@@ -45,6 +45,8 @@ export interface Region {
   name: string;
   /** Postcode areas offered as quick choices, in order of importance. */
   postcodeAreas: PostcodeArea[];
+  /** Outward codes covered outside those areas, for example TD15 (Berwick-upon-Tweed). */
+  extraOutwardCodes?: string[];
 }
 
 /** Where a visitor came from. Captured on every record for the audit trail. */
@@ -74,6 +76,8 @@ export interface InterestRegistration {
   firstName: string;
   email: string;
   postcodeArea: string | null;
+  /** Full postcode, when given (for example by someone outside the areas we cover). */
+  postcode: string | null;
   consent: ConsentRecord;
   source: SourceInfo;
   createdAt: string;
@@ -99,6 +103,8 @@ export interface Specialist {
   slug: string;
   name: string;
   isDemo: boolean;
+  /** Where enquiries are sent. */
+  enquiryEmail: string;
   services: string[];
   areasCovered: string[];
   about: string;
@@ -108,3 +114,45 @@ export interface Specialist {
   /** ISO date the checks were last confirmed. */
   checksLastConfirmed: string;
 }
+
+/** A homeowner's request to be put in touch with a specialist. */
+export interface Enquiry {
+  kind: "enquiry";
+  id: string;
+  serviceSlug: string;
+  /** Raw answers to the visible questions, by question id. */
+  answers: Record<string, string | string[]>;
+  /** Snapshot of the questions and answers as worded at the time. */
+  summary: { questionId: string; label: string; value: string }[];
+  postcode: string;
+  regionSlug: string;
+  contact: { firstName: string; lastName: string; email: string; phone: string };
+  consent: ConsentRecord;
+  source: SourceInfo;
+  createdAt: string;
+  /** The single specialist recommended. Null when no match was available. */
+  matchedSpecialistSlug: string | null;
+  /** When the homeowner was emailed the specialist's details. */
+  customerNotifiedAt: string | null;
+  /** When the specialist was sent the enquiry. Always after customerNotifiedAt. */
+  specialistNotifiedAt: string | null;
+}
+
+/** Answers saved by someone who isn't ready yet. Deleted on request. */
+export interface SavedProgress {
+  kind: "saved_progress";
+  /** Unguessable token used in resume and delete links. */
+  token: string;
+  serviceSlug: string;
+  answers: Record<string, string | string[]>;
+  email: string;
+  consent: ConsentRecord;
+  source: SourceInfo;
+  createdAt: string;
+}
+
+/** The parts of a specialist record that may be shown to homeowners. */
+export type PublicSpecialist = Pick<
+  Specialist,
+  "slug" | "name" | "isDemo" | "services" | "googleRating" | "checks" | "checksLastConfirmed"
+>;

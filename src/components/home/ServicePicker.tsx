@@ -7,14 +7,15 @@ import { RegisterInterest } from "@/components/home/RegisterInterest";
  * Live services start the questionnaire. Coming-soon services open a
  * register-interest form. Both lists come from config/services.ts.
  */
-export function ServicePicker() {
+export function ServicePicker({ area }: { area?: string | null }) {
+  const query = area ? `?area=${encodeURIComponent(area)}` : "";
   return (
     <div className="grid gap-4">
       <ul className="grid gap-4 md:grid-cols-2">
         {liveServices.map((s) => (
           <li key={s.slug}>
             <Link
-              href={`/find-a-specialist/${s.slug}`}
+              href={`/find-a-specialist/${s.slug}${query}`}
               className="group grid h-full gap-3 rounded-[var(--radius-panel)] border-[1.5px] border-line bg-surface p-6 text-ink no-underline shadow-[var(--shadow-card)] transition-colors hover:border-blue motion-reduce:transition-none"
             >
               <Icon name={s.icon} className="size-10 text-blue" />

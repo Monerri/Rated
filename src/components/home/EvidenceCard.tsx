@@ -1,20 +1,20 @@
 import { vettingChecks } from "@/config/vetting";
 import { formatMonthYear } from "@/lib/format";
 import { getService } from "@/config/services";
-import type { Specialist } from "@/lib/types";
+import type { PublicSpecialist } from "@/lib/types";
 import { TickIcon } from "@/components/ui/Icon";
 
 /**
  * Shows a specialist's checks as evidence. Check titles come from the vetting
  * config, so a new check appears here automatically.
  */
-export function EvidenceCard({ specialist }: { specialist: Specialist }) {
+export function EvidenceCard({ specialist }: { specialist: PublicSpecialist }) {
   const serviceNames = specialist.services.map((s) => getService(s)?.name).filter(Boolean).join(" · ");
 
   return (
     <figure
       className="grid gap-4 rounded-[var(--radius-panel)] border border-line bg-surface p-5 shadow-[var(--shadow-card)] sm:p-6"
-      aria-label={`Example evidence for ${specialist.name}`}
+      aria-label={`Checks for ${specialist.name}`}
     >
       <div className="flex items-start justify-between gap-3">
         <div>

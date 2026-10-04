@@ -1,7 +1,7 @@
 import { ButtonLink } from "@/components/ui/Button";
 import { ArrowIcon } from "@/components/ui/Icon";
 import { EvidenceCard } from "@/components/home/EvidenceCard";
-import { demoSpecialist } from "@/data/demo-specialist";
+import { demoSpecialist } from "@/data/specialists";
 import { primaryRegion } from "@/config/regions";
 
 export function Hero() {

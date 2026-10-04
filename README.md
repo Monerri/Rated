@@ -26,11 +26,16 @@ npm run build
 | `src/lib/consent.ts` | Versioned consent wording. Stored with every record. |
 | `src/lib/records.ts` | Persistence boundary. The prototype store only logs; swap in Supabase here. |
 | `src/app/api/interest` | Register-interest endpoint for coming-soon services. |
-| `src/data/demo-specialist.ts` | Fictional specialist. Always labelled as demonstration data. |
+| `src/data/specialists.ts` | Fictional specialist directory. Always labelled as demonstration data. |
+| `src/funnels/` | Questionnaire configs and the engine that validates and summarises answers. |
+| `src/lib/matching.ts` | Picks the one specialist for an enquiry (service, postcode, current checks). |
+| `src/lib/enquiries.ts` | Enquiry pipeline: validate, match, store, email the homeowner, then the specialist. |
+| `src/lib/notifications.ts` | Email templates and the sender boundary. The prototype sender only logs. |
 
 ## Status
 
 - Step 5, homepage: done.
-- Next: Windows & Doors funnel, Conservatory Roof funnel, register-interest pages, supplier section, vetting pages.
+- Step 6, Windows & Doors funnel: done, including automatic specialist matching and notification emails.
+- Next: Conservatory Roof funnel, register-interest pages, supplier section, vetting pages and specialist profiles.
 
-Nothing is persisted yet. Submissions are validated and written to the server log only.
+Prototype limits: records are held in server memory only and emails are written to the server log, not sent. Connect Supabase in `src/lib/records.ts` and an email provider in `src/lib/notifications.ts`. Set `SITE_URL` so links in emails use the live domain.

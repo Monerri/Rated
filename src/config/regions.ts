@@ -15,6 +15,7 @@ export const regions: Region[] = [
       { code: "DL", places: "Darlington, Bishop Auckland" },
       { code: "TS", places: "Teesside, Hartlepool" },
     ],
+    extraOutwardCodes: ["TD15"],
   },
 ];
 
@@ -22,4 +23,10 @@ export const primaryRegion = regions[0];
 
 export function getRegion(slug: string): Region | undefined {
   return regions.find((r) => r.slug === slug);
+}
+
+/** A postcode area offered as a quick choice, for example from a homepage link. */
+export function knownPostcodeArea(input: string | string[] | undefined): string | null {
+  const code = typeof input === "string" ? input.toUpperCase() : "";
+  return regions.some((r) => r.postcodeAreas.some((a) => a.code === code)) ? code : null;
 }

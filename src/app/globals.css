@@ -97,3 +97,21 @@ h4 {
 dialog::backdrop {
   background: rgb(14 34 57 / 0.45);
 }
+
+/* Each funnel screen eases in. Disabled when reduced motion is preferred. */
+@keyframes screen-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+.funnel-screen {
+  animation: screen-in 200ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .funnel-screen {
+    animation: none;
+  }
+}

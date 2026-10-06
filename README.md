@@ -20,7 +20,8 @@ npm run build
 |---|---|
 | `src/config/services.ts` | Service catalogue. Switch a service from `coming_soon` to `live` here. |
 | `src/config/regions.ts` | Regions and their postcode areas. Add a region to open a new market. |
-| `src/config/vetting.ts` | The consumer-facing checks. Add a check here to extend the standard. |
+| `src/config/vetting.ts` | The consumer-facing checks, their explanations, and the standard's review date, 12-month validity and minimum rating. |
+| `src/lib/vetting.ts` | The single "is this specialist currently vetted?" rule, used by matching and by profiles. |
 | `src/config/site.ts` | Brand name and company details (placeholders until registered). |
 | `src/lib/types.ts` | Domain types that mirror the planned database tables. |
 | `src/lib/consent.ts` | Versioned consent wording. Stored with every record. |
@@ -42,7 +43,8 @@ npm run build
 - Step 7, Conservatory Roofs funnel: done.
 - Step 8, coming soon and register interest: done.
 - Step 9, supplier section: done. Applications are stored with status "received", acknowledged by email and sent to `site.supplierApplicationsEmail` for review.
-- Next: vetting pages and specialist profiles.
+- Step 10, How we check page, Our specialists and specialist profiles: done.
+- Next: step 11, responsive polish and interactions, plus the remaining content pages (How it works, Areas, About, Guides, Contact, Privacy, Terms).
 
 ## Switching a service on or off without a rebuild
 

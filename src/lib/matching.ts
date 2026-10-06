@@ -1,22 +1,7 @@
 import { specialists } from "@/data/specialists";
-import { vettingChecks } from "@/config/vetting";
 import { outwardCode, postcodeArea } from "@/lib/postcode";
+import { isCurrentlyVetted } from "@/lib/vetting";
 import type { Specialist } from "@/lib/types";
-
-/** Checks older than this are treated as lapsed and the specialist is not recommended. */
-const CHECKS_VALID_MONTHS = 12;
-
-/** Every current check passed, and confirmed recently enough. */
-export function isCurrentlyVetted(s: Specialist, now = new Date()): boolean {
-  const confirmed = new Date(s.checksLastConfirmed);
-  const expires = new Date(confirmed);
-  expires.setUTCMonth(expires.getUTCMonth() + CHECKS_VALID_MONTHS);
-  if (expires < now) return false;
-  return vettingChecks.every((def) => {
-    const r = s.checks.find((c) => c.id === def.id);
-    return r && (r.passed || r.notApplicableReason);
-  });
-}
 
 function covers(s: Specialist, area: string, outward: string | null): boolean {
   return s.areasCovered.includes(area) || (outward !== null && s.areasCovered.includes(outward));

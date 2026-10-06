@@ -21,11 +21,11 @@ export function shareWithSpecialistWording(serviceName: string) {
 }
 
 /** How long saved progress is kept before it is deleted automatically. */
-export const SAVED_PROGRESS_MONTHS = 6;
+export const SAVED_PROGRESS_MONTHS = 12;
 
 export function retainProgressWording() {
   return {
-    wordingId: "retain_progress.v1",
+    wordingId: "retain_progress.v2",
     wording: `Save my answers so I can carry on later. ${site.name} will keep them for up to ${SAVED_PROGRESS_MONTHS} months, won't share them with anyone, and will delete them sooner if I ask.`,
   };
 }

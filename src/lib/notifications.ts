@@ -51,7 +51,7 @@ Profile: ${origin}/specialists/${s.slug}
 
 What happens next
 1. We're passing your answers and contact details to ${s.name} now.
-2. They'll contact you by phone or email to talk through your project.
+2. They'll contact you ${site.specialistResponseTime} by phone or email to talk through your project.
 3. Any quote is between you and them, and there's no obligation to go ahead.
 
 No other company has been given your details.

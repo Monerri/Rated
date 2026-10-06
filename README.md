@@ -36,6 +36,7 @@ npm run build
 
 - Step 5, homepage: done.
 - Step 6, Windows & Doors funnel: done, including automatic specialist matching and notification emails.
-- Next: Conservatory Roof funnel, register-interest pages, supplier section, vetting pages and specialist profiles.
+- Step 7, Conservatory Roofs funnel: done.
+- Next: register-interest pages, supplier section, vetting pages and specialist profiles.
 
 Prototype limits: records are held in server memory only and emails are written to the server log, not sent. Connect Supabase in `src/lib/records.ts` and an email provider in `src/lib/notifications.ts`. Set `SITE_URL` so links in emails use the live domain.

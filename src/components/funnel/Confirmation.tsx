@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { comingSoonServices } from "@/config/services";
+import { site } from "@/config/site";
 import { notifyServiceAvailableWording } from "@/lib/consent";
 import { getSourceInfo } from "@/lib/source";
 import { EvidenceCard } from "@/components/home/EvidenceCard";
@@ -49,7 +50,7 @@ export function Confirmation({
         <ol className="grid gap-3">
           {[
             `We've sent ${s.name} your answers and contact details. No other company has them.`,
-            `${s.name} will contact you by phone or email to talk about your project.`,
+            `${s.name} will contact you ${site.specialistResponseTime} by phone or email to talk about your project.`,
             "Any quote is between you and them. There's no obligation to go ahead.",
           ].map((t, i) => (
             <li key={t} className="grid grid-cols-[32px_1fr] items-start gap-3">

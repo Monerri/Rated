@@ -8,6 +8,12 @@ export const site = {
   description:
     "Tell us what you're looking to improve. We'll help you find the right solution and a trusted local specialist.",
   contactEmail: "hello@example.com",
+  /**
+   * When homeowners can expect to hear from their specialist. Deliberately
+   * vague during beta; change to, for example, "within five working days"
+   * once suppliers have agreed to a response time.
+   */
+  specialistResponseTime: "shortly",
   /** Placeholders until the company is registered. Shown in the footer. */
   legal: {
     companyName: "[Company name] Ltd",

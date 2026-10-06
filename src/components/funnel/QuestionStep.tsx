@@ -98,7 +98,10 @@ export function QuestionStep({
                     {pressed && "✓"}
                   </span>
                 )}
-                <span className="font-display text-base font-semibold leading-snug">{o.label}</span>
+                <span className="grid gap-0.5">
+                  <span className="font-display text-base font-semibold leading-snug">{o.label}</span>
+                  {o.hint && <span className="text-sm text-muted">{o.hint}</span>}
+                </span>
               </button>
             </li>
           );

@@ -29,8 +29,10 @@ function candidates(serviceSlug: string, area: string, outward: string | null): 
 }
 
 /**
- * Picks the one specialist we recommend. Prototype rule: highest Google
- * rating, then most reviews. Production will add capacity and fair rotation.
+ * Picks the one specialist we recommend. During beta there will usually be
+ * only one specialist per area, so the rule is simple: highest Google
+ * rating, then most reviews. Add capacity limits or rotation here once
+ * areas have several specialists.
  */
 export function matchSpecialist(serviceSlug: string, postcode: string): Specialist | null {
   const list = candidates(serviceSlug, postcodeArea(postcode), outwardCode(postcode));

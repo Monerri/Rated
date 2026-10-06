@@ -2,7 +2,7 @@ import { site } from "@/config/site";
 import { vettingChecks } from "@/config/vetting";
 import { formatMonthYear } from "@/lib/format";
 import { SAVED_PROGRESS_MONTHS } from "@/lib/consent";
-import type { Enquiry, InterestRegistration, SavedProgress, Specialist } from "@/lib/types";
+import type { Enquiry, InterestRegistration, SavedProgress, Specialist, SupplierApplication } from "@/lib/types";
 
 export interface Email {
   to: string;
@@ -153,6 +153,52 @@ ${origin}/find-a-specialist/${serviceSlug}
 This is the only email we'll send you about it. We won't contact you again unless you start an enquiry.
 
 ${site.name}
+`,
+  };
+}
+
+/** Acknowledges a supplier application. Makes no promise of acceptance. */
+export function supplierAcknowledgementEmail(a: SupplierApplication): Email {
+  return {
+    to: a.email,
+    subject: `We've received your details: ${a.companyName}`,
+    text: `Hello ${a.contactName},
+
+Thanks for your interest in joining the ${site.name} network. We've received your details and will review your business against our current requirements:
+
+${vettingChecks.map((c) => `  - ${c.title}`).join("\n")}
+
+If your business looks like a good fit, we'll be in touch to talk about next steps. We review every application, but we can't accept every business.
+
+Reference: ${a.id}
+
+${site.name}
+`,
+  };
+}
+
+/** Internal notification so the team can start the review. */
+export function supplierApplicationInternalEmail(a: SupplierApplication, serviceName: string): Email {
+  return {
+    to: site.supplierApplicationsEmail,
+    subject: `New supplier application: ${a.companyName}`,
+    text: `Company: ${a.companyName}
+Companies House: ${a.companiesHouseNumber} (https://find-and-update.company-information.service.gov.uk/company/${a.companiesHouseNumber})
+Contact: ${a.contactName}, ${a.phone}, ${a.email}
+Website: ${a.website ?? "not given"}
+Main service: ${serviceName}
+Areas: ${[...a.areasCovered, a.otherAreas].filter(Boolean).join(", ")}
+Competent Person Scheme: ${a.competentPersonScheme}
+Insurance-backed guarantee provider: ${a.insuranceBackedGuaranteeProvider}
+Google profile: ${a.googleProfileUrl}
+
+About the business:
+${a.description}
+
+Anything else:
+${a.anythingElse ?? "Nothing"}
+
+Reference: ${a.id}
 `,
   };
 }

@@ -8,6 +8,8 @@ export const site = {
   description:
     "Tell us what you're looking to improve. We'll help you find the right solution and a trusted local specialist.",
   contactEmail: "hello@example.com",
+  /** Where new supplier applications are sent for review. */
+  supplierApplicationsEmail: "suppliers@example.com",
   /**
    * When homeowners can expect to hear from their specialist. Deliberately
    * vague during beta; change to, for example, "within five working days"

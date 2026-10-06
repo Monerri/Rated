@@ -1,4 +1,4 @@
-import type { Enquiry, InterestRegistration, SavedProgress, ServiceOverride } from "@/lib/types";
+import type { Enquiry, InterestRegistration, SavedProgress, ServiceOverride, SupplierApplication } from "@/lib/types";
 
 /**
  * Persistence boundary. Pages and API routes call this interface only, so
@@ -22,6 +22,8 @@ export interface RecordStore {
 
   getServiceOverrides(): Promise<ServiceOverride[]>;
   saveServiceOverride(override: ServiceOverride): Promise<void>;
+
+  saveSupplierApplication(record: SupplierApplication): Promise<void>;
 }
 
 /**
@@ -35,6 +37,7 @@ interface Memory {
   enquiries: Map<string, Enquiry>;
   progress: Map<string, SavedProgress>;
   overrides: Map<string, ServiceOverride>;
+  suppliers: Map<string, SupplierApplication>;
 }
 
 const g = globalThis as typeof globalThis & { __vnMemory?: Memory };
@@ -43,6 +46,7 @@ const memory: Memory = (g.__vnMemory ??= {
   enquiries: new Map(),
   progress: new Map(),
   overrides: new Map(),
+  suppliers: new Map(),
 });
 
 function log(label: string, record: object) {
@@ -97,6 +101,11 @@ const prototypeStore: RecordStore = {
   async saveServiceOverride(override) {
     memory.overrides.set(override.serviceSlug, override);
     log("service override", override);
+  },
+
+  async saveSupplierApplication(record) {
+    memory.suppliers.set(record.id, record);
+    log("supplier application", record);
   },
 };
 

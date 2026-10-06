@@ -27,6 +27,7 @@ npm run build
 | `src/lib/records.ts` | Persistence boundary. The prototype store only logs; swap in Supabase here. |
 | `src/app/api/interest` | Register-interest endpoint, plus unsubscribe. |
 | `src/lib/catalogue.ts` | Live service catalogue: config plus runtime overrides. Use this for "is it live?". |
+| `src/config/suppliers.ts` | Supplier criteria, Competent Person Scheme options (alphabetical, unranked) and declaration wording. |
 | `src/lib/launch.ts` | Switches a service live or back, and sends the one "now available" email. |
 | `src/data/specialists.ts` | Fictional specialist directory. Always labelled as demonstration data. |
 | `src/funnels/` | Questionnaire configs and the engine that validates and summarises answers. |
@@ -40,7 +41,8 @@ npm run build
 - Step 6, Windows & Doors funnel: done, including automatic specialist matching and notification emails.
 - Step 7, Conservatory Roofs funnel: done.
 - Step 8, coming soon and register interest: done.
-- Next: supplier section, vetting pages and specialist profiles.
+- Step 9, supplier section: done. Applications are stored with status "received", acknowledged by email and sent to `site.supplierApplicationsEmail` for review.
+- Next: vetting pages and specialist profiles.
 
 ## Switching a service on or off without a rebuild
 

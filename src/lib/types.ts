@@ -169,3 +169,28 @@ export type PublicSpecialist = Pick<
   Specialist,
   "slug" | "name" | "isDemo" | "services" | "googleRating" | "checks" | "checksLastConfirmed"
 >;
+
+/** A business asking to be considered for the network. Not an approval. */
+export interface SupplierApplication {
+  kind: "supplier_application";
+  id: string;
+  status: "received" | "under_review" | "accepted" | "declined";
+  companyName: string;
+  contactName: string;
+  email: string;
+  phone: string;
+  website: string | null;
+  mainService: string;
+  areasCovered: string[];
+  otherAreas: string | null;
+  companiesHouseNumber: string;
+  competentPersonScheme: string;
+  insuranceBackedGuaranteeProvider: string;
+  googleProfileUrl: string;
+  description: string;
+  anythingElse: string | null;
+  /** The confirmation the applicant ticked, stored word for word. */
+  declaration: { wordingId: string; wording: string; givenAt: string };
+  source: SourceInfo;
+  createdAt: string;
+}

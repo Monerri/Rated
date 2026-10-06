@@ -82,3 +82,107 @@ export function GoodToKnow({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
+
+function describedBy(id: string, hint?: string, error?: string | null) {
+  return [hint && `${id}-hint`, error && `${id}-error`].filter(Boolean).join(" ") || undefined;
+}
+
+function FieldShell({
+  id,
+  label,
+  optional,
+  hint,
+  error,
+  children,
+}: {
+  id: string;
+  label: string;
+  optional?: boolean;
+  hint?: string;
+  error?: string | null;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="grid gap-1.5">
+      <label htmlFor={id} className="text-[15px] font-semibold">
+        {label} {optional && <span className="font-normal text-muted">(optional)</span>}
+      </label>
+      {hint && (
+        <p id={`${id}-hint`} className="-mt-1 text-sm text-muted">
+          {hint}
+        </p>
+      )}
+      {children}
+      {error && (
+        <p id={`${id}-error`} className="text-sm font-semibold text-ink">
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
+export function TextAreaField({
+  label,
+  optional,
+  hint,
+  error,
+  ...props
+}: {
+  label: string;
+  optional?: boolean;
+  hint?: string;
+  error?: string | null;
+} & React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  const id = useId();
+  return (
+    <FieldShell id={id} label={label} optional={optional} hint={hint} error={error}>
+      <textarea
+        id={id}
+        rows={4}
+        className={`${inputClass} py-3`}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={describedBy(id, hint, error)}
+        {...props}
+      />
+    </FieldShell>
+  );
+}
+
+export function SelectField({
+  label,
+  hint,
+  error,
+  options,
+  placeholder = "Choose one",
+  ...props
+}: {
+  label: string;
+  hint?: string;
+  error?: string | null;
+  options: { value: string; label: string }[];
+  placeholder?: string;
+} & React.SelectHTMLAttributes<HTMLSelectElement>) {
+  const id = useId();
+  return (
+    <FieldShell id={id} label={label} hint={hint} error={error}>
+      <select
+        id={id}
+        className={inputClass}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={describedBy(id, hint, error)}
+        {...(props.value === undefined ? { defaultValue: "" } : {})}
+        {...props}
+      >
+        <option value="" disabled>
+          {placeholder}
+        </option>
+        {options.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+    </FieldShell>
+  );
+}

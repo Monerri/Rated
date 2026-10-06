@@ -45,3 +45,23 @@ export function jsonError(message: string, status = 400) {
 export function requestOrigin(request: Request): string {
   return process.env.SITE_URL ?? new URL(request.url).origin;
 }
+
+/** Companies House number: 8 digits, or 2 letters and 6 digits (for example SC123456). Pads short numbers. */
+export function normaliseCompanyNumber(input: string): string | null {
+  const v = input.toUpperCase().replace(/\s+/g, "");
+  if (/^\d{6,8}$/.test(v)) return v.padStart(8, "0");
+  if (/^[A-Z]{2}\d{6}$/.test(v)) return v;
+  return null;
+}
+
+/** An http(s) URL, adding https:// if it was left off. */
+export function normaliseUrl(input: string): string | null {
+  const v = input.trim();
+  if (!v) return null;
+  try {
+    const url = new URL(/^https?:\/\//i.test(v) ? v : `https://${v}`);
+    return url.hostname.includes(".") ? url.toString() : null;
+  } catch {
+    return null;
+  }
+}

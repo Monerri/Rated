@@ -1,9 +1,10 @@
 import type { Service } from "@/lib/types";
 
 /**
- * The service catalogue. Switching a service from coming soon to live is a
- * change to `status` and `regions` here (and, later, a row in the database),
- * plus a questionnaire configuration for the funnel.
+ * Service definitions and their default availability. Availability can be
+ * changed at runtime without a rebuild (see lib/catalogue.ts and
+ * /api/admin/services). A service needs a questionnaire in src/funnels
+ * before it can go live.
  */
 export const services: Service[] = [
   {
@@ -56,9 +57,10 @@ export const services: Service[] = [
   },
 ];
 
-export const liveServices = services.filter((s) => s.status === "live");
-export const comingSoonServices = services.filter((s) => s.status === "coming_soon");
-
+/**
+ * Looks up a service's definition (name, icon, summary). For whether it is
+ * live right now, use getCatalogueService in lib/catalogue.ts instead.
+ */
 export function getService(slug: string): Service | undefined {
   return services.find((s) => s.slug === slug);
 }

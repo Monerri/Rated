@@ -76,7 +76,16 @@ async function checkAvailability(serviceSlug: string, answers: Answers): Promise
  * The questionnaire. Takes the service (plain data) and looks up its config
  * here, because configs contain functions that can't be sent from the server.
  */
-export function Funnel({ service, initialArea }: { service: Service; initialArea: string | null }) {
+export function Funnel({
+  service,
+  comingSoon,
+  initialArea,
+}: {
+  service: Service;
+  /** Services offered as optional "tell me when" sign-ups on the confirmation screen. */
+  comingSoon: Service[];
+  initialArea: string | null;
+}) {
   const config = getFunnel(service.slug)!;
   const key = storageKey(service.slug);
   const firstQuestion = config.questions[0].id;
@@ -293,7 +302,7 @@ export function Funnel({ service, initialArea }: { service: Service; initialArea
           />
         )}
 
-        {state.screen === "confirmation" && result && <Confirmation headingRef={headingRef} result={result} />}
+        {state.screen === "confirmation" && result && <Confirmation headingRef={headingRef} result={result} comingSoon={comingSoon} />}
         {state.screen === "confirmation" && !result && (
           <div className="grid gap-4">
             <h1 ref={headingRef} tabIndex={-1} className="text-[28px] font-bold outline-none">

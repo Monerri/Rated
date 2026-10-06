@@ -1,13 +1,14 @@
 import Link from "next/link";
-import { liveServices, comingSoonServices } from "@/config/services";
+import { getCatalogueLists } from "@/lib/catalogue";
 import { ArrowIcon, Icon } from "@/components/ui/Icon";
-import { RegisterInterest } from "@/components/home/RegisterInterest";
+import { RegisterInterest } from "@/components/interest/RegisterInterest";
 
 /**
  * Live services start the questionnaire. Coming-soon services open a
- * register-interest form. Both lists come from config/services.ts.
+ * register-interest form. Both lists come from the live catalogue.
  */
-export function ServicePicker({ area }: { area?: string | null }) {
+export async function ServicePicker({ area }: { area?: string | null }) {
+  const { live: liveServices, comingSoon: comingSoonServices } = await getCatalogueLists();
   const query = area ? `?area=${encodeURIComponent(area)}` : "";
   return (
     <div className="grid gap-4">

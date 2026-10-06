@@ -72,6 +72,8 @@ export interface ConsentRecord {
 /** Someone asking to hear when a coming-soon service goes live. Not an enquiry. */
 export interface InterestRegistration {
   kind: "interest_registration";
+  /** Unguessable token used in the unsubscribe link. */
+  token: string;
   serviceSlug: string;
   firstName: string;
   email: string;
@@ -81,6 +83,17 @@ export interface InterestRegistration {
   consent: ConsentRecord;
   source: SourceInfo;
   createdAt: string;
+  /** When we sent the one "now available" email this consent covers. */
+  notifiedAt: string | null;
+  unsubscribedAt: string | null;
+}
+
+/** A change to a service's availability made at runtime, without a rebuild. */
+export interface ServiceOverride {
+  serviceSlug: string;
+  status: ServiceStatus;
+  regions: string[];
+  changedAt: string;
 }
 
 /** The checks a specialist must pass. New checks are added here, not hard-coded in pages. */

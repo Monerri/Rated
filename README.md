@@ -25,7 +25,9 @@ npm run build
 | `src/lib/types.ts` | Domain types that mirror the planned database tables. |
 | `src/lib/consent.ts` | Versioned consent wording. Stored with every record. |
 | `src/lib/records.ts` | Persistence boundary. The prototype store only logs; swap in Supabase here. |
-| `src/app/api/interest` | Register-interest endpoint for coming-soon services. |
+| `src/app/api/interest` | Register-interest endpoint, plus unsubscribe. |
+| `src/lib/catalogue.ts` | Live service catalogue: config plus runtime overrides. Use this for "is it live?". |
+| `src/lib/launch.ts` | Switches a service live or back, and sends the one "now available" email. |
 | `src/data/specialists.ts` | Fictional specialist directory. Always labelled as demonstration data. |
 | `src/funnels/` | Questionnaire configs and the engine that validates and summarises answers. |
 | `src/lib/matching.ts` | Picks the one specialist for an enquiry (service, postcode, current checks). |
@@ -37,6 +39,20 @@ npm run build
 - Step 5, homepage: done.
 - Step 6, Windows & Doors funnel: done, including automatic specialist matching and notification emails.
 - Step 7, Conservatory Roofs funnel: done.
-- Next: register-interest pages, supplier section, vetting pages and specialist profiles.
+- Step 8, coming soon and register interest: done.
+- Next: supplier section, vetting pages and specialist profiles.
+
+## Switching a service on or off without a rebuild
+
+Set `ADMIN_API_TOKEN`, then:
+
+```bash
+curl -X POST https://<site>/api/admin/services/<service-slug> \
+  -H "Authorization: Bearer $ADMIN_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"status":"live","regions":["north-east-england"]}'
+```
+
+A service can only go live once it has a questionnaire in `src/funnels`. Going live emails everyone who registered interest in that region, once. The route is disabled when `ADMIN_API_TOKEN` is not set.
 
 Prototype limits: records are held in server memory only and emails are written to the server log, not sent. Connect Supabase in `src/lib/records.ts` and an email provider in `src/lib/notifications.ts`. Set `SITE_URL` so links in emails use the live domain.

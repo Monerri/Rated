@@ -1,6 +1,7 @@
-import { getService } from "@/config/services";
+import { getCatalogueService } from "@/lib/catalogue";
 import { hasCoverage } from "@/lib/matching";
 import { normalisePostcode, regionForPostcode } from "@/lib/postcode";
+import { regions } from "@/config/regions";
 import { jsonError } from "@/lib/request";
 import type { NextRequest } from "next/server";
 
@@ -10,7 +11,7 @@ import type { NextRequest } from "next/server";
  */
 export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams;
-  const service = getService(params.get("service") ?? "");
+  const service = await getCatalogueService(params.get("service") ?? "");
   if (!service || service.status !== "live") return jsonError("Unknown service.");
 
   const postcode = normalisePostcode(params.get("postcode") ?? "");
@@ -18,6 +19,10 @@ export async function GET(request: NextRequest) {
   const target = postcode ?? area;
   if (!target) return jsonError("Missing area or postcode.");
 
-  const covered = postcode ? regionForPostcode(postcode) !== null : true;
+  // The postcode or area must be in a region where this service is live.
+  const region = postcode
+    ? regionForPostcode(postcode)
+    : (regions.find((r) => r.postcodeAreas.some((a) => a.code === area))?.slug ?? null);
+  const covered = region !== null && service.regions.includes(region);
   return Response.json({ available: covered && hasCoverage(service.slug, target) });
 }

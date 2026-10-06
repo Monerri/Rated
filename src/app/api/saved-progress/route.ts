@@ -1,4 +1,4 @@
-import { getService } from "@/config/services";
+import { getCatalogueService } from "@/lib/catalogue";
 import { getFunnel } from "@/funnels";
 import { validateAnswers } from "@/funnels/engine";
 import { retainProgressWording } from "@/lib/consent";
@@ -12,7 +12,7 @@ export async function POST(request: Request) {
   const body = await readJson(request);
   if (!body) return jsonError("We couldn't read that request.");
 
-  const service = getService(String(body.serviceSlug ?? ""));
+  const service = await getCatalogueService(String(body.serviceSlug ?? ""));
   const funnel = service && getFunnel(service.slug);
   if (!service || !funnel) return jsonError("That service isn't available.");
 

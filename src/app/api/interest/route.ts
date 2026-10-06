@@ -1,8 +1,10 @@
-import { getService } from "@/config/services";
+import { getCatalogueService } from "@/lib/catalogue";
 import { notifyServiceAvailableWording } from "@/lib/consent";
-import { normalisePostcode, regionForPostcode } from "@/lib/postcode";
+import { normalisePostcode, postcodeArea, regionForPostcode } from "@/lib/postcode";
+import { knownPostcodeArea } from "@/config/regions";
+import { emailSender, interestConfirmationEmail } from "@/lib/notifications";
 import { recordStore } from "@/lib/records";
-import { EMAIL, jsonError, parseSource, readJson, str } from "@/lib/request";
+import { EMAIL, jsonError, parseSource, readJson, requestOrigin, str } from "@/lib/request";
 import type { InterestRegistration } from "@/lib/types";
 
 /**
@@ -14,7 +16,7 @@ export async function POST(request: Request) {
   const body = await readJson(request);
   if (!body) return jsonError("We couldn't read that request.");
 
-  const service = getService(String(body.serviceSlug ?? ""));
+  const service = await getCatalogueService(String(body.serviceSlug ?? ""));
   if (!service) return jsonError("That service isn't open for registrations.");
 
   const postcode = typeof body.postcode === "string" ? normalisePostcode(body.postcode) : null;
@@ -45,10 +47,11 @@ export async function POST(request: Request) {
   const now = new Date().toISOString();
   const record: InterestRegistration = {
     kind: "interest_registration",
+    token: crypto.randomUUID(),
     serviceSlug: service.slug,
     firstName,
     email,
-    postcodeArea: str(body.postcodeArea, 12),
+    postcodeArea: knownPostcodeArea(str(body.postcodeArea, 12) ?? undefined) ?? (postcode ? postcodeArea(postcode) : null),
     postcode,
     consent: {
       purpose: "notify_service_available",
@@ -60,8 +63,11 @@ export async function POST(request: Request) {
     },
     source: parseSource(body.source),
     createdAt: now,
+    notifiedAt: null,
+    unsubscribedAt: null,
   };
 
-  const { id } = await recordStore.saveInterestRegistration(record);
-  return Response.json({ id }, { status: 201 });
+  await recordStore.saveInterestRegistration(record);
+  await emailSender.send(interestConfirmationEmail(record, service.name, requestOrigin(request)));
+  return new Response(null, { status: 201 });
 }

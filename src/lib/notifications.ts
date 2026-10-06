@@ -2,7 +2,7 @@ import { site } from "@/config/site";
 import { vettingChecks } from "@/config/vetting";
 import { formatMonthYear } from "@/lib/format";
 import { SAVED_PROGRESS_MONTHS } from "@/lib/consent";
-import type { Enquiry, SavedProgress, Specialist } from "@/lib/types";
+import type { Enquiry, InterestRegistration, SavedProgress, Specialist } from "@/lib/types";
 
 export interface Email {
   to: string;
@@ -104,6 +104,53 @@ Carry on when you're ready, or delete your answers, here:
 ${link}
 
 We'll delete them automatically after ${SAVED_PROGRESS_MONTHS} months.
+
+${site.name}
+`,
+  };
+}
+
+function unsubscribeLine(r: InterestRegistration, origin: string) {
+  return `Don't want this email? Unsubscribe here: ${origin}/unsubscribe/${r.token}`;
+}
+
+/** Confirms a register-interest request, with a way to undo it. */
+export function interestConfirmationEmail(r: InterestRegistration, serviceName: string, origin: string): Email {
+  return {
+    to: r.email,
+    subject: `We'll let you know when ${serviceName} is available`,
+    text: `Hello ${r.firstName},
+
+Thanks for registering your interest in ${serviceName}. We'll send you one email when it becomes available in your area.
+
+This isn't an enquiry, and no company has been given your details.
+
+${unsubscribeLine(r, origin)}
+
+${site.name}
+`,
+  };
+}
+
+/** The single email a register-interest consent covers. */
+export function serviceAvailableEmail(
+  r: InterestRegistration,
+  serviceName: string,
+  serviceSlug: string,
+  regionName: string,
+  origin: string,
+): Email {
+  return {
+    to: r.email,
+    subject: `${serviceName} is now available in your area`,
+    text: `Hello ${r.firstName},
+
+You asked us to let you know when ${serviceName} became available in your area. It's now available across ${regionName}.
+
+If you'd like to be matched with a vetted local specialist, it takes about two minutes:
+${origin}/find-a-specialist/${serviceSlug}
+
+This is the only email we'll send you about it. We won't contact you again unless you start an enquiry.
 
 ${site.name}
 `,

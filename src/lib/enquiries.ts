@@ -1,4 +1,4 @@
-import { getService } from "@/config/services";
+import { getCatalogueService } from "@/lib/catalogue";
 import { getFunnel } from "@/funnels";
 import { isResearching, summarise, validateAnswers } from "@/funnels/engine";
 import { shareWithSpecialistWording } from "@/lib/consent";
@@ -33,7 +33,7 @@ export interface SubmitInput {
  * 5. only then send the enquiry to the specialist
  */
 export async function submitEnquiry(input: SubmitInput): Promise<SubmitResult> {
-  const service = getService(input.serviceSlug);
+  const service = await getCatalogueService(input.serviceSlug);
   const funnel = getFunnel(input.serviceSlug);
   if (!service || service.status !== "live" || !funnel) {
     return { ok: false, status: 400, error: "That service isn't available." };

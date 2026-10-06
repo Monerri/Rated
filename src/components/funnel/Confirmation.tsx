@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { comingSoonServices } from "@/config/services";
 import { site } from "@/config/site";
 import { notifyServiceAvailableWording } from "@/lib/consent";
 import { getSourceInfo } from "@/lib/source";
@@ -9,13 +8,16 @@ import { EvidenceCard } from "@/components/home/EvidenceCard";
 import { buttonClass } from "@/components/ui/Button";
 import { ConsentCheckbox, FormError } from "@/components/ui/Form";
 import type { EnquiryResult } from "@/components/funnel/ContactStep";
+import type { Service } from "@/lib/types";
 
 export function Confirmation({
   headingRef,
   result,
+  comingSoon,
 }: {
   headingRef: React.RefObject<HTMLHeadingElement | null>;
   result: EnquiryResult;
+  comingSoon: Service[];
 }) {
   const s = result.specialist;
   return (
@@ -81,13 +83,13 @@ export function Confirmation({
         <p className="font-mono text-xs text-muted">Reference: {result.reference}</p>
       </section>
 
-      <FutureServices result={result} />
+      <FutureServices result={result} services={comingSoon} />
     </div>
   );
 }
 
 /** Separate, optional consent for each coming-soon service. Never pre-ticked. */
-function FutureServices({ result }: { result: EnquiryResult }) {
+function FutureServices({ result, services: comingSoonServices }: { result: EnquiryResult; services: Service[] }) {
   const [ticked, setTicked] = useState<string[]>([]);
   const [status, setStatus] = useState<"idle" | "saving" | "done" | "error">("idle");
 

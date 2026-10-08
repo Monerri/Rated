@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getService } from "@/config/services";
-import { guides } from "@/config/guides";
+import { getArticles } from "@/lib/content";
 import { getCatalogueService } from "@/lib/catalogue";
 import { Icon } from "@/components/ui/Icon";
 import { InterestForm } from "@/components/interest/InterestForm";
@@ -27,7 +27,7 @@ export default async function RegisterInterestPage({ params }: PageProps<"/regis
   if (!service) notFound();
   if (service.status === "live") redirect(`/find-a-specialist/${slug}`);
 
-  const related = guides.filter((g) => g.service === slug);
+  const related = getArticles("guides").filter((g) => g.service === slug);
 
   return (
     <div className="mx-auto grid max-w-5xl gap-10 px-4 py-10 sm:px-6 md:grid-cols-[1fr_0.8fr] md:py-16">
@@ -54,7 +54,7 @@ export default async function RegisterInterestPage({ params }: PageProps<"/regis
                   <Link href={`/guides/${g.slug}`} className="font-display font-semibold text-blue">
                     {g.title}
                   </Link>
-                  <p className="text-[15px] text-muted">{g.summary}</p>
+                  <p className="text-[15px] text-muted">{g.description}</p>
                 </li>
               ))}
             </ul>

@@ -8,6 +8,7 @@ export interface Email {
   to: string;
   subject: string;
   text: string;
+  replyTo?: string;
 }
 
 /** Delivery boundary. Swap the prototype sender for a provider (for example Resend or Postmark) here. */
@@ -199,6 +200,30 @@ Anything else:
 ${a.anythingElse ?? "Nothing"}
 
 Reference: ${a.id}
+`,
+  };
+}
+
+export const contactTopics = [
+  { value: "question", label: "A question about the service" },
+  { value: "enquiry", label: "An enquiry I've made" },
+  { value: "specialist", label: "A specialist you introduced" },
+  { value: "privacy", label: "My personal information" },
+  { value: "supplier", label: "Joining the network" },
+  { value: "other", label: "Something else" },
+];
+
+/** A message from the contact form, sent to the team inbox. */
+export function contactMessageEmail(m: { name: string; email: string; topic: string; message: string }): Email {
+  const topic = contactTopics.find((t) => t.value === m.topic)?.label ?? m.topic;
+  return {
+    to: site.contactEmail,
+    replyTo: m.email,
+    subject: `Contact form: ${topic}`,
+    text: `From: ${m.name} <${m.email}>
+Topic: ${topic}
+
+${m.message}
 `,
   };
 }

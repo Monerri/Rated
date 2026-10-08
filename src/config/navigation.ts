@@ -12,6 +12,14 @@ export const primaryNav: NavLink[] = [
 
 export const supplierNav: NavLink = { href: "/for-suppliers", label: "For suppliers" };
 
+/** Extra links in the mobile menu, where there's room for them. */
+export const mobileExtraNav: NavLink[] = [
+  { href: "/blog", label: "Blog" },
+  { href: "/specialists", label: "Our specialists" },
+  { href: "/about", label: "About us" },
+  { href: "/contact", label: "Contact" },
+];
+
 export const footerNav: { heading: string; links: NavLink[] }[] = [
   {
     heading: "Homeowners",
@@ -22,6 +30,7 @@ export const footerNav: { heading: string; links: NavLink[] }[] = [
       { href: "/how-we-check", label: "How we check our specialists" },
       { href: "/areas", label: "Areas we cover" },
       { href: "/guides", label: "Guides" },
+      { href: "/blog", label: "Blog" },
     ],
   },
   {

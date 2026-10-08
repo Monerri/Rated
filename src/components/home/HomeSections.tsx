@@ -3,10 +3,11 @@ import { Section } from "@/components/ui/Section";
 import { ButtonLink } from "@/components/ui/Button";
 import { ArrowIcon, TickIcon } from "@/components/ui/Icon";
 import { vettingChecks } from "@/config/vetting";
-import { guides } from "@/config/guides";
+import { getArticles } from "@/lib/content";
+import { ArticleCard } from "@/components/content/ArticleCard";
 import { primaryRegion } from "@/config/regions";
 
-const steps = [
+export const steps = [
   {
     title: "Tell us what you need",
     body: "Answer a few simple questions about your home and what you're looking to improve.",
@@ -72,7 +73,7 @@ export function ChecksSection() {
   );
 }
 
-const nextSteps = [
+export const nextSteps = [
   {
     title: "We review your answers",
     body: "We match your project and postcode to one vetted specialist who covers your area and does the work you need.",
@@ -112,9 +113,8 @@ export function WhatHappensNext() {
 }
 
 export function GuidesTeaser() {
-  const featured = guides.filter((g) =>
-    ["choosing-new-windows", "conservatory-roof-replacement", "window-energy-ratings"].includes(g.slug),
-  );
+  const featured = getArticles("guides").slice(0, 3);
+  const latest = getArticles("blog").slice(0, 3);
   return (
     <Section
       id="guides"
@@ -125,20 +125,20 @@ export function GuidesTeaser() {
       <ul className="grid gap-4 md:grid-cols-3">
         {featured.map((g) => (
           <li key={g.slug}>
-            <Link
-              href={`/guides/${g.slug}`}
-              className="grid h-full content-start gap-2 rounded-[var(--radius-card)] border border-line bg-surface p-5 text-ink no-underline transition-colors hover:border-blue motion-reduce:transition-none"
-            >
-              <span className="font-mono text-xs text-muted">{g.readingMinutes} min read</span>
-              <h3 className="text-lg font-bold">{g.title}</h3>
-              <p className="text-[15px] text-muted">{g.summary}</p>
-            </Link>
+            <ArticleCard article={g} />
           </li>
         ))}
       </ul>
-      <Link href="/guides" className="inline-flex items-center gap-1.5 justify-self-start font-display font-semibold text-blue">
-        All guides <ArrowIcon />
-      </Link>
+      <div className="flex flex-wrap gap-x-6 gap-y-2">
+        <Link href="/guides" className="inline-flex items-center gap-1.5 font-display font-semibold text-blue">
+          All guides <ArrowIcon />
+        </Link>
+        {latest.length > 0 && (
+          <Link href="/blog" className="inline-flex items-center gap-1.5 font-display font-semibold text-blue">
+            Latest from the blog <ArrowIcon />
+          </Link>
+        )}
+      </div>
     </Section>
   );
 }
@@ -178,7 +178,7 @@ export function AreaSection() {
   );
 }
 
-const faqs = [
+export const faqs = [
   {
     q: "Does it cost anything?",
     a: "No. Our service is free for homeowners. Specialists pay us a fee for introductions.",

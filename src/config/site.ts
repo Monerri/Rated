@@ -7,9 +7,11 @@ export const site = {
   tagline: "Helping homeowners make better decisions about improving their homes.",
   description:
     "Tell us what you're looking to improve. We'll help you find the right solution and a trusted local specialist.",
-  contactEmail: "hello@example.com",
+  /** Canonical address. Override with SITE_URL in other environments. */
+  url: process.env.SITE_URL ?? "https://vettednorth.com",
+  contactEmail: "hello@vettednorth.com",
   /** Where new supplier applications are sent for review. */
-  supplierApplicationsEmail: "suppliers@example.com",
+  supplierApplicationsEmail: "suppliers@vettednorth.com",
   /**
    * When homeowners can expect to hear from their specialist. Deliberately
    * vague during beta; change to, for example, "within five working days"

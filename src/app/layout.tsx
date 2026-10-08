@@ -10,6 +10,9 @@ const sourceSans = Source_Sans_3({ variable: "--font-source-sans", subsets: ["la
 const plexMono = IBM_Plex_Mono({ variable: "--font-plex-mono", subsets: ["latin"], weight: ["400", "500"] });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(site.url),
+  openGraph: { siteName: site.name, locale: "en_GB", type: "website" },
+  alternates: { types: { "application/rss+xml": "/blog/rss.xml" } },
   title: {
     default: `${site.name}: find a vetted local home-improvement specialist`,
     template: `%s | ${site.name}`,

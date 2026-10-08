@@ -44,7 +44,19 @@ npm run build
 - Step 8, coming soon and register interest: done.
 - Step 9, supplier section: done. Applications are stored with status "received", acknowledged by email and sent to `site.supplierApplicationsEmail` for review.
 - Step 10, How we check page, Our specialists and specialist profiles: done.
-- Next: step 11, responsive polish and interactions, plus the remaining content pages (How it works, Areas, About, Guides, Contact, Privacy, Terms).
+- Step 11, responsive polish and remaining pages: done. How it works, Areas, About, Contact, seven guides, blog with scheduling and RSS, draft Privacy and Terms, sitemap and robots.
+
+## Content
+
+Guides, blog posts and the legal pages are Markdown files in `content/`. See [docs/PUBLISHING.md](docs/PUBLISHING.md).
+
+## Deployment
+
+The site needs a Node.js host (it has API routes), so it can't run on GitHub Pages. It's set up for Vercel:
+
+1. Import `Monerri/rated` into Vercel. Every push to `main` deploys; other branches get preview links.
+2. Set environment variables: `SITE_URL=https://vettednorth.com` and `ADMIN_API_TOKEN` (a long random string).
+3. Add `vettednorth.com` and `www.vettednorth.com` in Vercel, then create the DNS records Vercel shows in Cloudflare with the proxy turned off (grey cloud, "DNS only").
 
 ## Switching a service on or off without a rebuild
 

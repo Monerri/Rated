@@ -1,10 +1,11 @@
 import { getArticles } from "@/lib/content";
 import { site } from "@/config/site";
 
-export const revalidate = 3600;
-
 const esc = (s: string) =>
   s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+/** Built at deploy time; the daily deploy picks up newly published posts. */
+export const dynamic = "force-static";
 
 /** RSS feed of published blog posts. */
 export function GET() {

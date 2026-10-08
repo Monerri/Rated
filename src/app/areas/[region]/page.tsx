@@ -6,6 +6,9 @@ import { getCatalogue } from "@/lib/catalogue";
 import { Eyebrow } from "@/components/ui/Section";
 import { Icon } from "@/components/ui/Icon";
 
+/** Only the pages generated at build time exist; anything else is a 404. */
+export const dynamicParams = false;
+
 export function generateStaticParams() {
   return regions.map((r) => ({ region: r.slug }));
 }

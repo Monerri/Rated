@@ -5,8 +5,6 @@ import { regions } from "@/config/regions";
 import { specialists } from "@/data/specialists";
 import { getCatalogue } from "@/lib/catalogue";
 
-export const revalidate = 3600;
-
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const u = (path: string) => `${site.url}${path}`;
   const staticPages = [

@@ -10,8 +10,8 @@ import { checksExpire, isCurrentlyVetted } from "@/lib/vetting";
 import { Icon, TickIcon } from "@/components/ui/Icon";
 import { ButtonLink } from "@/components/ui/Button";
 
-/** Re-check daily so lapsed checks drop off without a rebuild. */
-export const revalidate = 86400;
+/** Only the pages generated at build time exist; anything else is a 404. */
+export const dynamicParams = false;
 
 export function generateStaticParams() {
   return specialists.map((s) => ({ slug: s.slug }));

@@ -6,6 +6,7 @@ import type { Service } from "@/lib/types";
 import type { Answers } from "@/funnels/types";
 import { getFunnel } from "@/funnels";
 import { ELSEWHERE } from "@/funnels/types";
+import { knownPostcodeArea } from "@/config/regions";
 import { earlyPostcodeCovered, isResearching, visibleQuestions } from "@/funnels/engine";
 import { getSourceInfo } from "@/lib/source";
 import { QuestionStep } from "@/components/funnel/QuestionStep";
@@ -79,16 +80,16 @@ async function checkAvailability(serviceSlug: string, answers: Answers): Promise
 export function Funnel({
   service,
   comingSoon,
-  initialArea,
 }: {
   service: Service;
   /** Services offered as optional "tell me when" sign-ups on the confirmation screen. */
   comingSoon: Service[];
-  initialArea: string | null;
 }) {
   const config = getFunnel(service.slug)!;
   const key = storageKey(service.slug);
   const firstQuestion = config.questions[0].id;
+  // A postcode area chosen earlier (?area=NE) skips that question. Read in the browser so the page can be pre-built.
+  const [initialArea, setInitialArea] = useState<string | null>(null);
   const prefilled: Answers = initialArea ? { postcodeArea: initialArea } : {};
 
   const [state, setState] = useState<FunnelState>({
@@ -106,10 +107,15 @@ export function Funnel({
   // Restore progress after a refresh, or answers loaded from a saved-progress link.
   useEffect(() => {
     getSourceInfo();
+    const area = knownPostcodeArea(new URLSearchParams(window.location.search).get("area") ?? undefined);
     const saved = load(key);
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- sessionStorage is only readable after hydration
+    // Browser-only state (session storage, the address bar) can only be read after hydration.
+    /* eslint-disable react-hooks/set-state-in-effect */
+    setInitialArea(area);
     if (saved) setState(saved);
+    else if (area) setState((s) => ({ ...s, answers: { ...s.answers, postcodeArea: area } }));
     setRestored(true);
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [key]);
 
   useEffect(() => {

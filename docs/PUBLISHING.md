@@ -10,7 +10,7 @@ Guides live in `content/guides/` and blog posts in `content/blog/`. Each article
 
 ## Scheduling posts
 
-A post with a future `date` stays hidden until that day. You can commit a week of posts at once and they'll appear one a day. Blog pages refresh hourly, so a scheduled post goes live within an hour of midnight (UTC) on its date, with no new deploy.
+A post with a future `date` stays hidden until that day. You can commit a week of posts at once and they'll appear one a day. The site redeploys automatically every day at 00:05 UTC, which publishes that day's posts.
 
 ## Search engines
 

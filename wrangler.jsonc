@@ -1,0 +1,24 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "vetted-north",
+	"main": ".open-next/worker.js",
+	"compatibility_date": "2026-10-01",
+	"compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+	"assets": {
+		"directory": ".open-next/assets",
+		"binding": "ASSETS"
+	},
+	"services": [
+		{
+			// Self-reference used by the adapter. Must match "name" above.
+			"binding": "WORKER_SELF_REFERENCE",
+			"service": "vetted-north"
+		}
+	],
+	"vars": {
+		"SITE_URL": "https://vettednorth.com"
+	},
+	"observability": {
+		"enabled": true
+	}
+}

@@ -3,8 +3,8 @@ import { notFound } from "next/navigation";
 import { getArticle, getArticles } from "@/lib/content";
 import { ArticleView, pickRelated } from "@/components/content/ArticleView";
 
-/** Hourly, so scheduled posts go live on their date without a deploy. */
-export const revalidate = 3600;
+/** Only the pages generated at build time exist; anything else is a 404. */
+export const dynamicParams = false;
 
 export function generateStaticParams() {
   return getArticles("blog").map((p) => ({ slug: p.slug }));

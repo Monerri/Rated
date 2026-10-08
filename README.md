@@ -52,13 +52,16 @@ Guides, blog posts and the legal pages are Markdown files in `content/`. See [do
 
 ## Deployment
 
-The site needs a Node.js host (it has API routes), so it can't run on GitHub Pages. It's set up for Vercel:
+The site runs on Cloudflare Workers (free plan), deployed by GitHub Actions on every push to `main` and daily at 00:05 UTC. See [docs/DEPLOY-CLOUDFLARE.md](docs/DEPLOY-CLOUDFLARE.md) for the one-time setup.
 
-1. Import `Monerri/rated` into Vercel. Every push to `main` deploys; other branches get preview links.
-2. Set environment variables: `SITE_URL=https://vettednorth.com` and `ADMIN_API_TOKEN` (a long random string).
-3. Add `vettednorth.com` and `www.vettednorth.com` in Vercel, then create the DNS records Vercel shows in Cloudflare with the proxy turned off (grey cloud, "DNS only").
+```bash
+npm run cf:preview   # build and run locally in the Cloudflare Workers runtime
+npm run cf:deploy    # build and deploy (needs CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID)
+```
 
 ## Switching a service on or off without a rebuild
+
+On Cloudflare this needs the database step first (records are in memory for now). Until then, change `status` in `src/config/services.ts` and push.
 
 Set `ADMIN_API_TOKEN`, then:
 

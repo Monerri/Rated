@@ -1,11 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { getService } from "@/config/services";
 import { getArticles } from "@/lib/content";
-import { getCatalogueService } from "@/lib/catalogue";
+import { getCatalogue, getCatalogueService } from "@/lib/catalogue";
 import { Icon } from "@/components/ui/Icon";
 import { InterestForm } from "@/components/interest/InterestForm";
+
+/** Pre-built for coming-soon services. Live services redirect to their questionnaire (see next.config.ts). */
+export const dynamicParams = false;
+
+export async function generateStaticParams() {
+  return (await getCatalogue()).filter((s) => s.status !== "live").map((s) => ({ service: s.slug }));
+}
 
 export async function generateMetadata({ params }: PageProps<"/register-interest/[service]">): Promise<Metadata> {
   const service = getService((await params).service);
@@ -25,7 +32,7 @@ export default async function RegisterInterestPage({ params }: PageProps<"/regis
   const slug = (await params).service;
   const service = await getCatalogueService(slug);
   if (!service) notFound();
-  if (service.status === "live") redirect(`/find-a-specialist/${slug}`);
+  if (service.status === "live") notFound();
 
   const related = getArticles("guides").filter((g) => g.service === slug);
 

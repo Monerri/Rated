@@ -9,9 +9,6 @@ import { Eyebrow } from "@/components/ui/Section";
 import { ButtonLink } from "@/components/ui/Button";
 import { ArrowIcon, TickIcon } from "@/components/ui/Icon";
 
-/** Re-check daily so lapsed checks drop off without a rebuild. */
-export const revalidate = 86400;
-
 export const metadata: Metadata = {
   title: "Our specialists",
   description: `The vetted home-improvement specialists we work with across ${primaryRegion.name}.`,

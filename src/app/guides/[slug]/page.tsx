@@ -3,6 +3,9 @@ import { notFound } from "next/navigation";
 import { getArticle, getArticles } from "@/lib/content";
 import { ArticleView, pickRelated } from "@/components/content/ArticleView";
 
+/** Only the pages generated at build time exist; anything else is a 404. */
+export const dynamicParams = false;
+
 export function generateStaticParams() {
   return getArticles("guides").map((g) => ({ slug: g.slug }));
 }

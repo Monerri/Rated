@@ -1,0 +1,145 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+/* Design tokens from the approved visual direction (step 4). */
+:root {
+  --ink: #0e2239;
+  --blue: #1b5ca8;
+  --blue-deep: #154a88;
+  --blue-tint: #e7eff8;
+  --green: #157a52;
+  --green-tint: #e8f3ee;
+  --ground: #f2f6fa;
+  --surface: #ffffff;
+  --muted: #52606f;
+  --line: #d8e1ea;
+  --sand: #fdf6e7;
+  --sand-line: #e9d3a0;
+  --on-blue: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --ink: #e6eef7;
+    --blue: #7db3f0;
+    --blue-deep: #a3cbf6;
+    --blue-tint: #15304f;
+    --green: #52c993;
+    --green-tint: #123828;
+    --ground: #0b1826;
+    --surface: #122335;
+    --muted: #9fb0c2;
+    --line: #24384e;
+    --sand: #2e2716;
+    --sand-line: #5a4a22;
+    --on-blue: #0b1826;
+  }
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-blue: var(--blue);
+  --color-blue-deep: var(--blue-deep);
+  --color-blue-tint: var(--blue-tint);
+  --color-green: var(--green);
+  --color-green-tint: var(--green-tint);
+  --color-ground: var(--ground);
+  --color-surface: var(--surface);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-sand: var(--sand);
+  --color-sand-line: var(--sand-line);
+  --color-on-blue: var(--on-blue);
+
+  --font-display: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-source-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+
+  --radius-card: 10px;
+  --radius-panel: 14px;
+  --shadow-card: 0 1px 2px rgb(14 34 57 / 0.06), 0 6px 20px rgb(14 34 57 / 0.06);
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+body {
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 17px;
+  line-height: 1.55;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  text-wrap: balance;
+  letter-spacing: -0.01em;
+}
+
+:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+dialog::backdrop {
+  background: rgb(14 34 57 / 0.45);
+}
+
+/* Each funnel screen eases in. Disabled when reduced motion is preferred. */
+@keyframes screen-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+.funnel-screen {
+  animation: screen-in 200ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .funnel-screen {
+    animation: none;
+  }
+}
+
+/* Long-form articles: guides, blog posts and legal pages. */
+.prose {
+  --tw-prose-body: var(--ink);
+  --tw-prose-headings: var(--ink);
+  --tw-prose-links: var(--blue);
+  --tw-prose-bold: var(--ink);
+  --tw-prose-counters: var(--muted);
+  --tw-prose-bullets: var(--muted);
+  --tw-prose-hr: var(--line);
+  --tw-prose-quotes: var(--ink);
+  --tw-prose-quote-borders: var(--blue);
+  --tw-prose-captions: var(--muted);
+  --tw-prose-th-borders: var(--line);
+  --tw-prose-td-borders: var(--line);
+  font-size: 18px;
+  line-height: 1.7;
+}
+
+.prose :where(h2, h3) {
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+}
+
+.prose :where(a) {
+  text-underline-offset: 3px;
+}

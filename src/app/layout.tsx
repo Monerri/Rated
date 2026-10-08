@@ -1,13 +1,32 @@
 import type { Metadata } from "next";
-import { Figtree, Source_Sans_3, IBM_Plex_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import { site } from "@/config/site";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import "./globals.css";
 
-const figtree = Figtree({ variable: "--font-figtree", subsets: ["latin"], weight: ["500", "600", "700", "800"] });
-const sourceSans = Source_Sans_3({ variable: "--font-source-sans", subsets: ["latin"], weight: ["400", "500", "600"] });
-const plexMono = IBM_Plex_Mono({ variable: "--font-plex-mono", subsets: ["latin"], weight: ["400", "500"] });
+// Fonts are stored in the repository (src/fonts, SIL Open Font License) so
+// builds never depend on downloading them from Google.
+const figtree = localFont({
+  src: "../fonts/figtree-latin-wght-normal.woff2",
+  variable: "--font-figtree",
+  weight: "300 900",
+  display: "swap",
+});
+const sourceSans = localFont({
+  src: "../fonts/source-sans-3-latin-wght-normal.woff2",
+  variable: "--font-source-sans",
+  weight: "200 900",
+  display: "swap",
+});
+const plexMono = localFont({
+  src: [
+    { path: "../fonts/ibm-plex-mono-latin-400-normal.woff2", weight: "400" },
+    { path: "../fonts/ibm-plex-mono-latin-500-normal.woff2", weight: "500" },
+  ],
+  variable: "--font-plex-mono",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),

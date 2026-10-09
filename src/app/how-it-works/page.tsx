@@ -8,14 +8,14 @@ import { faqs, nextSteps, steps } from "@/components/home/HomeSections";
 
 export const metadata: Metadata = {
   title: "How it works",
-  description: "Tell us what you need, we find one suitable vetted specialist, and they contact you. Here's exactly what happens.",
+  description: "Tell us what you need, choose whether to hear from one, two or three vetted specialists, and they contact you. Here's exactly what happens.",
 };
 
 const asks = [
   { q: "What you want to improve", why: "So we only match you with specialists who do that work." },
   { q: "The start of your postcode", why: "So we can check early that we cover your area, before you answer anything else." },
-  { q: "A few questions about your home", why: "Property type, what you have now and what matters to you, so the specialist understands your project before they call." },
-  { q: "Whether the property is listed or in a conservation area", why: "Because extra rules can apply, and the specialist should know." },
+  { q: "A few questions about your home", why: "Property type, what you have now and what matters to you, so specialists understand your project before they call." },
+  { q: "Whether the property is listed or in a conservation area", why: "Because extra rules can apply, and specialists should know." },
   { q: "When you're looking to do the work", why: "If you're only researching, we won't pass your details on." },
   { q: "Your contact details", why: "Asked last, only once you've seen exactly what happens next." },
 ];
@@ -28,7 +28,7 @@ export default function HowItWorksPage() {
           <div className="grid max-w-2xl gap-5">
             <Eyebrow>How it works</Eyebrow>
             <h1 id="hiw-heading" className="text-[36px] font-extrabold leading-[1.08] tracking-[-0.02em] sm:text-5xl">
-              One suitable specialist, introduced openly
+              The right specialists, introduced openly
             </h1>
             <p className="text-lg text-muted sm:text-xl">
               It takes about two minutes. You&apos;ll know who will contact you, and why, before anyone does.
@@ -90,7 +90,18 @@ export default function HowItWorksPage() {
           {faqs.map((f) => (
             <div key={f.q} className="grid gap-1 py-4">
               <h3 className="text-lg font-bold">{f.q}</h3>
-              <p className="text-muted">{f.a}</p>
+              <p className="text-muted">
+                {f.a}
+                {f.link && (
+                  <>
+                    {" "}
+                    <Link href={f.link.href} className="text-blue">
+                      {f.link.label}
+                    </Link>
+                    .
+                  </>
+                )}
+              </p>
             </div>
           ))}
         </div>

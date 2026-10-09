@@ -4,7 +4,7 @@ import { useState } from "react";
 import type { PublicSpecialist, Service } from "@/lib/types";
 import type { Answers } from "@/funnels/types";
 import { ELSEWHERE } from "@/funnels/types";
-import { shareWithSpecialistWording } from "@/lib/consent";
+import { MAX_SPECIALISTS, numberWord, shareWithSpecialistWording } from "@/lib/consent";
 import { normalisePostcode, postcodeArea } from "@/lib/postcode";
 import { getSourceInfo } from "@/lib/source";
 import { buttonClass } from "@/components/ui/Button";
@@ -13,7 +13,10 @@ import { ConsentCheckbox, FormError, TextField } from "@/components/ui/Form";
 export interface EnquiryResult {
   reference: string;
   summary: { questionId: string; label: string; value: string }[];
-  specialist: PublicSpecialist;
+  /** How many specialists the homeowner asked for. */
+  requested: number;
+  /** The specialists introduced (can be fewer than requested). */
+  specialists: PublicSpecialist[];
   firstName: string;
   email: string;
   postcodeArea: string;
@@ -34,7 +37,9 @@ export function ContactStep({
   researchingConfirmed: boolean;
   onSubmitted: (r: EnquiryResult) => void;
 }) {
-  const consent = shareWithSpecialistWording(service.name);
+  const count = Math.min(Math.max(1, Number(answers.specialistCount ?? 1) || 1), MAX_SPECIALISTS);
+  const consent = shareWithSpecialistWording(service.name, count);
+  const many = count > 1;
   const knownPostcode = answers.postcodeArea === ELSEWHERE ? String(answers.postcodeEarly ?? "") : "";
   const area = answers.postcodeArea !== ELSEWHERE ? String(answers.postcodeArea ?? "") : null;
 
@@ -59,7 +64,7 @@ export function ContactStep({
     if (get("phone").replace(/\D/g, "").length < 10) next.phone = "Please enter a UK phone number.";
     setErrors(next);
     if (Object.keys(next).length > 0) return;
-    if (!agreed) return setFormError("Please tick the box so we can share your details with the specialist.");
+    if (!agreed) return setFormError("Please tick the box so we can share your details.");
 
     setFormError(null);
     setSubmitting(true);
@@ -93,8 +98,9 @@ export function ContactStep({
           Almost there. Let&apos;s find your local specialist.
         </h1>
         <p className="text-muted">
-          We&apos;ll use the information you&apos;ve provided to identify one suitable vetted specialist covering your
-          area.
+          We&apos;ll use the information you&apos;ve provided to identify{" "}
+          {many ? `up to ${numberWord(count)} suitable vetted specialists` : "one suitable vetted specialist"} covering
+          your area.
         </p>
       </header>
 
@@ -125,11 +131,16 @@ export function ContactStep({
       <div className="grid gap-3 rounded-[var(--radius-card)] bg-blue-tint p-4">
         <h2 className="font-display text-[17px] font-bold">What happens when you continue</h2>
         <ol className="grid list-decimal gap-1.5 pl-5 text-[15px]">
-          <li>We match you with one vetted {service.name.toLowerCase()} specialist covering your postcode.</li>
-          <li>We show you who it is straight away, and email you their name and checks.</li>
+          <li>
+            We match you with {many ? `up to ${numberWord(count)} vetted ${service.name.toLowerCase()} specialists` : `one vetted ${service.name.toLowerCase()} specialist`} covering your postcode.
+          </li>
+          <li>We show you who {many ? "they are" : "it is"} straight away, and email you {many ? "their names" : "their name"} and checks.</li>
           <li>We then send them your answers and contact details so they can get in touch.</li>
         </ol>
-        <p className="text-[15px]">No other company receives your details. There&apos;s no obligation to go ahead.</p>
+        <p className="text-[15px]">
+          No other company receives your details. You can go back and change how many specialists you hear from.
+          There&apos;s no obligation to go ahead.
+        </p>
       </div>
 
       <ConsentCheckbox name="consent" wording={consent.wording} checked={agreed} onChange={setAgreed} />
@@ -137,7 +148,7 @@ export function ContactStep({
       {formError && <FormError>{formError}</FormError>}
 
       <button type="submit" disabled={submitting} className={buttonClass("primary", "md", "w-full sm:w-auto sm:justify-self-start")}>
-        {submitting ? "Finding your specialist…" : "Find my specialist"}
+        {submitting ? (many ? "Finding your specialists…" : "Finding your specialist…") : many ? "Find my specialists" : "Find my specialist"}
       </button>
     </form>
   );

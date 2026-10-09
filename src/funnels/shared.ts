@@ -65,3 +65,24 @@ export const timescaleQuestion: Question = {
     { value: RESEARCHING, label: "Just researching" },
   ],
 };
+
+/**
+ * The homeowner decides how many specialists contact them. The questionnaire
+ * hides choices above the number who cover their area, and skips the
+ * question when only one does.
+ */
+export const SPECIALIST_COUNT = "specialistCount";
+
+export const specialistCountQuestion: Question = {
+  id: SPECIALIST_COUNT,
+  type: "single",
+  title: "How many specialists would you like to hear from?",
+  hint: "You're in control. We'll only share your details with the number you choose.",
+  summaryLabel: "Specialists requested",
+  layout: "list",
+  options: [
+    { value: "1", label: "One", hint: "The fewest calls" },
+    { value: "2", label: "Two", hint: "Compare two quotes" },
+    { value: "3", label: "Three", hint: "Compare three quotes" },
+  ],
+};

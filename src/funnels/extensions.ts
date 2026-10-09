@@ -1,0 +1,96 @@
+import type { FunnelConfig } from "@/funnels/types";
+import {
+  fullPostcodeQuestion,
+  listedQuestion,
+  postcodeAreaQuestion,
+  propertyTypeQuestion,
+  RESEARCHING,
+  specialistCountQuestion,
+  timescaleQuestion,
+} from "@/funnels/shared";
+
+export const extensionsFunnel: FunnelConfig = {
+  serviceSlug: "extensions",
+  heading: "Extensions",
+  researching: { questionId: "timescale", value: RESEARCHING },
+  questions: [
+    {
+      id: "extensionType",
+      type: "single",
+      title: "What kind of extension are you thinking about?",
+      summaryLabel: "Extension type",
+      options: [
+        { value: "single-storey", label: "Single-storey", icon: "single-storey" },
+        { value: "two-storey", label: "Two-storey", icon: "two-storey" },
+        { value: "not-sure", label: "Not sure yet", icon: "unsure" },
+      ],
+    },
+    postcodeAreaQuestion,
+    fullPostcodeQuestion,
+    {
+      id: "position",
+      type: "single",
+      title: "Where would it go?",
+      summaryLabel: "Position",
+      layout: "list",
+      options: [
+        { value: "rear", label: "At the back" },
+        { value: "side", label: "At the side" },
+        { value: "wrap-around", label: "Side and back (wrap-around)" },
+        { value: "not-sure", label: "Not sure yet" },
+      ],
+    },
+    {
+      id: "purpose",
+      type: "multi",
+      title: "What would you use the space for?",
+      hint: "Choose up to three.",
+      summaryLabel: "Use of space",
+      max: 3,
+      layout: "list",
+      options: [
+        { value: "kitchen", label: "A bigger kitchen" },
+        { value: "open-plan", label: "Open-plan living or dining" },
+        { value: "bedroom", label: "An extra bedroom" },
+        { value: "bathroom-utility", label: "A bathroom or utility room" },
+        { value: "office", label: "A home office" },
+        { value: "other", label: "Something else" },
+      ],
+    },
+    {
+      id: "size",
+      type: "single",
+      title: "Roughly how big?",
+      hint: "A rough idea is fine. A small kitchen extension might be around 3m × 4m.",
+      summaryLabel: "Approximate size",
+      layout: "list",
+      options: [
+        { value: "small", label: "Small", hint: "Under about 15 m²" },
+        { value: "medium", label: "Medium", hint: "About 15 to 30 m²" },
+        { value: "large", label: "Large", hint: "Over about 30 m²" },
+        { value: "not-sure", label: "Not sure" },
+      ],
+    },
+    {
+      id: "stage",
+      type: "single",
+      title: "Where are you up to?",
+      summaryLabel: "Plans",
+      layout: "list",
+      options: [
+        { value: "idea", label: "It's just an idea so far" },
+        { value: "drawings", label: "I have drawings or plans" },
+        { value: "approved", label: "Planning is approved, or I've been told it isn't needed" },
+        { value: "not-sure", label: "Not sure" },
+      ],
+      goodToKnow: {
+        when: (v) => v === "idea" || v === "not-sure",
+        text: "Many extensions can be built without a planning application, but not all, especially two-storey extensions and homes that are listed or in a conservation area. Most extensions also need Building Regulations approval. Your specialist can explain what applies to your home.",
+      },
+    },
+    propertyTypeQuestion,
+    listedQuestion,
+    specialistCountQuestion,
+    timescaleQuestion,
+  ],
+};

@@ -72,7 +72,8 @@ export default async function SpecialistProfilePage({ params }: PageProps<"/spec
             <ul className="grid gap-3 sm:grid-cols-2">
               {vettingChecks.map((def) => {
                 const r = s.checks.find((c) => c.id === def.id);
-                const ok = !!r && (r.passed || !!r.notApplicableReason);
+                const ok = !!r && r.passed;
+                const notApplicable = !!r && !r.passed && !!r.notApplicableReason;
                 const title = def.id === "google_rating" ? `${s.googleRating.toFixed(1)} ★ Google rating` : def.title;
                 return (
                   <li key={def.id} className="grid grid-cols-[32px_1fr] gap-3 rounded-[var(--radius-card)] border border-line bg-surface p-4">
@@ -85,10 +86,10 @@ export default async function SpecialistProfilePage({ params }: PageProps<"/spec
                     <div className="grid gap-0.5">
                       <h3 className="text-[17px] font-bold">
                         {title}
-                        <span className="sr-only">{ok ? ": passed" : ": not confirmed"}</span>
+                        <span className="sr-only">{ok ? ": passed" : notApplicable ? ": not applicable" : ": not confirmed"}</span>
                       </h3>
                       <p className="font-mono text-[13px] text-muted">
-                        {r?.notApplicableReason ?? r?.evidence ?? "Not confirmed"}
+                        {notApplicable ? r?.notApplicableReason : r?.evidence || "Not confirmed"}
                       </p>
                     </div>
                   </li>
@@ -144,7 +145,7 @@ export default async function SpecialistProfilePage({ params }: PageProps<"/spec
           </section>
           <section className="grid gap-3 border-t border-line pt-5">
             <p className="text-[15px] text-muted">
-              We match each enquiry with one specialist who covers your postcode and the work you need. Tell us about
+              We match each enquiry with up to three specialists, as the homeowner chooses, who cover their postcode and the work they need. Tell us about
               your project to find yours.
             </p>
             <ButtonLink href="/find-a-specialist">Find a specialist</ButtonLink>

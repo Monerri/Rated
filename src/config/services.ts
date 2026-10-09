@@ -24,6 +24,22 @@ export const services: Service[] = [
     regions: ["north-east-england"],
   },
   {
+    slug: "extensions",
+    name: "Extensions",
+    summary: "Single-storey and two-storey extensions, from kitchens to extra bedrooms.",
+    icon: "extension",
+    status: "live",
+    regions: ["north-east-england"],
+  },
+  {
+    slug: "roofing",
+    name: "Roof Replacement",
+    summary: "Re-roofing pitched and flat house roofs, from slipped tiles to a complete new roof.",
+    icon: "roof",
+    status: "live",
+    regions: ["north-east-england"],
+  },
+  {
     slug: "solar-battery",
     name: "Solar & Battery",
     summary: "Solar panels and home battery storage.",

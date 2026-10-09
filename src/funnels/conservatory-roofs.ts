@@ -5,6 +5,7 @@ import {
   postcodeAreaQuestion,
   propertyTypeQuestion,
   RESEARCHING,
+  specialistCountQuestion,
   timescaleQuestion,
 } from "@/funnels/shared";
 
@@ -78,6 +79,7 @@ export const conservatoryRoofsFunnel: FunnelConfig = {
     },
     propertyTypeQuestion,
     listedQuestion,
+    specialistCountQuestion,
     timescaleQuestion,
   ],
 };

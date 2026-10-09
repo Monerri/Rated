@@ -1,7 +1,7 @@
 import { site } from "@/config/site";
 import { vettingChecks } from "@/config/vetting";
 import { formatMonthYear } from "@/lib/format";
-import { SAVED_PROGRESS_MONTHS } from "@/lib/consent";
+import { numberWord, SAVED_PROGRESS_MONTHS } from "@/lib/consent";
 import type { Enquiry, InterestRegistration, SavedProgress, Specialist, SupplierApplication } from "@/lib/types";
 
 export interface Email {
@@ -26,33 +26,42 @@ const prototypeSender: EmailSender = {
 export const emailSender: EmailSender = prototypeSender;
 
 const DEMO_NOTE =
-  "Please note: this is a prototype. The specialist below is fictional demonstration data, not a real company.\n\n";
+  "Please note: this is a prototype. The specialists below are fictional demonstration data, not real companies.\n\n";
 
 function checksBlock(s: Specialist): string {
   const lines = vettingChecks.map((def) => {
     const r = s.checks.find((c) => c.id === def.id);
-    return `  ✓ ${def.title}: ${r?.notApplicableReason ?? r?.evidence ?? ""}`;
+    if (r && !r.passed && r.notApplicableReason) return `  – ${def.title}: ${r.notApplicableReason}`;
+    return `  ✓ ${def.title}: ${r?.evidence ?? ""}`;
   });
   return `${lines.join("\n")}\n  Checks last confirmed: ${formatMonthYear(s.checksLastConfirmed)}`;
 }
 
 /** Sent to the homeowner first, so they know who will contact them and why. */
-export function customerMatchEmail(e: Enquiry, s: Specialist, serviceName: string, origin: string): Email {
+export function customerMatchEmail(e: Enquiry, specialists: Specialist[], serviceName: string, origin: string): Email {
+  const n = specialists.length;
+  const names = specialists.map((s) => s.name);
+  const nameList = n === 1 ? names[0] : `${names.slice(0, -1).join(", ")} and ${names[n - 1]}`;
+  const demo = specialists.some((s) => s.isDemo);
+  const fewer =
+    n < e.specialistsRequested
+      ? `You asked to hear from ${numberWord(e.specialistsRequested)}. Right now ${numberWord(n)} vetted ${n === 1 ? "specialist covers" : "specialists cover"} your area, so we've introduced ${n === 1 ? "them" : "all of them"}.\n\n`
+      : "";
+  const blocks = specialists
+    .map((s) => `${s.name}\n${checksBlock(s)}\n  Profile: ${origin}/specialists/${s.slug}`)
+    .join("\n\n");
   return {
     to: e.contact.email,
-    subject: `Your ${serviceName} specialist: ${s.name}`,
-    text: `${s.isDemo ? DEMO_NOTE : ""}Hello ${e.contact.firstName},
+    subject: n === 1 ? `Your ${serviceName} specialist: ${names[0]}` : `Your ${n} ${serviceName} specialists`,
+    text: `${demo ? DEMO_NOTE : ""}Hello ${e.contact.firstName},
 
-Thanks for telling us about your ${serviceName.toLowerCase()} project. We've matched you with one vetted local specialist:
+Thanks for telling us about your ${serviceName.toLowerCase()} project. We've matched you with ${n === 1 ? "one vetted local specialist" : `${numberWord(n)} vetted local specialists`}:
 
-${s.name}
-${checksBlock(s)}
+${blocks}
 
-Profile: ${origin}/specialists/${s.slug}
-
-What happens next
-1. We're passing your answers and contact details to ${s.name} now.
-2. They'll contact you ${site.specialistResponseTime} by phone or email to talk through your project.
+${fewer}What happens next
+1. We're passing your answers and contact details to ${nameList} now.
+2. ${n === 1 ? "They'll" : "Each will"} contact you ${site.specialistResponseTime} by phone or email to talk through your project.
 3. Any quote is between you and them, and there's no obligation to go ahead.
 
 No other company has been given your details.
@@ -60,21 +69,25 @@ No other company has been given your details.
 Your answers
 ${e.summary.map((r) => `  ${r.label}: ${r.value}`).join("\n")}
 
-If you'd rather not be contacted after all, reply to this email and we'll let ${s.name} know.
+If you'd rather not be contacted after all, reply to this email and we'll let ${n === 1 ? "them" : "them all"} know.
 
 ${site.name}
 `,
   };
 }
 
-/** Sent to the specialist after the homeowner has been told who they are. */
-export function specialistEnquiryEmail(e: Enquiry, s: Specialist, serviceName: string): Email {
+/** Sent to each specialist after the homeowner has been told who they are. */
+export function specialistEnquiryEmail(e: Enquiry, s: Specialist, introduced: number, serviceName: string): Email {
+  const shared =
+    introduced === 1
+      ? "You're the only specialist we've introduced for this enquiry."
+      : `The homeowner chose to hear from ${numberWord(e.specialistsRequested)} specialists. We've introduced ${numberWord(introduced)}, including you.`;
   return {
     to: s.enquiryEmail,
     subject: `New ${serviceName} enquiry: ${e.postcode}`,
     text: `${s.isDemo ? DEMO_NOTE : ""}Hello ${s.name},
 
-A homeowner has asked to be put in touch about ${serviceName.toLowerCase()}. We've told them to expect your call or email.
+A homeowner has asked to be put in touch about ${serviceName.toLowerCase()}. We've told them to expect your call or email. ${shared}
 
 Name: ${e.contact.firstName} ${e.contact.lastName}
 Phone: ${e.contact.phone}

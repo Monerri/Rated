@@ -3,7 +3,7 @@ import { getFunnel } from "@/funnels";
 import { isResearching, summarise, validateAnswers } from "@/funnels/engine";
 import { MAX_SPECIALISTS, shareWithSpecialistWording } from "@/lib/consent";
 import { matchSpecialists } from "@/lib/matching";
-import { customerMatchEmail, emailSender, specialistEnquiryEmail } from "@/lib/notifications";
+import { customerMatchEmail, specialistEnquiryEmail, trySend } from "@/lib/notifications";
 import { normalisePostcode, regionForPostcode } from "@/lib/postcode";
 import { recordStore } from "@/lib/records";
 import type { Enquiry, SourceInfo, Specialist } from "@/lib/types";
@@ -98,12 +98,21 @@ export async function submitEnquiry(input: SubmitInput): Promise<SubmitResult> {
   };
   await recordStore.saveEnquiry(enquiry);
 
-  await emailSender.send(customerMatchEmail(enquiry, specialists, service.name, input.origin));
+  // The homeowner must be told who will contact them before anyone else gets their details.
+  if (!(await trySend(customerMatchEmail(enquiry, specialists, service.name, input.origin)))) {
+    return {
+      ok: false,
+      status: 502,
+      error:
+        "We couldn't send your confirmation email, so we haven't passed your details to anyone. Please check your email address and try again in a few minutes.",
+    };
+  }
   enquiry.customerNotifiedAt = new Date().toISOString();
   await recordStore.updateEnquiry(enquiry.id, { customerNotifiedAt: enquiry.customerNotifiedAt });
 
   for (const specialist of specialists) {
-    await emailSender.send(specialistEnquiryEmail(enquiry, specialist, specialists.length, service.name));
+    // A failed send is logged and left off the record, so it can be followed up.
+    if (!(await trySend(specialistEnquiryEmail(enquiry, specialist, specialists.length, service.name)))) continue;
     enquiry.specialistNotifications.push({ slug: specialist.slug, notifiedAt: new Date().toISOString() });
   }
   await recordStore.updateEnquiry(enquiry.id, { specialistNotifications: enquiry.specialistNotifications });

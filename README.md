@@ -25,7 +25,7 @@ npm run build
 | `src/config/site.ts` | Brand name and company details (placeholders until registered). |
 | `src/lib/types.ts` | Domain types that mirror the planned database tables. |
 | `src/lib/consent.ts` | Versioned consent wording. Stored with every record. |
-| `src/lib/records.ts` | Persistence boundary. The prototype store only logs; swap in Supabase here. |
+| `src/lib/records.ts` | Persistence boundary. Cloudflare D1 when the `DB` binding exists, in memory otherwise (local `next dev`). |
 | `src/app/api/interest` | Register-interest endpoint, plus unsubscribe. |
 | `src/lib/catalogue.ts` | Live service catalogue: config plus runtime overrides. Use this for "is it live?". |
 | `src/config/suppliers.ts` | Supplier criteria, Competent Person Scheme options (alphabetical, unranked) and declaration wording. |
@@ -34,7 +34,7 @@ npm run build
 | `src/funnels/` | Questionnaire configs and the engine that validates and summarises answers. |
 | `src/lib/matching.ts` | Picks up to three specialists for an enquiry, as the homeowner chooses (service, postcode, current checks; random when more are eligible, so introductions are shared fairly). |
 | `src/lib/enquiries.ts` | Enquiry pipeline: validate, match, store, email the homeowner, then the specialist. |
-| `src/lib/notifications.ts` | Email templates and the sender boundary. The prototype sender only logs. |
+| `src/lib/notifications.ts` | Email templates and the sender. Sends through Resend when `RESEND_API_KEY` is set, otherwise logs. |
 
 ## Status
 
@@ -61,8 +61,6 @@ npm run cf:deploy    # build and deploy (needs CLOUDFLARE_API_TOKEN and CLOUDFLA
 
 ## Switching a service on or off without a rebuild
 
-On Cloudflare this needs the database step first (records are in memory for now). Until then, change `status` in `src/config/services.ts` and push.
-
 Set `ADMIN_API_TOKEN`, then:
 
 ```bash
@@ -74,4 +72,4 @@ curl -X POST https://<site>/api/admin/services/<service-slug> \
 
 A service can only go live once it has a questionnaire in `src/funnels`. Going live emails everyone who registered interest in that region, once. The route is disabled when `ADMIN_API_TOKEN` is not set.
 
-Prototype limits: records are held in server memory only and emails are written to the server log, not sent. Connect Supabase in `src/lib/records.ts` and an email provider in `src/lib/notifications.ts`. Set `SITE_URL` so links in emails use the live domain.
+The forms see the change straight away; pre-built pages update on the next deploy (daily at the latest). Locally with `next dev`, records are kept in memory and emails are logged, not sent.

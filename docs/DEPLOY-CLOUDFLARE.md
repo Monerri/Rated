@@ -45,13 +45,41 @@ Merge the work into `main` (or run **Actions → Deploy to Cloudflare → Run wo
 
 The site uses hello@, privacy@ and suppliers@vettednorth.com. Set them up under **Email → Email Routing** to forward to your usual inbox. It's free.
 
+## Database (Cloudflare D1)
+
+Enquiries, saved answers, interest registrations and supplier applications are stored in a D1 database bound to the Worker as `DB`.
+
+1. Put the database's name and ID in `wrangler.jsonc` under `d1_databases`. Both are shown in **Storage & Databases → D1** in the Cloudflare dashboard.
+2. Give the GitHub Actions API token permission to edit D1: **My Profile → API Tokens →** edit the token **→** add **Account · D1 · Edit**.
+
+Every deploy then creates or updates the tables from `migrations/` and deletes records older than the periods in the privacy notice (`scripts/retention.sql`). The daily scheduled deploy runs the clean-up too.
+
+To look at records, open the database in the dashboard and use the **Console** tab, for example:
+
+```sql
+SELECT created_at, json_extract(data, '$.serviceSlug') AS service FROM enquiries ORDER BY created_at DESC;
+```
+
+## Email (Resend)
+
+Emails are sent through Resend from `EMAIL_FROM` in `wrangler.jsonc`. The domain must be verified in Resend.
+
+Add the Resend API key as a **secret**: **Workers & Pages → vetted-north → Settings → Variables and Secrets → Add**, type **Secret**, name `RESEND_API_KEY`. Until it's set, the live forms show an error and nothing is shared with anyone, so no record ever says an email was sent when it wasn't. For a local preview (`npm run cf:preview`), put `EMAIL_LOG_ONLY=1` in `.dev.vars` to log emails instead.
+
+Links in emails use the address the visitor is on, so they work on the workers.dev address until vettednorth.com is connected.
+
+Emails meant for demonstration specialists (`@example.com` addresses) go to `ADMIN_EMAIL` instead, marked "[Demo specialist copy]", so you can see what a specialist would receive.
+
+If the homeowner's confirmation email can't be sent, nothing is shared with any specialist and they're asked to check their email address.
+
+Resend's free plan allows 100 emails a day and 3,000 a month. Each enquiry uses one email for the homeowner plus one per specialist.
+
 ## Optional: admin token
 
-The service on/off switch (`/api/admin/services/...`) is disabled unless `ADMIN_API_TOKEN` is set. To set it, run `npx wrangler secret put ADMIN_API_TOKEN` or add it under **Workers & Pages → vetted-north → Settings → Variables and Secrets**. It only becomes useful once records are kept in a database (see below).
+The service on/off switch (`/api/admin/services/...`) is disabled unless `ADMIN_API_TOKEN` is set. To set it, run `npx wrangler secret put ADMIN_API_TOKEN` or add it under **Workers & Pages → vetted-north → Settings → Variables and Secrets**. The change applies to the forms straight away; pre-built pages show it after the next deploy (at the latest, the daily one at 00:05 UTC).
 
 ## Limits to know about
 
 - **Free plan:** 100,000 requests a day and 10 ms of processing time per request. Pre-built pages use almost none; the forms are light. If traffic outgrows the free plan, Workers Paid is $5 a month.
-- **Records aren't kept yet.** The prototype holds enquiries, registrations and saved answers in memory, which on Cloudflare can be cleared at any time. Before taking real enquiries, connect a database. Cloudflare D1 is free at this scale and would keep everything on Cloudflare.
-- **Emails aren't sent yet.** They're written to the Worker's logs (**Workers & Pages → vetted-north → Logs**). Connect an email provider before launch. Resend, for example, has a free tier.
-- **Switching a service live** is, for now, an edit to `src/config/services.ts` followed by a deploy. Switching without a deploy returns when the database is connected.
+- **D1 free plan:** 5 GB of storage and 5 million rows read a day, far more than this site needs.
+- **Resend free plan:** 100 emails a day. Upgrade before running paid advertising.

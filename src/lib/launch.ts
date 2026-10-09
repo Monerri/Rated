@@ -1,7 +1,7 @@
 import { regions } from "@/config/regions";
 import { getService } from "@/config/services";
 import { getFunnel } from "@/funnels";
-import { emailSender, serviceAvailableEmail } from "@/lib/notifications";
+import { serviceAvailableEmail, trySend } from "@/lib/notifications";
 import { regionForPostcode } from "@/lib/postcode";
 import { recordStore } from "@/lib/records";
 import type { InterestRegistration, ServiceStatus } from "@/lib/types";
@@ -52,7 +52,7 @@ export async function setServiceAvailability(
       const region = regionOf(r);
       if (region !== null && !regionSlugs.includes(region)) continue;
       const regionName = regions.find((x) => x.slug === (region ?? regionSlugs[0]))!.name;
-      await emailSender.send(serviceAvailableEmail(r, service.name, serviceSlug, regionName, origin));
+      if (!(await trySend(serviceAvailableEmail(r, service.name, serviceSlug, regionName, origin)))) continue;
       await recordStore.updateInterestRegistration(r.token, { notifiedAt: new Date().toISOString() });
       notified++;
     }

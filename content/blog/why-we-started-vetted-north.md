@@ -2,6 +2,7 @@
 title: Why we started Vetted North
 description: What we do, how we check the specialists we work with, and what you can expect when you get in touch.
 date: 2026-10-08
+updated: 2026-10-09
 tags: [about us]
 ---
 
@@ -11,9 +12,9 @@ We started Vetted North to make that first step simpler and clearer for homeowne
 
 ## What we do
 
-You tell us what you're looking to improve and answer a few questions about your home. We use your answers and postcode to find **one** suitable local specialist who covers your area and does the work you need. We show you who they are, and their checks, before they get in touch.
+You tell us what you're looking to improve and answer a few questions about your home. You choose whether to hear from one, two or three specialists, and we use your answers and postcode to find suitable local specialists who cover your area and do the work you need. We show you who they are, and their checks, before they get in touch.
 
-That's it. One specialist, introduced openly, so you know who will contact you and why.
+That's it. The number of specialists you choose, introduced openly, so you know who will contact you and why.
 
 ## How we check the specialists we work with
 

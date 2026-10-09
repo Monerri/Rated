@@ -48,7 +48,7 @@ export default function ForSuppliersPage() {
           <div className="grid gap-3 rounded-[var(--radius-panel)] border border-line bg-ground p-5 sm:p-6">
             <p className="font-display text-lg font-bold">How we work with specialists</p>
             <ul className="grid gap-2 text-[15px]">
-              <li>One specialist per homeowner enquiry. We never send the same enquiry to several companies.</li>
+              <li>Homeowners choose to hear from one, two or three specialists. An enquiry is never shared with more than three.</li>
               <li>Homeowners are told who you are, and see your checks, before you contact them.</li>
               <li>Every enquiry comes from a homeowner who has agreed to be contacted by you.</li>
             </ul>

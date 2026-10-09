@@ -1,5 +1,4 @@
 import { submitEnquiry } from "@/lib/enquiries";
-import { formatMonthYear } from "@/lib/format";
 import { EMAIL, jsonError, normalisePhone, parseSource, readJson, requestOrigin, str } from "@/lib/request";
 
 export async function POST(request: Request) {
@@ -34,22 +33,22 @@ export async function POST(request: Request) {
 
   if (!result.ok) return jsonError(result.error, result.status);
 
-  const { enquiry, specialist } = result;
+  const { enquiry, specialists } = result;
   // Only what the confirmation screen needs. Contact details are not echoed back.
   return Response.json(
     {
       reference: enquiry.id,
       summary: enquiry.summary,
-      specialist: {
-        slug: specialist.slug,
-        name: specialist.name,
-        isDemo: specialist.isDemo,
-        services: specialist.services,
-        googleRating: specialist.googleRating,
-        checks: specialist.checks,
-        checksLastConfirmed: specialist.checksLastConfirmed,
-        checksLastConfirmedLabel: formatMonthYear(specialist.checksLastConfirmed),
-      },
+      requested: enquiry.specialistsRequested,
+      specialists: specialists.map((s) => ({
+        slug: s.slug,
+        name: s.name,
+        isDemo: s.isDemo,
+        services: s.services,
+        googleRating: s.googleRating,
+        checks: s.checks,
+        checksLastConfirmed: s.checksLastConfirmed,
+      })),
     },
     { status: 201 },
   );

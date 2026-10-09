@@ -75,8 +75,8 @@ export default function SpecialistsPage() {
       <section className="grid justify-items-start gap-3 rounded-[var(--radius-panel)] bg-blue-tint p-6">
         <h2 className="text-xl font-bold">You don&apos;t need to choose</h2>
         <p className="max-w-2xl text-muted">
-          Tell us about your project and we&apos;ll match you with one specialist who covers your postcode and the work you
-          need. We&apos;ll tell you who it is before they get in touch.
+          Tell us about your project and choose whether to hear from one, two or three specialists who cover your postcode and the work you
+          need. We&apos;ll tell you who they are before they get in touch.
         </p>
         <ButtonLink href="/find-a-specialist">
           Find a specialist <ArrowIcon />

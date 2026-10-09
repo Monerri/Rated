@@ -5,7 +5,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { Service } from "@/lib/types";
 import type { Answers } from "@/funnels/types";
 import { getFunnel } from "@/funnels";
-import { ELSEWHERE } from "@/funnels/types";
+import { ELSEWHERE, type Question } from "@/funnels/types";
+import { SPECIALIST_COUNT } from "@/funnels/shared";
 import { knownPostcodeArea } from "@/config/regions";
 import { earlyPostcodeCovered, isResearching, visibleQuestions } from "@/funnels/engine";
 import { getSourceInfo } from "@/lib/source";
@@ -35,6 +36,8 @@ interface FunnelState {
   researchingConfirmed: boolean;
   /** Set when the answers were loaded from saved progress, so they can be deleted after submitting. */
   resumeToken: string | null;
+  /** How many vetted specialists cover the chosen area. Null until checked. */
+  coverage?: number | null;
 }
 
 export function storageKey(serviceSlug: string) {
@@ -59,18 +62,29 @@ function save(key: string, state: FunnelState | null) {
   }
 }
 
-async function checkAvailability(serviceSlug: string, answers: Answers): Promise<boolean> {
+/** How many vetted specialists cover the area. Null if the check couldn't be made. */
+async function checkCoverage(serviceSlug: string, answers: Answers): Promise<number | null> {
   const params = new URLSearchParams({ service: serviceSlug });
   if (answers.postcodeArea === ELSEWHERE) params.set("postcode", String(answers.postcodeEarly ?? ""));
   else params.set("area", String(answers.postcodeArea ?? ""));
   try {
     const res = await fetch(`/api/availability?${params}`);
-    if (!res.ok) return false;
-    return ((await res.json()) as { available: boolean }).available;
+    if (!res.ok) return 0;
+    return ((await res.json()) as { count: number }).count;
   } catch {
     // If the check fails, let them continue; the server checks again on submit.
-    return true;
+    return null;
   }
+}
+
+/** Only offer as many specialists as actually cover the area, and say so. */
+function limitSpecialistChoices(q: Question | undefined, coverage: number | null): Question | undefined {
+  if (!q || q.id !== SPECIALIST_COUNT || q.type !== "single" || coverage === null || coverage >= q.options.length) return q;
+  return {
+    ...q,
+    options: q.options.filter((o) => Number(o.value) <= coverage),
+    hint: `${q.hint} At the moment, ${coverage} vetted specialists cover your area.`,
+  };
 }
 
 /**
@@ -151,19 +165,29 @@ export function Funnel({
     if (fromId === "postcodeEarly" && !earlyPostcodeCovered(answers)) return go("out-of-area", answers);
 
     const isAreaStep = (fromId === "postcodeArea" && answers.postcodeArea !== ELSEWHERE) || fromId === "postcodeEarly";
-    const questions = visibleQuestions(config, answers);
-    const idx = questions.findIndex((q) => q.id === fromId);
-    const next = questions.slice(idx + 1).find((q) => !(initialArea && q.id === "postcodeArea"));
-    const atEnd = !next;
+    const after = (a: Answers, id: string) => {
+      const qs = visibleQuestions(config, a);
+      return qs.slice(qs.findIndex((q) => q.id === id) + 1).find((q) => !(initialArea && q.id === "postcodeArea"));
+    };
+    let next = after(answers, fromId);
+    let coverage = isAreaStep ? null : (state.coverage ?? null);
 
-    if (isAreaStep || atEnd) {
+    // Check coverage after the area is chosen, before asking how many specialists, and at the end.
+    if (isAreaStep || !next || (next.id === SPECIALIST_COUNT && coverage === null)) {
       setBusy(true);
-      const available = await checkAvailability(service.slug, answers);
+      coverage = await checkCoverage(service.slug, answers);
       setBusy(false);
-      if (!available) return go("no-coverage", answers);
+      if (coverage === 0) return go("no-coverage", answers, { coverage });
     }
-    if (next) return go(`q:${next.id}`, answers);
-    return go(isResearching(config, answers) ? "researching" : "contact", answers);
+
+    // Only one specialist covers the area: don't ask how many.
+    if (next?.id === SPECIALIST_COUNT && coverage !== null && coverage <= 1) {
+      answers = { ...answers, [SPECIALIST_COUNT]: "1" };
+      next = after(answers, SPECIALIST_COUNT);
+    }
+
+    if (next) return go(`q:${next.id}`, answers, { coverage });
+    return go(isResearching(config, answers) ? "researching" : "contact", answers, { coverage });
   }
 
   function answer(questionId: string, value: string | string[], advanceNow: boolean) {
@@ -184,7 +208,11 @@ export function Funnel({
   }
 
   // Progress counts the questions that apply, plus the contact step.
-  const questions = visibleQuestions(config, state.answers).filter((q) => !(initialArea && q.id === "postcodeArea"));
+  const questions = visibleQuestions(config, state.answers).filter(
+    (q) =>
+      !(initialArea && q.id === "postcodeArea") &&
+      !(q.id === SPECIALIST_COUNT && state.coverage != null && state.coverage <= 1),
+  );
   const total = questions.length + 1;
   const position =
     state.screen === "contact"
@@ -193,7 +221,10 @@ export function Funnel({
         ? questions.findIndex((q) => `q:${q.id}` === state.screen) + 1
         : null;
 
-  const current = state.screen.startsWith("q:") ? config.questions.find((q) => `q:${q.id}` === state.screen) : undefined;
+  const current = limitSpecialistChoices(
+    state.screen.startsWith("q:") ? config.questions.find((q) => `q:${q.id}` === state.screen) : undefined,
+    state.coverage ?? null,
+  );
   const finished = ["confirmation", "deleted", "saved"].includes(state.screen);
 
   return (

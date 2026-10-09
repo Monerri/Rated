@@ -7,7 +7,7 @@ description: One or two sentences for search results and link previews (around 1
 date: 2026-10-10
 # Optional: the date of a meaningful update.
 # updated: 2026-11-01
-# Optional: links the post to a service (windows-doors, conservatory-roofs, solar-battery, heat-pumps, ev-charging, insulation).
+# Optional: links the post to a service (windows-doors, conservatory-roofs, extensions, roofing, solar-battery, heat-pumps, ev-charging, insulation).
 service: windows-doors
 tags: [windows]
 # Optional. Defaults to "The Vetted North team".

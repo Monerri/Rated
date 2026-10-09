@@ -68,6 +68,37 @@ const paths: Record<IconName, React.ReactNode> = {
       <path d="M5 14v14h22V14M5 22h22M11.5 14v8M20.5 14v8" />
     </>
   ),
+  extension: (
+    <>
+      <path d="M2 15 11 7l9 8" />
+      <path d="M4 13.5V28h14V13.5M8 28v-6h6v6" />
+      <path d="M18 18h12v10H18M30 18l-2-3h-8l-2 3" />
+      <rect x="22" y="21" width="5" height="4" rx=".5" />
+    </>
+  ),
+  roof: (
+    <>
+      <path d="M2 17 16 5l14 12" />
+      <path d="M6 13.5V28h20V13.5" />
+      <path d="M8.5 12h15M11 9h10M13 28v-7h6v7" />
+    </>
+  ),
+  "single-storey": (
+    <>
+      <path d="M3 14 12 7l9 7" />
+      <path d="M5 12.5V27h14V12.5" />
+      <path d="M19 18h10v9H19M29 18l-2-3h-6" />
+      <path d="M1.5 27h29" />
+    </>
+  ),
+  "two-storey": (
+    <>
+      <path d="M3 12 12 5l9 7" />
+      <path d="M5 10.5V27h14V10.5" />
+      <path d="M19 10h10v17H19M19 18.5h10M29 10l-2-3h-6" />
+      <path d="M1.5 27h29" />
+    </>
+  ),
   "solar-battery": (
     <>
       <path d="M2.5 17 7 7h11l-4.5 10z" />

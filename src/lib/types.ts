@@ -16,6 +16,10 @@ export type IconName =
   | "unsure"
   | "windows-doors"
   | "conservatory-roof"
+  | "extension"
+  | "roof"
+  | "single-storey"
+  | "two-storey"
   | "solar-battery"
   | "heat-pump"
   | "ev-charging"
@@ -143,12 +147,14 @@ export interface Enquiry {
   consent: ConsentRecord;
   source: SourceInfo;
   createdAt: string;
-  /** The single specialist recommended. Null when no match was available. */
-  matchedSpecialistSlug: string | null;
-  /** When the homeowner was emailed the specialist's details. */
+  /** How many specialists the homeowner asked to hear from (1 to 3). */
+  specialistsRequested: number;
+  /** The specialists introduced. Can be fewer than requested if fewer cover the area. */
+  matchedSpecialistSlugs: string[];
+  /** When the homeowner was emailed the specialists' details. */
   customerNotifiedAt: string | null;
-  /** When the specialist was sent the enquiry. Always after customerNotifiedAt. */
-  specialistNotifiedAt: string | null;
+  /** When each specialist was sent the enquiry. Always after customerNotifiedAt. */
+  specialistNotifications: { slug: string; notifiedAt: string }[];
 }
 
 /** Answers saved by someone who isn't ready yet. Deleted on request. */

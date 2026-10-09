@@ -5,6 +5,7 @@ import {
   postcodeAreaQuestion,
   propertyTypeQuestion,
   RESEARCHING,
+  specialistCountQuestion,
   timescaleQuestion,
 } from "@/funnels/shared";
 
@@ -90,6 +91,7 @@ export const windowsDoorsFunnel: FunnelConfig = {
       ],
     },
     listedQuestion,
+    specialistCountQuestion,
     timescaleQuestion,
   ],
 };

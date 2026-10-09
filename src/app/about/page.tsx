@@ -17,8 +17,8 @@ const principles = [
     body: "Our buttons describe what you're doing. When you ask to be put in touch, we tell you who with before we share anything.",
   },
   {
-    title: "One specialist per enquiry",
-    body: "We introduce you to one suitable specialist, not a list of companies competing for your attention.",
+    title: "You choose how many",
+    body: "You decide whether to hear from one, two or three specialists. Never more, and never a list of companies competing for your attention.",
   },
   {
     title: "Show the evidence",
@@ -52,7 +52,7 @@ export default function AboutPage() {
         </p>
         <p>
           We understand the home-improvement industry, and we use that to help you navigate it. We explain your options
-          in plain English, check the businesses we work with, and introduce you to one suitable specialist who covers
+          in plain English, check the businesses we work with, and introduce you to the number of suitable specialists you choose, up to three, who cover
           your area.
         </p>
       </section>
@@ -83,7 +83,7 @@ export default function AboutPage() {
           Where we work
         </h2>
         <p className="text-lg text-muted">
-          We&apos;re starting in {primaryRegion.name}, with windows, doors and conservatory roofs. We&apos;ll add more
+          We&apos;re starting in {primaryRegion.name}, with windows, doors, conservatory roofs, extensions and roof replacement. We&apos;ll add more
           services and areas as we build our network.{" "}
           <Link href="/areas" className="text-blue">
             Areas we cover

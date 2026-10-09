@@ -76,11 +76,11 @@ export function ChecksSection() {
 export const nextSteps = [
   {
     title: "We review your answers",
-    body: "We match your project and postcode to one vetted specialist who covers your area and does the work you need.",
+    body: "We match your project and postcode with vetted specialists who cover your area and do the work you need. You choose whether to hear from one, two or three.",
   },
   {
-    title: "We tell you who it is",
-    body: "We email you the specialist's name and their checks before they get in touch, so you know who to expect.",
+    title: "We tell you who they are",
+    body: "We show you each specialist's name and checks, and email them to you, before they get in touch, so you know who to expect.",
   },
   {
     title: "They contact you",
@@ -178,26 +178,31 @@ export function AreaSection() {
   );
 }
 
-export const faqs = [
+export const faqs: { q: string; a: string; link?: { href: string; label: string } }[] = [
   {
     q: "Does it cost anything?",
     a: "No. Our service is free for homeowners. Specialists pay us a fee for introductions.",
   },
   {
     q: "How many companies will contact me?",
-    a: "One. We recommend a single vetted specialist for your project, and we tell you who it is before they get in touch.",
+    a: "You decide: one, two or three. We'll never pass your details to more than the number you choose, and we tell you who they are before they get in touch.",
   },
   {
     q: "Do I have to go ahead?",
-    a: "No. Talking to the specialist doesn't commit you to anything. Any quote or contract is between you and them.",
+    a: "No. Talking to a specialist doesn't commit you to anything. Any quote or contract is between you and them.",
   },
   {
     q: "Who sees my details?",
-    a: "We do, and the one specialist we recommend, once you've agreed to that. If you're only researching, we don't share your details with anyone.",
+    a: "We do, and the specialists we introduce, up to the number you choose and only once you've agreed. If you're only researching, we don't share your details with anyone.",
   },
   {
     q: "What if I'm not ready yet?",
-    a: "Tell us you're just researching. We'll let you know a specialist covers your area, and you choose whether to be put in touch, save your progress, or delete your answers.",
+    a: "Tell us you're just researching. We'll let you know whether a vetted specialist covers your area, and you choose whether to be put in touch, save your progress, or delete your answers.",
+  },
+  {
+    q: "Can you help me get a grant?",
+    a: "No. We don't offer grants, and there's nothing to \"qualify\" for. Be wary of websites and callers that promise free or government-funded improvements in return for your details.",
+    link: { href: "/guides/misleading-grants-and-offers", label: "How to spot misleading grants and offers" },
   },
 ];
 
@@ -213,7 +218,18 @@ export function Faq() {
                 +
               </span>
             </summary>
-            <p className="pb-4 pr-8 text-muted">{f.a}</p>
+            <p className="pb-4 pr-8 text-muted">
+              {f.a}
+              {f.link && (
+                <>
+                  {" "}
+                  <Link href={f.link.href} className="text-blue">
+                    {f.link.label}
+                  </Link>
+                  .
+                </>
+              )}
+            </p>
           </details>
         ))}
       </div>

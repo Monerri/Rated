@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { site } from "@/config/site";
-import { notifyServiceAvailableWording } from "@/lib/consent";
+import { notifyServiceAvailableWording, numberWord } from "@/lib/consent";
 import { getSourceInfo } from "@/lib/source";
 import { EvidenceCard } from "@/components/home/EvidenceCard";
 import { buttonClass } from "@/components/ui/Button";
@@ -19,7 +19,11 @@ export function Confirmation({
   result: EnquiryResult;
   comingSoon: Service[];
 }) {
-  const s = result.specialist;
+  const list = result.specialists;
+  const n = list.length;
+  const many = n > 1;
+  const names = list.map((s) => s.name);
+  const nameList = many ? `${names.slice(0, -1).join(", ")} and ${names[n - 1]}` : names[0];
   return (
     <div className="grid gap-8">
       <header className="grid gap-3">
@@ -30,18 +34,32 @@ export function Confirmation({
           We&apos;ve got your details
         </h1>
         <p className="text-lg text-muted">
-          Thanks, {result.firstName}. Your recommended specialist is <strong className="text-ink">{s.name}</strong>.
-          We&apos;ve emailed their details to {result.email}.
+          Thanks, {result.firstName}. {many ? "Your recommended specialists are " : "Your recommended specialist is "}
+          <strong className="text-ink">{nameList}</strong>. We&apos;ve emailed their details to{" "}
+          {result.email}.
         </p>
+        {n < result.requested && (
+          <p className="rounded-[var(--radius-card)] bg-blue-tint px-4 py-3 text-[15px]">
+            You asked to hear from {numberWord(result.requested)}. At the moment {numberWord(n)} vetted{" "}
+            {n === 1 ? "specialist covers" : "specialists cover"} your area, so we&apos;ve introduced{" "}
+            {n === 1 ? "them" : "all of them"}.
+          </p>
+        )}
       </header>
 
       <section aria-labelledby="specialist-heading" className="grid gap-3">
         <h2 id="specialist-heading" className="text-xl font-bold">
-          Your specialist
+          {many ? "Your specialists" : "Your specialist"}
         </h2>
-        <EvidenceCard specialist={s} />
-        {s.isDemo && (
-          <p className="text-[13px] text-muted">This is a prototype. The specialist shown is fictional demonstration data.</p>
+        <div className={many ? "grid gap-4 md:grid-cols-2" : "grid"}>
+          {list.map((s) => (
+            <EvidenceCard key={s.slug} specialist={s} />
+          ))}
+        </div>
+        {list.some((s) => s.isDemo) && (
+          <p className="text-[13px] text-muted">
+            This is a prototype. The {many ? "specialists shown are" : "specialist shown is"} fictional demonstration data.
+          </p>
         )}
       </section>
 
@@ -51,8 +69,8 @@ export function Confirmation({
         </h2>
         <ol className="grid gap-3">
           {[
-            `We've sent ${s.name} your answers and contact details. No other company has them.`,
-            `${s.name} will contact you ${site.specialistResponseTime} by phone or email to talk about your project.`,
+            `We've sent ${nameList} your answers and contact details. No other company has them.`,
+            `${many ? "Each will" : `${names[0]} will`} contact you ${site.specialistResponseTime} by phone or email to talk about your project.`,
             "Any quote is between you and them. There's no obligation to go ahead.",
           ].map((t, i) => (
             <li key={t} className="grid grid-cols-[32px_1fr] items-start gap-3">
@@ -64,7 +82,7 @@ export function Confirmation({
           ))}
         </ol>
         <p className="text-[15px] text-muted">
-          Changed your mind? Reply to our email and we&apos;ll let {s.name} know.
+          Changed your mind? Reply to our email and we&apos;ll let {many ? "them" : names[0]} know.
         </p>
       </section>
 

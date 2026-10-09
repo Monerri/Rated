@@ -53,7 +53,7 @@ export const vettingChecks: VettingCheckDefinition[] = [
     title: "Competent Person Scheme",
     summary: "Where relevant, we check registration with an appropriate Competent Person Scheme.",
     whatWeCheck:
-      "Where the work needs it, that the business is registered with an appropriate government-authorised Competent Person Scheme. For windows and doors, examples include FENSA, Certass and Assure.",
+      "Where the work needs it, that the business is registered with an appropriate government-authorised Competent Person Scheme. For windows and doors, examples include FENSA, Certass and Assure. For roofing, an example is Competent Roofer. Extensions are approved by building control rather than a scheme, so this check doesn't apply to builders who only do extensions, and we show it as not applicable.",
     whyItMatters:
       "Replacement windows and doors must meet Building Regulations. A registered installer can certify that their work complies, so you don't need to arrange a separate inspection with your council.",
     worthKnowing:

@@ -33,6 +33,21 @@ export default function GuidesPage() {
         </p>
       </header>
 
+      {ungrouped.length > 0 && (
+        <section aria-labelledby="g-other" className="grid gap-4">
+          <h2 id="g-other" className="text-2xl font-bold">
+            Staying safe
+          </h2>
+          <ul className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {ungrouped.map((g) => (
+              <li key={g.slug}>
+                <ArticleCard article={g} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {groups.map(({ service, items }) => (
         <section key={service.slug} aria-labelledby={`g-${service.slug}`} className="grid gap-4">
           <h2 id={`g-${service.slug}`} className="text-2xl font-bold">
@@ -48,20 +63,6 @@ export default function GuidesPage() {
         </section>
       ))}
 
-      {ungrouped.length > 0 && (
-        <section aria-labelledby="g-other" className="grid gap-4">
-          <h2 id="g-other" className="text-2xl font-bold">
-            More guides
-          </h2>
-          <ul className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {ungrouped.map((g) => (
-              <li key={g.slug}>
-                <ArticleCard article={g} />
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
     </div>
   );
 }

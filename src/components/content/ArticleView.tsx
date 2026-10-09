@@ -53,8 +53,8 @@ export async function ArticleView({ article, related }: { article: Article; rela
               <>
                 <p className="font-display text-lg font-bold">Thinking about {service.name.toLowerCase()}?</p>
                 <p className="text-muted">
-                  Answer a few questions and we&apos;ll match you with one vetted local specialist. We&apos;ll tell you
-                  who it is before they get in touch.
+                  Answer a few questions and choose whether to hear from one, two or three vetted local specialists. We&apos;ll tell you
+                  who they are before they get in touch.
                 </p>
                 <ButtonLink href={`/find-a-specialist/${service.slug}`}>
                   Find a specialist <ArrowIcon />

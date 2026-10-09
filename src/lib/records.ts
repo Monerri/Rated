@@ -14,7 +14,7 @@ export interface RecordStore {
   ): Promise<void>;
 
   saveEnquiry(record: Enquiry): Promise<void>;
-  updateEnquiry(id: string, patch: Partial<Pick<Enquiry, "customerNotifiedAt" | "specialistNotifiedAt">>): Promise<void>;
+  updateEnquiry(id: string, patch: Partial<Pick<Enquiry, "customerNotifiedAt" | "specialistNotifications">>): Promise<void>;
 
   saveProgress(record: SavedProgress): Promise<void>;
   getProgress(token: string): Promise<SavedProgress | null>;

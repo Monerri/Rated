@@ -36,17 +36,24 @@ export function EvidenceCard({ specialist }: { specialist: PublicSpecialist }) {
       <ul className="grid gap-2.5">
         {vettingChecks.map((def) => {
           const result = specialist.checks.find((c) => c.id === def.id);
-          if (!result?.passed) return null;
+          const notApplicable = !!result?.notApplicableReason && !result.passed;
+          if (!result?.passed && !notApplicable) return null;
           const title =
             def.id === "google_rating" ? `${specialist.googleRating.toFixed(1)} ★ Google rating` : def.title;
           return (
             <li key={def.id} className="grid grid-cols-[22px_1fr] items-start gap-2.5">
-              <span className="mt-0.5 grid size-[22px] place-items-center rounded-full bg-green text-surface">
-                <TickIcon />
+              <span
+                className={`mt-0.5 grid size-[22px] place-items-center rounded-full ${notApplicable ? "border-[1.5px] border-line text-muted" : "bg-green text-surface"}`}
+                aria-hidden="true"
+              >
+                {notApplicable ? "–" : <TickIcon />}
               </span>
               <span>
-                <span className="block text-[15px] font-semibold leading-snug">{title}</span>
-                <span className="font-mono text-[13px] text-muted">{result.evidence}</span>
+                <span className="block text-[15px] font-semibold leading-snug">
+                  {title}
+                  <span className="sr-only">{notApplicable ? ": not applicable" : ": passed"}</span>
+                </span>
+                <span className="font-mono text-[13px] text-muted">{notApplicable ? result?.notApplicableReason : result?.evidence}</span>
               </span>
             </li>
           );

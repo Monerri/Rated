@@ -2,6 +2,7 @@
 title: Terms of use
 description: The terms that apply when you use the Vetted North website and service.
 date: 2026-10-08
+updated: 2026-10-09
 ---
 
 **This is a draft and is being reviewed before launch.**
@@ -14,7 +15,7 @@ Vetted North is a trading name of [Company name] Ltd, registered in England and 
 
 ## 2. What our service is
 
-We help homeowners find a suitable local home-improvement specialist. You tell us about your project, and we introduce you to **one** specialist from our network who covers your area and does the work you need.
+We help homeowners find a suitable local home-improvement specialist. You tell us about your project, and we introduce you to the number of specialists you choose, **one, two or three**, from our network who cover your area and do the work you need.
 
 Our service is free for homeowners. Specialists pay us a fee for introductions.
 
@@ -24,7 +25,7 @@ We are an introducer. We don't carry out home-improvement work, and we don't sel
 
 We match enquiries using your answers, your postcode and the specialists available at the time. We can't guarantee that a suitable specialist will be available for every project or area. If none is, we'll tell you rather than pass your details on.
 
-We tell you who your specialist is before passing your details to them. If you change your mind, reply to our email and we'll let them know.
+We tell you who your specialists are before passing your details to them. If you change your mind, reply to our email and we'll let them know.
 
 ## 4. Our checks
 

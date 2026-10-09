@@ -32,7 +32,7 @@ npm run build
 | `src/lib/launch.ts` | Switches a service live or back, and sends the one "now available" email. |
 | `src/data/specialists.ts` | Fictional specialist directory. Always labelled as demonstration data. |
 | `src/funnels/` | Questionnaire configs and the engine that validates and summarises answers. |
-| `src/lib/matching.ts` | Picks the one specialist for an enquiry (service, postcode, current checks). |
+| `src/lib/matching.ts` | Picks up to three specialists for an enquiry, as the homeowner chooses (service, postcode, current checks; random when more are eligible, so introductions are shared fairly). |
 | `src/lib/enquiries.ts` | Enquiry pipeline: validate, match, store, email the homeowner, then the specialist. |
 | `src/lib/notifications.ts` | Email templates and the sender boundary. The prototype sender only logs. |
 

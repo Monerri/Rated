@@ -2,6 +2,7 @@
 title: Privacy notice
 description: How Vetted North collects, uses, shares and protects your personal information.
 date: 2026-10-08
+updated: 2026-10-09
 ---
 
 **This is a draft and is being reviewed before launch.**
@@ -20,7 +21,7 @@ You can contact us about privacy at **privacy@vettednorth.com**.
 
 **What:** your answers to our questions about your home and project, your postcode, name, email address and phone number.
 
-**Why:** to identify one suitable vetted specialist covering your area, to tell you who they are, and to pass your details to them so they can contact you about your project.
+**Why:** to identify suitable vetted specialists covering your area, up to the number you choose (one, two or three), to tell you who they are, and to pass your details to them so they can contact you about your project.
 
 **Lawful basis:** your consent, which you give by ticking the box before you submit. The exact wording you agreed to is stored with your enquiry.
 
@@ -72,11 +73,11 @@ Our hosting provider keeps short-term technical logs, such as IP addresses, to k
 
 ## Who we share it with
 
-- **The one specialist we recommend**, and only when you've asked us to put you in touch. Once they receive your details, they are responsible for how they use them and will have their own privacy notice.
+- **The specialists we introduce**, up to the number you chose, and only when you've asked us to put you in touch. Once they receive your details, they are responsible for how they use them and will have their own privacy notice.
 - **Service providers** who help us run the site, such as website hosting, our database and our email provider. They act on our instructions and must keep your information secure.
 - **Authorities**, if the law requires us to.
 
-We never sell your personal information, and we never pass an enquiry to more than one specialist.
+We never sell your personal information, and we never pass an enquiry to more specialists than you chose.
 
 ## International transfers
 

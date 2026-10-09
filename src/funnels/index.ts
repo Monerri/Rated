@@ -1,6 +1,8 @@
 import type { FunnelConfig } from "@/funnels/types";
 import { windowsDoorsFunnel } from "@/funnels/windows-doors";
 import { conservatoryRoofsFunnel } from "@/funnels/conservatory-roofs";
+import { extensionsFunnel } from "@/funnels/extensions";
+import { roofingFunnel } from "@/funnels/roofing";
 
 /**
  * Questionnaires by service slug. A live service needs an entry here.
@@ -9,6 +11,8 @@ import { conservatoryRoofsFunnel } from "@/funnels/conservatory-roofs";
 const funnels: Record<string, FunnelConfig> = {
   [windowsDoorsFunnel.serviceSlug]: windowsDoorsFunnel,
   [conservatoryRoofsFunnel.serviceSlug]: conservatoryRoofsFunnel,
+  [extensionsFunnel.serviceSlug]: extensionsFunnel,
+  [roofingFunnel.serviceSlug]: roofingFunnel,
 };
 
 export function getFunnel(serviceSlug: string): FunnelConfig | undefined {

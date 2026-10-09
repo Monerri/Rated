@@ -1,4 +1,4 @@
-import { contactMessageEmail, contactTopics, emailSender } from "@/lib/notifications";
+import { contactMessageEmail, contactTopics, trySend } from "@/lib/notifications";
 import { EMAIL, jsonError, readJson, str } from "@/lib/request";
 
 /** Contact form. Sends the message to the team inbox with reply-to set to the sender. */
@@ -19,6 +19,8 @@ export async function POST(request: Request) {
   if (!message) fields.message = "Please enter a message.";
   if (Object.keys(fields).length) return Response.json({ error: "Please check the highlighted fields.", fields }, { status: 400 });
 
-  await emailSender.send(contactMessageEmail({ name: name!, email: email!, topic, message: message! }));
+  if (!(await trySend(contactMessageEmail({ name: name!, email: email!, topic, message: message! })))) {
+    return jsonError("Sorry, we couldn't send your message. Please try again, or email us directly.", 502);
+  }
   return new Response(null, { status: 201 });
 }

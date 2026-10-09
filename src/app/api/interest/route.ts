@@ -2,7 +2,7 @@ import { getCatalogueService } from "@/lib/catalogue";
 import { notifyServiceAvailableWording } from "@/lib/consent";
 import { normalisePostcode, postcodeArea, regionForPostcode } from "@/lib/postcode";
 import { knownPostcodeArea } from "@/config/regions";
-import { emailSender, interestConfirmationEmail } from "@/lib/notifications";
+import { interestConfirmationEmail, trySend } from "@/lib/notifications";
 import { recordStore } from "@/lib/records";
 import { EMAIL, jsonError, parseSource, readJson, requestOrigin, str } from "@/lib/request";
 import type { InterestRegistration } from "@/lib/types";
@@ -68,6 +68,10 @@ export async function POST(request: Request) {
   };
 
   await recordStore.saveInterestRegistration(record);
-  await emailSender.send(interestConfirmationEmail(record, service.name, requestOrigin(request)));
+  if (!(await trySend(interestConfirmationEmail(record, service.name, requestOrigin(request))))) {
+    // Without the confirmation they have no unsubscribe link, so don't keep the registration.
+    await recordStore.deleteInterestRegistration(record.token);
+    return jsonError("We couldn't send your confirmation email. Please check your email address and try again.", 502);
+  }
   return new Response(null, { status: 201 });
 }

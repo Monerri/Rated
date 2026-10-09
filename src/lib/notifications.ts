@@ -1,4 +1,5 @@
 import { site } from "@/config/site";
+import { bindings } from "@/lib/cloudflare";
 import { vettingChecks } from "@/config/vetting";
 import { formatMonthYear } from "@/lib/format";
 import { numberWord, SAVED_PROGRESS_MONTHS } from "@/lib/consent";
@@ -11,7 +12,7 @@ export interface Email {
   replyTo?: string;
 }
 
-/** Delivery boundary. Swap the prototype sender for a provider (for example Resend or Postmark) here. */
+/** Delivery boundary. Every email the site sends goes through this. */
 export interface EmailSender {
   send(email: Email): Promise<void>;
 }
@@ -23,7 +24,61 @@ const prototypeSender: EmailSender = {
   },
 };
 
-export const emailSender: EmailSender = prototypeSender;
+/** Sends through Resend's HTTP API. Throws if Resend refuses the email. */
+function resendSender(apiKey: string, from: string): EmailSender {
+  return {
+    async send(email) {
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          from,
+          to: [email.to],
+          subject: email.subject,
+          text: email.text,
+          reply_to: email.replyTo ?? site.contactEmail,
+        }),
+      });
+      if (!res.ok) {
+        throw new Error(`Resend refused the email "${email.subject}": ${res.status} ${await res.text()}`);
+      }
+    },
+  };
+}
+
+/** Demo specialists have example.com addresses, so their emails go to our own inbox instead, marked as such. */
+function redirectDemo(email: Email): Email {
+  if (!email.to.endsWith("@example.com")) return email;
+  const admin = bindings().ADMIN_EMAIL ?? site.contactEmail;
+  return {
+    ...email,
+    to: admin,
+    subject: `[Demo specialist copy] ${email.subject}`,
+    text: `This email would have gone to the demonstration specialist ${email.to}. It has been sent to you instead.\n\n${email.text}`,
+  };
+}
+
+/** Uses Resend when RESEND_API_KEY is set (a Worker secret); otherwise logs only. */
+export const emailSender: EmailSender = {
+  async send(email) {
+    const { RESEND_API_KEY, EMAIL_FROM } = bindings();
+    const sender = RESEND_API_KEY
+      ? resendSender(RESEND_API_KEY, EMAIL_FROM ?? `${site.name} <${site.contactEmail}>`)
+      : prototypeSender;
+    await sender.send(redirectDemo(email));
+  },
+};
+
+/** Sends and reports success instead of throwing. Failures are logged without the address. */
+export async function trySend(email: Email): Promise<boolean> {
+  try {
+    await emailSender.send(email);
+    return true;
+  } catch (err) {
+    console.error(`Email failed: ${email.subject}`, err instanceof Error ? err.message : err);
+    return false;
+  }
+}
 
 const DEMO_NOTE =
   "Please note: this is a prototype. The specialists below are fictional demonstration data, not real companies.\n\n";

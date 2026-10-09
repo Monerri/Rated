@@ -1,7 +1,7 @@
 import { primaryRegion } from "@/config/regions";
 import { getService, services } from "@/config/services";
 import { competentPersonSchemes, supplierDeclarationWording } from "@/config/suppliers";
-import { emailSender, supplierAcknowledgementEmail, supplierApplicationInternalEmail } from "@/lib/notifications";
+import { supplierAcknowledgementEmail, supplierApplicationInternalEmail, trySend } from "@/lib/notifications";
 import { recordStore } from "@/lib/records";
 import {
   EMAIL,
@@ -98,8 +98,9 @@ export async function POST(request: Request) {
 
   await recordStore.saveSupplierApplication(application);
   const serviceName = mainService === OTHER_SERVICE ? "Other" : (getService(mainService)?.name ?? mainService);
-  await emailSender.send(supplierAcknowledgementEmail(application));
-  await emailSender.send(supplierApplicationInternalEmail(application, serviceName));
+  // The application is saved either way, so a failed email is logged rather than shown as an error.
+  await trySend(supplierAcknowledgementEmail(application));
+  await trySend(supplierApplicationInternalEmail(application, serviceName));
 
   return Response.json({ reference: application.id }, { status: 201 });
 }

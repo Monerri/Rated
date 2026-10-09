@@ -16,8 +16,23 @@
 		}
 	],
 	"vars": {
-		"SITE_URL": "https://vettednorth.com"
+		"SITE_URL": "https://vettednorth.com",
+		// Sender for every email. The domain must be verified in Resend.
+		"EMAIL_FROM": "Vetted North <hello@vettednorth.com>",
+		// Receives copies of emails meant for demonstration specialists.
+		"ADMIN_EMAIL": "hello@vettednorth.com"
 	},
+	// Enquiries, saved answers, registrations and applications. Tables are
+	// created by the files in migrations/, applied on every deploy.
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "DATABASE_NAME",
+			"database_id": "DATABASE_ID",
+			"migrations_dir": "migrations"
+		}
+	],
+	// RESEND_API_KEY is a secret: set it in the Cloudflare dashboard, never here.
 	"observability": {
 		"enabled": true
 	}

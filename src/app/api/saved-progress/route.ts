@@ -2,7 +2,7 @@ import { getCatalogueService } from "@/lib/catalogue";
 import { getFunnel } from "@/funnels";
 import { validateAnswers } from "@/funnels/engine";
 import { retainProgressWording } from "@/lib/consent";
-import { emailSender, savedProgressEmail } from "@/lib/notifications";
+import { savedProgressEmail, trySend } from "@/lib/notifications";
 import { recordStore } from "@/lib/records";
 import { EMAIL, jsonError, parseSource, readJson, requestOrigin, str } from "@/lib/request";
 import type { SavedProgress } from "@/lib/types";
@@ -47,7 +47,11 @@ export async function POST(request: Request) {
     createdAt: now,
   };
   await recordStore.saveProgress(record);
-  await emailSender.send(savedProgressEmail(record, service.name, requestOrigin(request)));
+  if (!(await trySend(savedProgressEmail(record, service.name, requestOrigin(request))))) {
+    // Without the email they have no delete link, so don't keep the answers.
+    await recordStore.deleteProgress(record.token);
+    return jsonError("We couldn't send the email with your link. Please check your email address and try again.", 502);
+  }
 
   return Response.json({ token: record.token }, { status: 201 });
 }

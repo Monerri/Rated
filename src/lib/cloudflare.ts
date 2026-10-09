@@ -9,6 +9,7 @@ export interface D1Statement {
 }
 export interface D1 {
   prepare(sql: string): D1Statement;
+  batch(statements: D1Statement[]): Promise<unknown[]>;
 }
 
 interface Bindings {

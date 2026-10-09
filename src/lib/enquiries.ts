@@ -104,7 +104,7 @@ export async function submitEnquiry(input: SubmitInput): Promise<SubmitResult> {
       ok: false,
       status: 502,
       error:
-        "We couldn't send your confirmation email, so we haven't passed your details to anyone. Please check your email address and try again.",
+        "We couldn't send your confirmation email, so we haven't passed your details to anyone. Please check your email address and try again in a few minutes.",
     };
   }
   enquiry.customerNotifiedAt = new Date().toISOString();

@@ -16,6 +16,8 @@ interface Bindings {
   RESEND_API_KEY?: string;
   EMAIL_FROM?: string;
   ADMIN_EMAIL?: string;
+  /** "1" to log emails instead of sending them, for local previews (.dev.vars). */
+  EMAIL_LOG_ONLY?: string;
 }
 
 /**

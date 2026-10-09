@@ -42,8 +42,13 @@ export function jsonError(message: string, status = 400) {
   return Response.json({ error: message }, { status });
 }
 
+/**
+ * The address the visitor is using, for links in emails. A Worker only
+ * receives requests for its own domains, so this is always one of ours, and
+ * links keep working on workers.dev before the main domain is connected.
+ */
 export function requestOrigin(request: Request): string {
-  return process.env.SITE_URL ?? new URL(request.url).origin;
+  return new URL(request.url).origin;
 }
 
 /** Companies House number: 8 digits, or 2 letters and 6 digits (for example SC123456). Pads short numbers. */

@@ -27,8 +27,8 @@
 	"d1_databases": [
 		{
 			"binding": "DB",
-			"database_name": "DATABASE_NAME",
-			"database_id": "DATABASE_ID",
+			"database_name": "vetted-north-database",
+			"database_id": "56d02c78-f596-411e-bebc-3f03a497a4d3",
 			"migrations_dir": "migrations"
 		}
 	],

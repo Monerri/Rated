@@ -58,10 +58,18 @@ function redirectDemo(email: Email): Email {
   };
 }
 
-/** Uses Resend when RESEND_API_KEY is set (a Worker secret); otherwise logs only. */
+/**
+ * Uses Resend when RESEND_API_KEY is set (a Worker secret). Without it, emails
+ * are logged only, but only where there's no database either (local
+ * `next dev`): on Cloudflare a missing key is a failure, so no record ever
+ * says an email was sent when it wasn't. For a local Workers preview, put
+ * EMAIL_LOG_ONLY=1 in .dev.vars.
+ */
 export const emailSender: EmailSender = {
   async send(email) {
-    const { RESEND_API_KEY, EMAIL_FROM } = bindings();
+    const { RESEND_API_KEY, EMAIL_FROM, DB, EMAIL_LOG_ONLY } = bindings();
+    if (EMAIL_LOG_ONLY === "1") return prototypeSender.send(redirectDemo(email));
+    if (!RESEND_API_KEY && DB) throw new Error("RESEND_API_KEY is not set, so emails can't be sent.");
     const sender = RESEND_API_KEY
       ? resendSender(RESEND_API_KEY, EMAIL_FROM ?? `${site.name} <${site.contactEmail}>`)
       : prototypeSender;

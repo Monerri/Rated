@@ -64,7 +64,9 @@ SELECT created_at, json_extract(data, '$.serviceSlug') AS service FROM enquiries
 
 Emails are sent through Resend from `EMAIL_FROM` in `wrangler.jsonc`. The domain must be verified in Resend.
 
-Add the Resend API key as a **secret**: **Workers & Pages → vetted-north → Settings → Variables and Secrets → Add**, type **Secret**, name `RESEND_API_KEY`. Without it, emails are only written to the Worker's logs.
+Add the Resend API key as a **secret**: **Workers & Pages → vetted-north → Settings → Variables and Secrets → Add**, type **Secret**, name `RESEND_API_KEY`. Until it's set, the live forms show an error and nothing is shared with anyone, so no record ever says an email was sent when it wasn't. For a local preview (`npm run cf:preview`), put `EMAIL_LOG_ONLY=1` in `.dev.vars` to log emails instead.
+
+Links in emails use the address the visitor is on, so they work on the workers.dev address until vettednorth.com is connected.
 
 Emails meant for demonstration specialists (`@example.com` addresses) go to `ADMIN_EMAIL` instead, marked "[Demo specialist copy]", so you can see what a specialist would receive.
 

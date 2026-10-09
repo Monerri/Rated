@@ -49,10 +49,9 @@ The site uses hello@, privacy@ and suppliers@vettednorth.com. Set them up under 
 
 Enquiries, saved answers, interest registrations and supplier applications are stored in a D1 database bound to the Worker as `DB`.
 
-1. Put the database's name and ID in `wrangler.jsonc` under `d1_databases`. Both are shown in **Storage & Databases → D1** in the Cloudflare dashboard.
-2. Give the GitHub Actions API token permission to edit D1: **My Profile → API Tokens →** edit the token **→** add **Account · D1 · Edit**.
+The database's name and ID are in `wrangler.jsonc` under `d1_databases` (shown in **Storage & Databases → D1** in the dashboard).
 
-Every deploy then creates or updates the tables from `migrations/` and deletes records older than the periods in the privacy notice (`scripts/retention.sql`). The daily scheduled deploy runs the clean-up too.
+The site creates its own tables the first time it needs them, and every few hours deletes records older than the periods in the privacy notice. Both happen through the Worker's own database connection, so the GitHub Actions token needs no database permission. The SQL is in `src/lib/records.ts`.
 
 To look at records, open the database in the dashboard and use the **Console** tab, for example:
 

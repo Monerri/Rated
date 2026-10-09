@@ -1,10 +1,10 @@
 import { bindings, type D1 } from "@/lib/cloudflare";
+import { SAVED_PROGRESS_MONTHS } from "@/lib/consent";
 import type { Enquiry, InterestRegistration, SavedProgress, ServiceOverride, SupplierApplication } from "@/lib/types";
 
 /**
  * Persistence boundary. Pages and API routes call this interface only.
- * On Cloudflare, records are kept in the D1 database bound as DB (see
- * migrations/). Without that binding (local `next dev`, the build) the
+ * On Cloudflare, records are kept in the D1 database bound as DB. Without that binding (local `next dev`, the build) the
  * in-memory prototype store is used instead.
  */
 export interface RecordStore {
@@ -116,8 +116,73 @@ const prototypeStore: RecordStore = {
   },
 };
 
-/** D1 store. Records are stored whole as JSON; see migrations/0001_initial.sql. */
+/**
+ * D1 tables. Each record is stored whole as JSON in `data`, with the few
+ * fields we look up or tidy by pulled out into columns. Created by the site
+ * itself through its database binding, so deploys need no database access.
+ * Add new statements to the end; never edit existing ones.
+ */
+const SCHEMA = [
+  "CREATE TABLE IF NOT EXISTS interest_registrations (token TEXT PRIMARY KEY, service_slug TEXT NOT NULL, created_at TEXT NOT NULL, data TEXT NOT NULL)",
+  "CREATE INDEX IF NOT EXISTS interest_by_service ON interest_registrations (service_slug)",
+  "CREATE TABLE IF NOT EXISTS enquiries (id TEXT PRIMARY KEY, created_at TEXT NOT NULL, data TEXT NOT NULL)",
+  "CREATE TABLE IF NOT EXISTS saved_progress (token TEXT PRIMARY KEY, created_at TEXT NOT NULL, data TEXT NOT NULL)",
+  "CREATE TABLE IF NOT EXISTS service_overrides (service_slug TEXT PRIMARY KEY, data TEXT NOT NULL)",
+  "CREATE TABLE IF NOT EXISTS supplier_applications (id TEXT PRIMARY KEY, created_at TEXT NOT NULL, data TEXT NOT NULL)",
+];
+
+/**
+ * Deletes records past the retention periods in the privacy notice.
+ * Timestamps are ISO 8601 strings, so they compare correctly as text.
+ * Supplier applications are reviewed by hand instead: unsuccessful ones are
+ * kept 24 months, businesses that join for longer.
+ */
+const RETENTION = [
+  `DELETE FROM saved_progress WHERE created_at < strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-${SAVED_PROGRESS_MONTHS} months')`,
+  "DELETE FROM enquiries WHERE created_at < strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-24 months')",
+  "DELETE FROM interest_registrations WHERE created_at < strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-24 months')",
+];
+
+/** How often the retention clean-up runs, at most. */
+const RETENTION_INTERVAL_MS = 6 * 60 * 60 * 1000;
+
+const state = globalThis as typeof globalThis & { __vnSchema?: Promise<void>; __vnRetentionAt?: number };
+
+/** Creates the tables once per Worker instance, and tidies old records every few hours. */
+async function prepare(db: D1): Promise<void> {
+  state.__vnSchema ??= db
+    .batch(SCHEMA.map((sql) => db.prepare(sql)))
+    .then(() => undefined)
+    .catch((err) => {
+      state.__vnSchema = undefined; // try again on the next request
+      throw err;
+    });
+  await state.__vnSchema;
+
+  const now = Date.now();
+  if (now - (state.__vnRetentionAt ?? 0) > RETENTION_INTERVAL_MS) {
+    state.__vnRetentionAt = now;
+    await db.batch(RETENTION.map((sql) => db.prepare(sql))).catch((err) => {
+      console.error("Retention clean-up failed", err instanceof Error ? err.message : err);
+    });
+  }
+}
+
+/** D1 store, with the tables prepared before first use. */
 function d1Store(db: D1): RecordStore {
+  const store = d1Queries(db);
+  return Object.fromEntries(
+    Object.entries(store).map(([name, fn]) => [
+      name,
+      async (...args: unknown[]) => {
+        await prepare(db);
+        return (fn as (...a: unknown[]) => unknown)(...args);
+      },
+    ]),
+  ) as unknown as RecordStore;
+}
+
+function d1Queries(db: D1): RecordStore {
   const one = async <T>(sql: string, key: string) => {
     const row = await db.prepare(sql).bind(key).first<{ data: string }>();
     return row ? (JSON.parse(row.data) as T) : null;

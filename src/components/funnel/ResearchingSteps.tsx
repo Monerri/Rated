@@ -167,3 +167,31 @@ export function DeletedStep({ headingRef, onStartAgain }: { headingRef: HeadingR
     </div>
   );
 }
+
+/** Shown when the person doesn't own the property. Nothing is saved or shared. */
+export function NotOwnerStep({ headingRef, onBack }: { headingRef: HeadingRef; onBack: () => void }) {
+  return (
+    <div className="grid gap-4">
+      <h1 ref={headingRef} tabIndex={-1} className="text-[28px] font-bold leading-tight outline-none">
+        Sorry, we can only help property owners
+      </h1>
+      <p className="text-muted">
+        Specialists need the owner&apos;s agreement before they can quote for or carry out work, so we only put owners
+        in touch. We haven&apos;t saved or shared any of your answers.
+      </p>
+      <p className="text-muted">
+        If you rent, your landlord is usually responsible for repairs to things like windows, doors and roofs, so
+        it&apos;s worth speaking to them. If you live with family, the owner is welcome to tell us about the project
+        themselves.
+      </p>
+      <div className="flex flex-wrap gap-3">
+        <Link href="/guides" className={buttonClass("primary")}>
+          Read our guides
+        </Link>
+        <button type="button" className={buttonClass("secondary")} onClick={onBack}>
+          Change my answer
+        </button>
+      </div>
+    </div>
+  );
+}

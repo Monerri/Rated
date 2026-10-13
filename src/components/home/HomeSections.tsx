@@ -200,6 +200,10 @@ export const faqs: { q: string; a: string; link?: { href: string; label: string 
     a: "Tell us you're just researching. We'll let you know whether a vetted specialist covers your area, and you choose whether to be put in touch, save your progress, or delete your answers.",
   },
   {
+    q: "Can I use Vetted North if I rent?",
+    a: "We can only put property owners in touch with specialists, because the owner needs to agree to the work. If you rent, your landlord is usually responsible for repairs to things like windows, doors and roofs, so it's worth speaking to them.",
+  },
+  {
     q: "Can you help me get a grant?",
     a: "No. We don't offer grants, and there's nothing to \"qualify\" for. Be wary of websites and callers that promise free or government-funded improvements in return for your details.",
     link: { href: "/guides/misleading-grants-and-offers", label: "How to spot misleading grants and offers" },

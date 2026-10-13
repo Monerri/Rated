@@ -6,14 +6,20 @@ import type { Service } from "@/lib/types";
 import type { Answers } from "@/funnels/types";
 import { getFunnel } from "@/funnels";
 import { ELSEWHERE, type Question } from "@/funnels/types";
-import { SPECIALIST_COUNT } from "@/funnels/shared";
+import { NOT_OWNER, OWNERSHIP, SPECIALIST_COUNT } from "@/funnels/shared";
 import { knownPostcodeArea } from "@/config/regions";
 import { earlyPostcodeCovered, isResearching, visibleQuestions } from "@/funnels/engine";
 import { getSourceInfo } from "@/lib/source";
 import { QuestionStep } from "@/components/funnel/QuestionStep";
 import { ContactStep, type EnquiryResult } from "@/components/funnel/ContactStep";
 import { Confirmation } from "@/components/funnel/Confirmation";
-import { ResearchingStep, SaveProgressStep, SavedStep, DeletedStep } from "@/components/funnel/ResearchingSteps";
+import {
+  ResearchingStep,
+  SaveProgressStep,
+  SavedStep,
+  DeletedStep,
+  NotOwnerStep,
+} from "@/components/funnel/ResearchingSteps";
 import { NotifyMe } from "@/components/funnel/NotifyMe";
 
 /** Screens are either a question (by id) or one of the fixed steps. */
@@ -21,6 +27,7 @@ type Screen =
   | `q:${string}`
   | "out-of-area"
   | "no-coverage"
+  | "not-owner"
   | "researching"
   | "save"
   | "saved"
@@ -162,6 +169,7 @@ export function Funnel({
 
   /** Work out the next screen after answering question `fromId`. */
   async function advance(answers: Answers, fromId: string) {
+    if (fromId === OWNERSHIP && answers[OWNERSHIP] === NOT_OWNER) return go("not-owner", answers);
     if (fromId === "postcodeEarly" && !earlyPostcodeCovered(answers)) return go("out-of-area", answers);
 
     const isAreaStep = (fromId === "postcodeArea" && answers.postcodeArea !== ELSEWHERE) || fromId === "postcodeEarly";
@@ -303,6 +311,8 @@ export function Funnel({
             body={`We haven't yet vetted a ${service.name} specialist covering your area. Leave your details and we'll email you when we have.`}
           />
         )}
+
+        {state.screen === "not-owner" && <NotOwnerStep headingRef={headingRef} onBack={back} />}
 
         {state.screen === "researching" && (
           <ResearchingStep

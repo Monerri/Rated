@@ -13,6 +13,7 @@ export const metadata: Metadata = {
 
 const asks = [
   { q: "What you want to improve", why: "So we only match you with specialists who do that work." },
+  { q: "Whether you own the property, and whether it's a home or a business", why: "Specialists need the owner's agreement to quote and carry out work, so we only put owners in touch." },
   { q: "The start of your postcode", why: "So we can check early that we cover your area, before you answer anything else." },
   { q: "A few questions about your home", why: "Property type, what you have now and what matters to you, so specialists understand your project before they call." },
   { q: "Whether the property is listed or in a conservation area", why: "Because extra rules can apply, and specialists should know." },

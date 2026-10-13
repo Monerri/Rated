@@ -1,6 +1,7 @@
 import { regions } from "@/config/regions";
 import { normalisePostcode, regionForPostcode } from "@/lib/postcode";
 import { ELSEWHERE, type Answers, type FunnelConfig, type Question } from "@/funnels/types";
+import { NOT_OWNER, OWNERSHIP } from "@/funnels/shared";
 
 /** Questions that apply given the answers so far. */
 export function visibleQuestions(config: FunnelConfig, answers: Answers): Question[] {
@@ -54,6 +55,9 @@ export function validateAnswers(
         return { ok: false, error: `Please answer: ${q.title}` };
       }
       clean[q.id] = value;
+      if (q.id === OWNERSHIP && value === NOT_OWNER) {
+        return { ok: false, error: "We can only put property owners in touch with specialists." };
+      }
     }
   }
   return { ok: true, answers: clean };

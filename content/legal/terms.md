@@ -2,7 +2,7 @@
 title: Terms of use
 description: The terms that apply when you use the Vetted North website and service.
 date: 2026-10-08
-updated: 2026-10-09
+updated: 2026-10-13
 ---
 
 **This is a draft and is being reviewed before launch.**
@@ -45,7 +45,7 @@ Our guides and articles are general information to help you understand your opti
 
 ## 7. Using our site
 
-Please give accurate information and only submit an enquiry about a property you own or have permission to arrange work on. Don't misuse the site, for example by submitting enquiries in someone else's name, trying to disrupt it or accessing it in ways it isn't intended to be used.
+Please give accurate information. You can only use our service for a property you own, on your own or jointly. If you own it jointly, please check the other owners are happy for you to get quotes. Don't misuse the site, for example by submitting enquiries in someone else's name, trying to disrupt it or accessing it in ways it isn't intended to be used.
 
 ## 8. Our responsibility to you
 

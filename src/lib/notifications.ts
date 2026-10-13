@@ -3,6 +3,7 @@ import { bindings } from "@/lib/cloudflare";
 import { vettingChecks } from "@/config/vetting";
 import { formatMonthYear } from "@/lib/format";
 import { numberWord, SAVED_PROGRESS_MONTHS } from "@/lib/consent";
+import { formatPence } from "@/lib/billing";
 import type { Enquiry, InterestRegistration, SavedProgress, Specialist, SupplierApplication } from "@/lib/types";
 
 export interface Email {
@@ -140,7 +141,13 @@ ${site.name}
 }
 
 /** Sent to each specialist after the homeowner has been told who they are. */
-export function specialistEnquiryEmail(e: Enquiry, s: Specialist, introduced: number, serviceName: string): Email {
+export function specialistEnquiryEmail(
+  e: Enquiry,
+  s: Specialist,
+  introduced: number,
+  serviceName: string,
+  billing: { pricePence: number; balancePence: number; description: string } | null = null,
+): Email {
   const shared =
     introduced === 1
       ? "You're the only specialist we've introduced for this enquiry."
@@ -161,8 +168,66 @@ Their answers
 ${e.summary.map((r) => `  ${r.label}: ${r.value}`).join("\n")}
 
 Enquiry reference: ${e.id}
+${
+  billing
+    ? `
+This lead cost ${formatPence(billing.pricePence)} from your prepaid balance: ${billing.description}.
+Your balance is now ${formatPence(billing.balancePence)}.${
+        billing.balancePence < billing.pricePence
+          ? `
+Your balance won't cover another lead like this one. Top up to keep receiving leads: reply to this email or contact ${site.supplierApplicationsEmail}.`
+          : ""
+      }
+If this lead isn't genuine (for example, the details are wrong or it's a duplicate), reply within 7 days and we'll look into a refund to your balance.
+`
+    : ""
+}
+${site.name}
+`,
+  };
+}
+
+function adminEmail(): string {
+  return bindings().ADMIN_EMAIL ?? site.contactEmail;
+}
+
+/** A specialist wasn't considered for a lead because their balance was too low. No homeowner details. */
+export function missedLeadEmail(s: Specialist, serviceName: string, area: string, pricePence: number, balancePence: number): Email {
+  return {
+    to: s.enquiryEmail,
+    subject: `You missed a ${serviceName} lead in ${area}`,
+    text: `${s.isDemo ? DEMO_NOTE : ""}Hello ${s.name},
+
+A homeowner in the ${area} area has just asked to be put in touch about ${serviceName.toLowerCase()}. You cover that area, but your prepaid balance (${formatPence(balancePence)}) didn't cover the lead price of ${formatPence(pricePence)}, so you weren't considered for it.
+
+Top up your balance to make sure you're considered for the next one: reply to this email or contact ${site.supplierApplicationsEmail}.
 
 ${site.name}
+`,
+  };
+}
+
+/** Tells us when a homeowner got fewer specialists than they asked for because of low balances. */
+export function lostLeadAlertEmail(
+  serviceName: string,
+  outward: string,
+  requested: number,
+  introduced: number,
+  underfunded: Specialist[],
+): Email {
+  return {
+    to: adminEmail(),
+    subject: `Lead ${introduced === 0 ? "lost" : "only partly placed"}: ${serviceName} in ${outward}`,
+    text: `A homeowner in ${outward} asked to hear from ${numberWord(requested)} ${serviceName} specialist${requested === 1 ? "" : "s"}. ${
+      introduced === 0
+        ? "Nobody could take the lead, so the homeowner was told no specialist is available yet."
+        : `Only ${numberWord(introduced)} could be introduced.`
+    }
+
+These specialists cover the area but didn't have enough credit:
+${underfunded.map((s) => `  - ${s.name}`).join("\n")}
+
+They've each been told they missed a lead.
 `,
   };
 }

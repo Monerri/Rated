@@ -25,6 +25,6 @@ export async function GET(request: NextRequest) {
     ? regionForPostcode(postcode)
     : (regions.find((r) => r.postcodeAreas.some((a) => a.code === area))?.slug ?? null);
   const covered = region !== null && service.regions.includes(region);
-  const count = covered ? coverageCount(service.slug, target) : 0;
+  const count = covered ? await coverageCount(service.slug, target) : 0;
   return Response.json({ available: count > 0, count });
 }

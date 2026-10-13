@@ -1,18 +1,9 @@
-import { timingSafeEqual } from "node:crypto";
+import { authorised } from "@/lib/admin";
 import { revalidatePath } from "next/cache";
 import { setServiceAvailability } from "@/lib/launch";
 import { jsonError, readJson, requestOrigin } from "@/lib/request";
 
 type Context = { params: Promise<{ service: string }> };
-
-function authorised(request: Request): boolean {
-  const expected = process.env.ADMIN_API_TOKEN;
-  if (!expected) return false;
-  const given = request.headers.get("authorization")?.replace(/^Bearer /, "") ?? "";
-  const a = Buffer.from(given);
-  const b = Buffer.from(expected);
-  return a.length === b.length && timingSafeEqual(a, b);
-}
 
 /**
  * Switch a service between coming soon and live, without a rebuild.

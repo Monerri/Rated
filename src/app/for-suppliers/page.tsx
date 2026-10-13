@@ -22,7 +22,7 @@ const process = [
   },
   {
     title: "We get in touch if it's a good fit",
-    body: "We'll talk you through how introductions work, including our fees, before anything is agreed.",
+    body: "We'll talk you through how introductions and prepaid credit work, including our prices, before anything is agreed.",
   },
 ];
 
@@ -50,8 +50,15 @@ export default function ForSuppliersPage() {
             <ul className="grid gap-2 text-[15px]">
               <li>Homeowners choose to hear from one, two or three specialists. An enquiry is never shared with more than three.</li>
               <li>Homeowners are told who you are, and see your checks, before you contact them.</li>
-              <li>Every enquiry comes from a homeowner who has agreed to be contacted by you.</li>
+              <li>Every enquiry comes from a homeowner who owns the property and has agreed to be contacted by you.</li>
+              <li>
+                Pay as you go with prepaid credit. You&apos;re only charged when you receive an introduction, and every
+                charge is on your weekly statement.
+              </li>
             </ul>
+            <Link href="/supplier-terms" className="text-[15px] font-semibold text-blue">
+              Read our specialist terms
+            </Link>
           </div>
         </div>
       </section>

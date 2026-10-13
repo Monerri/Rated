@@ -2,9 +2,16 @@ import { getCatalogueService } from "@/lib/catalogue";
 import { getFunnel } from "@/funnels";
 import { isResearching, summarise, validateAnswers } from "@/funnels/engine";
 import { MAX_SPECIALISTS, shareWithSpecialistWording } from "@/lib/consent";
-import { matchSpecialists } from "@/lib/matching";
-import { customerMatchEmail, specialistEnquiryEmail, trySend } from "@/lib/notifications";
-import { normalisePostcode, regionForPostcode } from "@/lib/postcode";
+import { allocateLead } from "@/lib/matching";
+import { describeLead, isLaterLead, leadPrice, refundLead } from "@/lib/billing";
+import {
+  customerMatchEmail,
+  lostLeadAlertEmail,
+  missedLeadEmail,
+  specialistEnquiryEmail,
+  trySend,
+} from "@/lib/notifications";
+import { normalisePostcode, outwardCode, postcodeArea, regionForPostcode } from "@/lib/postcode";
 import { recordStore } from "@/lib/records";
 import type { Enquiry, SourceInfo, Specialist } from "@/lib/types";
 
@@ -66,15 +73,34 @@ export async function submitEnquiry(input: SubmitInput): Promise<SubmitResult> {
     return { ok: false, status: 400, error: "Please tick the box so we can share your details with the specialists." };
   }
 
-  const specialists = matchSpecialists(service.slug, postcode, requested);
+  // Each specialist is charged before being chosen, so every lead sent is already paid for.
+  const enquiryId = crypto.randomUUID();
+  const later = isLaterLead(answers);
+  const pricePence = leadPrice(service.slug, requested, later);
+  const area = postcodeArea(postcode);
+  const { chosen: specialists, underfunded } = await allocateLead({
+    serviceSlug: service.slug,
+    postcode,
+    requested,
+    later,
+    enquiryId,
+    pricePence,
+    note: `${service.name} lead, ${outwardCode(postcode)}, ${describeLead(requested, later)}`,
+  });
+  await recordMissedLeads(underfunded, { enquiryId, serviceSlug: service.slug, serviceName: service.name, area, pricePence });
+
   if (specialists.length === 0) {
+    if (underfunded.length > 0) await trySend(lostLeadAlertEmail(service.name, outwardCode(postcode), requested, 0, underfunded));
     return { ok: false, status: 409, error: "We don't have a vetted specialist available for that postcode right now." };
+  }
+  if (specialists.length < requested && underfunded.length > 0) {
+    await trySend(lostLeadAlertEmail(service.name, outwardCode(postcode), requested, specialists.length, underfunded));
   }
 
   const now = new Date().toISOString();
   const enquiry: Enquiry = {
     kind: "enquiry",
-    id: crypto.randomUUID(),
+    id: enquiryId,
     serviceSlug: service.slug,
     answers,
     summary: [...summarise(funnel, answers), { questionId: "postcode", label: "Postcode", value: postcode }],
@@ -95,11 +121,16 @@ export async function submitEnquiry(input: SubmitInput): Promise<SubmitResult> {
     matchedSpecialistSlugs: specialists.map((s) => s.slug),
     customerNotifiedAt: null,
     specialistNotifications: [],
+    pricePence,
   };
   await recordStore.saveEnquiry(enquiry);
 
   // The homeowner must be told who will contact them before anyone else gets their details.
   if (!(await trySend(customerMatchEmail(enquiry, specialists, service.name, input.origin)))) {
+    // Nobody receives the lead, so nobody pays for it.
+    for (const s of specialists) {
+      await refundLead(s, enquiry.id, pricePence, "Refund: the homeowner's confirmation email couldn't be sent, so the lead wasn't passed on");
+    }
     return {
       ok: false,
       status: 502,
@@ -110,12 +141,40 @@ export async function submitEnquiry(input: SubmitInput): Promise<SubmitResult> {
   enquiry.customerNotifiedAt = new Date().toISOString();
   await recordStore.updateEnquiry(enquiry.id, { customerNotifiedAt: enquiry.customerNotifiedAt });
 
+  const balances = await recordStore.getBalances();
   for (const specialist of specialists) {
-    // A failed send is logged and left off the record, so it can be followed up.
-    if (!(await trySend(specialistEnquiryEmail(enquiry, specialist, specialists.length, service.name)))) continue;
+    const billing = specialist.isDemo
+      ? null
+      : { pricePence, balancePence: balances[specialist.slug] ?? 0, description: describeLead(requested, later) };
+    if (!(await trySend(specialistEnquiryEmail(enquiry, specialist, specialists.length, service.name, billing)))) {
+      // They never received the details, so they get their money back. Logged so it can be followed up.
+      await refundLead(specialist, enquiry.id, pricePence, "Refund: the lead email couldn't be delivered");
+      continue;
+    }
     enquiry.specialistNotifications.push({ slug: specialist.slug, notifiedAt: new Date().toISOString() });
   }
   await recordStore.updateEnquiry(enquiry.id, { specialistNotifications: enquiry.specialistNotifications });
 
   return { ok: true, enquiry, specialists };
+}
+
+/** Records and tells each specialist who missed a lead because of a low balance. No homeowner details are shared. */
+async function recordMissedLeads(
+  specialists: Specialist[],
+  lead: { enquiryId: string; serviceSlug: string; serviceName: string; area: string; pricePence: number },
+) {
+  if (specialists.length === 0) return;
+  const balances = await recordStore.getBalances();
+  for (const s of specialists) {
+    await recordStore.saveMissedLead({
+      id: crypto.randomUUID(),
+      supplierSlug: s.slug,
+      enquiryId: lead.enquiryId,
+      serviceSlug: lead.serviceSlug,
+      area: lead.area,
+      pricePence: lead.pricePence,
+      createdAt: new Date().toISOString(),
+    });
+    await trySend(missedLeadEmail(s, lead.serviceName, lead.area, lead.pricePence, balances[s.slug] ?? 0));
+  }
 }

@@ -2,7 +2,7 @@
 title: Privacy notice
 description: How Vetted North collects, uses, shares and protects your personal information.
 date: 2026-10-08
-updated: 2026-10-09
+updated: 2026-10-13
 ---
 
 **This is a draft and is being reviewed before launch.**
@@ -66,6 +66,8 @@ You can contact us about privacy at **privacy@vettednorth.com**.
 **Lawful basis:** our legitimate interest in vetting the businesses we work with.
 
 **How long we keep it:** for unsuccessful applications, 24 months. For businesses that join our network, for as long as we work together and six years afterwards.
+
+For businesses in our network we also keep records of payments, introductions sent and refunds, for the same period, because they're financial records.
 
 ### Technical information
 

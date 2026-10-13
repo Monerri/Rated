@@ -1,6 +1,14 @@
 import { bindings, type D1 } from "@/lib/cloudflare";
 import { SAVED_PROGRESS_MONTHS } from "@/lib/consent";
-import type { Enquiry, InterestRegistration, SavedProgress, ServiceOverride, SupplierApplication } from "@/lib/types";
+import type {
+  Enquiry,
+  InterestRegistration,
+  LedgerEntry,
+  MissedLead,
+  SavedProgress,
+  ServiceOverride,
+  SupplierApplication,
+} from "@/lib/types";
 
 /**
  * Persistence boundary. Pages and API routes call this interface only.
@@ -28,6 +36,20 @@ export interface RecordStore {
   saveServiceOverride(override: ServiceOverride): Promise<void>;
 
   saveSupplierApplication(record: SupplierApplication): Promise<void>;
+
+  /** Adds a line to a specialist's account. */
+  addLedgerEntry(entry: LedgerEntry): Promise<void>;
+  /**
+   * Adds a lead charge only if the balance covers it, in one atomic step, so
+   * two leads at once can't spend the same money. False if it doesn't.
+   */
+  chargeIfFunded(entry: LedgerEntry): Promise<boolean>;
+  /** Current balance in pence for every specialist with an account. */
+  getBalances(): Promise<Record<string, number>>;
+  /** Ledger lines since a date (ISO), newest first. */
+  listLedger(since: string, limit?: number): Promise<LedgerEntry[]>;
+  saveMissedLead(record: MissedLead): Promise<void>;
+  listMissedLeads(since: string): Promise<MissedLead[]>;
 }
 
 /**
@@ -42,6 +64,8 @@ interface Memory {
   progress: Map<string, SavedProgress>;
   overrides: Map<string, ServiceOverride>;
   suppliers: Map<string, SupplierApplication>;
+  ledger: LedgerEntry[];
+  missed: MissedLead[];
 }
 
 const g = globalThis as typeof globalThis & { __vnMemory?: Memory };
@@ -51,6 +75,8 @@ const memory: Memory = (g.__vnMemory ??= {
   progress: new Map(),
   overrides: new Map(),
   suppliers: new Map(),
+  ledger: [],
+  missed: [],
 });
 
 function log(label: string, record: object) {
@@ -114,6 +140,30 @@ const prototypeStore: RecordStore = {
     memory.suppliers.set(record.id, record);
     log("supplier application", record);
   },
+
+  async addLedgerEntry(entry) {
+    memory.ledger.push(entry);
+  },
+  async chargeIfFunded(entry) {
+    const balance = memory.ledger.filter((e) => e.supplierSlug === entry.supplierSlug).reduce((t, e) => t + e.amountPence, 0);
+    if (balance < -entry.amountPence) return false;
+    memory.ledger.push(entry);
+    return true;
+  },
+  async getBalances() {
+    const out: Record<string, number> = {};
+    for (const e of memory.ledger) out[e.supplierSlug] = (out[e.supplierSlug] ?? 0) + e.amountPence;
+    return out;
+  },
+  async listLedger(since, limit = 500) {
+    return memory.ledger.filter((e) => e.createdAt >= since).reverse().slice(0, limit);
+  },
+  async saveMissedLead(record) {
+    memory.missed.push(record);
+  },
+  async listMissedLeads(since) {
+    return memory.missed.filter((m) => m.createdAt >= since);
+  },
 };
 
 /**
@@ -129,6 +179,12 @@ const SCHEMA = [
   "CREATE TABLE IF NOT EXISTS saved_progress (token TEXT PRIMARY KEY, created_at TEXT NOT NULL, data TEXT NOT NULL)",
   "CREATE TABLE IF NOT EXISTS service_overrides (service_slug TEXT PRIMARY KEY, data TEXT NOT NULL)",
   "CREATE TABLE IF NOT EXISTS supplier_applications (id TEXT PRIMARY KEY, created_at TEXT NOT NULL, data TEXT NOT NULL)",
+  // Prepaid accounts. Lines are only ever added; the balance is their sum.
+  "CREATE TABLE IF NOT EXISTS ledger (id TEXT PRIMARY KEY, supplier_slug TEXT NOT NULL, created_at TEXT NOT NULL, kind TEXT NOT NULL, amount_pence INTEGER NOT NULL, enquiry_id TEXT, note TEXT NOT NULL)",
+  "CREATE INDEX IF NOT EXISTS ledger_by_supplier ON ledger (supplier_slug, created_at)",
+  // A specialist can only ever be charged once for the same enquiry.
+  "CREATE UNIQUE INDEX IF NOT EXISTS ledger_one_charge_per_lead ON ledger (enquiry_id, supplier_slug) WHERE kind = 'lead'",
+  "CREATE TABLE IF NOT EXISTS missed_leads (id TEXT PRIMARY KEY, supplier_slug TEXT NOT NULL, created_at TEXT NOT NULL, data TEXT NOT NULL)",
 ];
 
 /**
@@ -141,6 +197,8 @@ const RETENTION = [
   `DELETE FROM saved_progress WHERE created_at < strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-${SAVED_PROGRESS_MONTHS} months')`,
   "DELETE FROM enquiries WHERE created_at < strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-24 months')",
   "DELETE FROM interest_registrations WHERE created_at < strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-24 months')",
+  "DELETE FROM missed_leads WHERE created_at < strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-24 months')",
+  // The ledger is a financial record and is kept: it holds no homeowner details, only enquiry ids.
 ];
 
 /** How often the retention clean-up runs, at most. */
@@ -255,6 +313,71 @@ function d1Queries(db: D1): RecordStore {
         .bind(a.id, a.createdAt, JSON.stringify(a))
         .run();
     },
+
+    async addLedgerEntry(e) {
+      await db
+        .prepare(
+          "INSERT INTO ledger (id, supplier_slug, created_at, kind, amount_pence, enquiry_id, note) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        )
+        .bind(e.id, e.supplierSlug, e.createdAt, e.kind, e.amountPence, e.enquiryId, e.note)
+        .run();
+    },
+    async chargeIfFunded(e) {
+      // One statement, so the balance check and the charge can't be separated.
+      const { meta } = await db
+        .prepare(
+          `INSERT INTO ledger (id, supplier_slug, created_at, kind, amount_pence, enquiry_id, note)
+           SELECT ?, ?, ?, ?, ?, ?, ?
+           WHERE (SELECT COALESCE(SUM(amount_pence), 0) FROM ledger WHERE supplier_slug = ?) >= ?`,
+        )
+        .bind(e.id, e.supplierSlug, e.createdAt, e.kind, e.amountPence, e.enquiryId, e.note, e.supplierSlug, -e.amountPence)
+        .run();
+      return meta.changes === 1;
+    },
+    async getBalances() {
+      const { results } = await db
+        .prepare("SELECT supplier_slug, SUM(amount_pence) AS balance FROM ledger GROUP BY supplier_slug")
+        .all<{ supplier_slug: string; balance: number }>();
+      return Object.fromEntries(results.map((r) => [r.supplier_slug, r.balance]));
+    },
+    async listLedger(since, limit = 500) {
+      const { results } = await db
+        .prepare(
+          "SELECT id, supplier_slug, created_at, kind, amount_pence, enquiry_id, note FROM ledger WHERE created_at >= ? ORDER BY created_at DESC LIMIT ?",
+        )
+        .bind(since, limit)
+        .all<{
+          id: string;
+          supplier_slug: string;
+          created_at: string;
+          kind: LedgerEntry["kind"];
+          amount_pence: number;
+          enquiry_id: string | null;
+          note: string;
+        }>();
+      return results.map((r) => ({
+        id: r.id,
+        supplierSlug: r.supplier_slug,
+        createdAt: r.created_at,
+        kind: r.kind,
+        amountPence: r.amount_pence,
+        enquiryId: r.enquiry_id,
+        note: r.note,
+      }));
+    },
+    async saveMissedLead(m) {
+      await db
+        .prepare("INSERT INTO missed_leads (id, supplier_slug, created_at, data) VALUES (?, ?, ?, ?)")
+        .bind(m.id, m.supplierSlug, m.createdAt, JSON.stringify(m))
+        .run();
+    },
+    async listMissedLeads(since) {
+      const { results } = await db
+        .prepare("SELECT data FROM missed_leads WHERE created_at >= ? ORDER BY created_at")
+        .bind(since)
+        .all<{ data: string }>();
+      return results.map((row) => JSON.parse(row.data) as MissedLead);
+    },
   };
 }
 
@@ -278,4 +401,10 @@ export const recordStore: RecordStore = {
   getServiceOverrides: () => currentStore().getServiceOverrides(),
   saveServiceOverride: (o) => currentStore().saveServiceOverride(o),
   saveSupplierApplication: (a) => currentStore().saveSupplierApplication(a),
+  addLedgerEntry: (e) => currentStore().addLedgerEntry(e),
+  chargeIfFunded: (e) => currentStore().chargeIfFunded(e),
+  getBalances: () => currentStore().getBalances(),
+  listLedger: (since, limit) => currentStore().listLedger(since, limit),
+  saveMissedLead: (m) => currentStore().saveMissedLead(m),
+  listMissedLeads: (since) => currentStore().listMissedLeads(since),
 };

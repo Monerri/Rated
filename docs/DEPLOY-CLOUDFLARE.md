@@ -73,9 +73,17 @@ If the homeowner's confirmation email can't be sent, nothing is shared with any 
 
 Resend's free plan allows 100 emails a day and 3,000 a month. Each enquiry uses one email for the homeowner plus one per specialist.
 
-## Optional: admin token
+## Prepaid credit and the admin page
 
-The service on/off switch (`/api/admin/services/...`) is disabled unless `ADMIN_API_TOKEN` is set. To set it, run `npx wrangler secret put ADMIN_API_TOKEN` or add it under **Workers & Pages → vetted-north → Settings → Variables and Secrets**. The change applies to the forms straight away; pre-built pages show it after the next deploy (at the latest, the daily one at 00:05 UTC).
+Specialists pay for leads in advance. A lead's price is taken from their balance at the moment it's sent, and they only receive the homeowner's details if their balance covers it. Prices are in `src/config/pricing.ts`. Demo specialists are never charged.
+
+- **Admin page:** `/admin` shows every specialist's balance and the last 90 days of account lines, and lets you add top-ups, refunds, corrections and forfeits. It needs the `ADMIN_API_TOKEN` secret: **Workers & Pages → vetted-north → Settings → Variables and Secrets → Add**, type **Secret**, name `ADMIN_API_TOKEN`, value a long random password. Sign in to `/admin` with the same value.
+- **Weekly reports:** every Monday at 07:05 UTC the Worker emails each real specialist a statement and sends you an overview (`worker.ts` and `triggers` in `wrangler.jsonc`). This doesn't need the admin token.
+- **Records:** every top-up, lead, refund and correction is a permanent line in the `ledger` table. A balance is the sum of its lines; nothing is edited or deleted.
+
+## Admin token
+
+The admin page and the service on/off switch (`/api/admin/...`) are disabled unless `ADMIN_API_TOKEN` is set (see above). The change applies to the forms straight away; pre-built pages show it after the next deploy (at the latest, the daily one at 00:05 UTC).
 
 ## Limits to know about
 

@@ -64,6 +64,16 @@ export interface FunnelConfig {
   questions: Question[];
   /** Question id and answer value that mean "just researching". */
   researching: { questionId: string; value: string };
+  /**
+   * Kinds of job within the service that specialists can choose to take,
+   * for example single-storey extensions only. A specialist who hasn't
+   * chosen is sent every kind. Leave out when the service has one kind.
+   */
+  leadTypes?: {
+    options: { value: string; label: string }[];
+    /** The kind this enquiry needs, from the answers. */
+    of: (answers: Answers) => string;
+  };
 }
 
 /** Value used by the postcode-area question when the area isn't listed. */

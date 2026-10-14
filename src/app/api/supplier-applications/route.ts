@@ -3,6 +3,7 @@ import { getService, services } from "@/config/services";
 import { competentPersonSchemes, supplierDeclarationWording } from "@/config/suppliers";
 import { supplierAcknowledgementEmail, supplierApplicationInternalEmail, trySend } from "@/lib/notifications";
 import { recordStore } from "@/lib/records";
+import { getFunnel } from "@/funnels";
 import {
   EMAIL,
   jsonError,
@@ -35,7 +36,20 @@ export async function POST(request: Request) {
   const phone = typeof body.phone === "string" ? normalisePhone(body.phone) : null;
   const websiteRaw = str(body.website, 300);
   const website = websiteRaw ? normaliseUrl(websiteRaw) : null;
-  const mainService = String(body.mainService ?? "");
+  const servicesOffered: string[] = Array.isArray(body.servicesOffered)
+    ? [...new Set(body.servicesOffered.map(String))].filter((slug) => services.some((s) => s.slug === slug))
+    : [];
+  const otherServices = str(body.otherServices, 300);
+  // Kinds of job per service, only for services that have kinds, and only known values.
+  const rawTypes = (body.leadTypes ?? {}) as Record<string, unknown>;
+  const leadTypes: Record<string, string[]> = {};
+  for (const slug of servicesOffered) {
+    const kinds = getFunnel(slug)?.leadTypes?.options.map((o) => o.value);
+    if (!kinds) continue;
+    const chosen = Array.isArray(rawTypes[slug]) ? (rawTypes[slug] as unknown[]).map(String).filter((v) => kinds.includes(v)) : [];
+    leadTypes[slug] = [...new Set(chosen)];
+  }
+  const mainService = servicesOffered[0] ?? OTHER_SERVICE;
   const areasCovered = Array.isArray(body.areasCovered)
     ? body.areasCovered.map(String).filter((a) => primaryRegion.postcodeAreas.some((x) => x.code === a))
     : [];
@@ -53,7 +67,10 @@ export async function POST(request: Request) {
   if (!email || !EMAIL.test(email)) errors.email = "Please enter a valid email address.";
   if (!phone) errors.phone = "Please enter a UK phone number.";
   if (websiteRaw && !website) errors.website = "Please enter a valid web address, or leave this blank.";
-  if (mainService !== OTHER_SERVICE && !services.some((s) => s.slug === mainService)) errors.mainService = "Please choose your main service.";
+  if (servicesOffered.length === 0 && !otherServices) errors.servicesOffered = "Please choose at least one service.";
+  for (const [slug, kinds] of Object.entries(leadTypes)) {
+    if (kinds.length === 0) errors.servicesOffered = `Please tell us which ${getService(slug)?.name.toLowerCase()} work you take on.`;
+  }
   if (areasCovered.length === 0 && !otherAreas) errors.areasCovered = "Please tell us which areas you cover.";
   if (!companiesHouseNumber) errors.companiesHouseNumber = "Please enter an 8-character Companies House number, for example 01234567 or SC123456.";
   if (!scheme) errors.competentPersonScheme = "Please choose an option.";
@@ -83,6 +100,9 @@ export async function POST(request: Request) {
     phone: phone!,
     website,
     mainService,
+    servicesOffered,
+    leadTypes,
+    otherServices,
     areasCovered,
     otherAreas,
     companiesHouseNumber: companiesHouseNumber!,
@@ -97,7 +117,7 @@ export async function POST(request: Request) {
   };
 
   await recordStore.saveSupplierApplication(application);
-  const serviceName = mainService === OTHER_SERVICE ? "Other" : (getService(mainService)?.name ?? mainService);
+  const serviceName = servicesOffered.map((slug) => getService(slug)?.name ?? slug).join(", ") || "Other";
   // The application is saved either way, so a failed email is logged rather than shown as an error.
   await trySend(supplierAcknowledgementEmail(application));
   await trySend(supplierApplicationInternalEmail(application, serviceName));

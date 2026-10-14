@@ -72,6 +72,8 @@ function save(key: string, state: FunnelState | null) {
 /** How many vetted specialists cover the area. Null if the check couldn't be made. */
 async function checkCoverage(serviceSlug: string, answers: Answers): Promise<number | null> {
   const params = new URLSearchParams({ service: serviceSlug });
+  const leadType = getFunnel(serviceSlug)?.leadTypes?.of(answers);
+  if (leadType) params.set("leadType", leadType);
   if (answers.postcodeArea === ELSEWHERE) params.set("postcode", String(answers.postcodeEarly ?? ""));
   else params.set("area", String(answers.postcodeArea ?? ""));
   try {
@@ -180,8 +182,9 @@ export function Funnel({
     let next = after(answers, fromId);
     let coverage = isAreaStep ? null : (state.coverage ?? null);
 
-    // Check coverage after the area is chosen, before asking how many specialists, and at the end.
-    if (isAreaStep || !next || (next.id === SPECIALIST_COUNT && coverage === null)) {
+    // Check coverage after the area is chosen, again before asking how many specialists
+    // (earlier answers may have changed the kind of job), and at the end.
+    if (isAreaStep || !next || next.id === SPECIALIST_COUNT) {
       setBusy(true);
       coverage = await checkCoverage(service.slug, answers);
       setBusy(false);

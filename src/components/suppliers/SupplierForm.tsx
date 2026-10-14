@@ -6,6 +6,7 @@ import { primaryRegion } from "@/config/regions";
 import { competentPersonSchemes, supplierDeclarationWording } from "@/config/suppliers";
 import { getSourceInfo } from "@/lib/source";
 import { buttonClass } from "@/components/ui/Button";
+import { getFunnel } from "@/funnels";
 import { ConsentCheckbox, FormError, SelectField, TextAreaField, TextField } from "@/components/ui/Form";
 
 type FieldErrors = Record<string, string>;
@@ -16,6 +17,7 @@ export function SupplierForm({ services }: { services: Pick<Service, "slug" | "n
   const [formError, setFormError] = useState<string | null>(null);
   const [agreed, setAgreed] = useState(false);
   const [scheme, setScheme] = useState("");
+  const [offered, setOffered] = useState<string[]>([]);
   const [status, setStatus] = useState<"idle" | "sending" | "done">("idle");
   const doneRef = useRef<HTMLHeadingElement>(null);
 
@@ -37,7 +39,9 @@ export function SupplierForm({ services }: { services: Pick<Service, "slug" | "n
         phone: get("phone"),
         website: get("website"),
         website_confirm: get("website_confirm"),
-        mainService: get("mainService"),
+        servicesOffered: offered,
+        leadTypes: Object.fromEntries(offered.map((slug) => [slug, f.getAll(`leadTypes:${slug}`).map(String)])),
+        otherServices: get("otherServices"),
         areasCovered: f.getAll("areasCovered").map(String),
         otherAreas: get("otherAreas"),
         companiesHouseNumber: get("companiesHouseNumber"),
@@ -107,12 +111,48 @@ export function SupplierForm({ services }: { services: Pick<Service, "slug" | "n
           error={errors.companiesHouseNumber}
         />
         <TextField label="Website (optional)" name="website" type="url" inputMode="url" autoComplete="url" error={errors.website} />
-        <SelectField
-          label="Main service"
-          name="mainService"
-          options={[...services.map((s) => ({ value: s.slug, label: s.name })), { value: "other", label: "Something else" }]}
-          error={errors.mainService}
-        />
+      </fieldset>
+
+      <fieldset className="grid gap-3" aria-describedby={errors.servicesOffered ? "services-error" : undefined}>
+        <legend className="mb-1 font-display text-lg font-bold">Services you offer</legend>
+        <p className="-mt-1 text-sm text-muted">Choose all that apply. We&apos;ll only send you enquiries for these.</p>
+        <div className="grid gap-2 sm:grid-cols-2">
+          {services.map((s) => (
+            <label key={s.slug} className="flex min-h-11 cursor-pointer items-center gap-3 text-[15px]">
+              <input
+                type="checkbox"
+                checked={offered.includes(s.slug)}
+                onChange={(e) =>
+                  setOffered((o) => (e.target.checked ? [...o, s.slug] : o.filter((x) => x !== s.slug)))
+                }
+                className="size-5 accent-[var(--color-blue)]"
+              />
+              {s.name}
+            </label>
+          ))}
+        </div>
+        {offered.map((slug) => {
+          const kinds = getFunnel(slug)?.leadTypes;
+          if (!kinds) return null;
+          const name = services.find((s) => s.slug === slug)?.name;
+          return (
+            <fieldset key={slug} className="grid gap-2 rounded-[var(--radius-card)] border border-line p-4">
+              <legend className="px-1 text-[15px] font-semibold">Which {name?.toLowerCase()} work do you take on?</legend>
+              {kinds.options.map((o) => (
+                <label key={o.value} className="flex min-h-11 cursor-pointer items-center gap-3 text-[15px]">
+                  <input type="checkbox" name={`leadTypes:${slug}`} value={o.value} defaultChecked className="size-5 accent-[var(--color-blue)]" />
+                  {o.label}
+                </label>
+              ))}
+            </fieldset>
+          );
+        })}
+        {errors.servicesOffered && (
+          <p id="services-error" className="text-sm font-semibold">
+            {errors.servicesOffered}
+          </p>
+        )}
+        <TextField label="Anything else you do (optional)" name="otherServices" maxLength={300} />
       </fieldset>
 
       <fieldset className="grid gap-3">

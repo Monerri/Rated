@@ -25,8 +25,8 @@ export const services: Service[] = [
   },
   {
     slug: "extensions",
-    name: "Extensions",
-    summary: "Single-storey and two-storey extensions, from kitchens to extra bedrooms.",
+    name: "Extensions & New Builds",
+    summary: "Single, two and three-storey extensions, and new houses built on your own plot.",
     icon: "extension",
     status: "live",
     regions: ["north-east-england"],
@@ -44,34 +44,57 @@ export const services: Service[] = [
     name: "Solar & Battery",
     summary: "Solar panels and home battery storage.",
     icon: "solar-battery",
-    status: "coming_soon",
-    regions: [],
+    status: "live",
+    regions: ["north-east-england"],
   },
   {
     slug: "heat-pumps",
     name: "Heat Pumps",
     summary: "Air source heat pumps for heating and hot water.",
     icon: "heat-pump",
-    status: "coming_soon",
-    regions: [],
+    status: "live",
+    regions: ["north-east-england"],
   },
   {
     slug: "ev-charging",
     name: "EV Charging",
     summary: "Home charge points for electric vehicles.",
     icon: "ev-charging",
-    status: "coming_soon",
-    regions: [],
+    status: "live",
+    regions: ["north-east-england"],
   },
   {
     slug: "insulation",
     name: "Insulation",
     summary: "Loft, cavity wall and other insulation.",
     icon: "insulation",
-    status: "coming_soon",
-    regions: [],
+    status: "live",
+    regions: ["north-east-england"],
   },
 ];
+
+const comingSoon = (slug: string, name: string, summary: string, icon: Service["icon"]): Service => ({
+  slug,
+  name,
+  summary,
+  icon,
+  status: "coming_soon",
+  regions: [],
+});
+
+/** Not yet live: people can register interest and be told when they launch. */
+services.push(
+  comingSoon("loft-conversions", "Loft Conversions", "Turn your loft into a bedroom, office or extra living space.", "loft"),
+  comingSoon("architecture-planning", "Architects & Planning", "Drawings, planning applications and Building Regulations plans.", "architecture"),
+  comingSoon("kitchens", "Kitchens", "New fitted kitchens, from design to installation.", "kitchen"),
+  comingSoon("bathrooms", "Bathrooms", "New bathrooms, en suites and wet rooms.", "bathroom"),
+  comingSoon("air-conditioning", "Air Conditioning", "Air conditioning and air-to-air heat pumps for cooling and heating.", "air-con"),
+  comingSoon("gardens-driveways", "Gardens, Driveways & Landscaping", "Driveways, patios, fencing and garden landscaping.", "garden"),
+  comingSoon("flooring", "Flooring", "Wood, laminate, vinyl, tiles and carpets, supplied and fitted.", "flooring"),
+  comingSoon("plumbing", "Plumbing", "Plumbing repairs and installations around the home.", "plumbing"),
+  comingSoon("electrical", "Electrical", "Rewiring, new circuits, consumer units and electrical repairs.", "electrical"),
+  comingSoon("security-systems", "Security Systems", "Burglar alarms, CCTV, smart doorbells and security lighting.", "security"),
+);
 
 /**
  * Looks up a service's definition (name, icon, summary). For whether it is

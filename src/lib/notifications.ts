@@ -3,7 +3,7 @@ import { bindings } from "@/lib/cloudflare";
 import { vettingChecks } from "@/config/vetting";
 import { formatMonthYear } from "@/lib/format";
 import { numberWord, SAVED_PROGRESS_MONTHS } from "@/lib/consent";
-import { formatPence } from "@/lib/billing";
+import { formatPence, priceListFor } from "@/lib/billing";
 import type { Enquiry, InterestRegistration, SavedProgress, Specialist, SupplierApplication } from "@/lib/types";
 
 export interface Email {
@@ -310,7 +310,21 @@ Thanks for your interest in joining the ${site.name} network. We've received you
 
 ${vettingChecks.map((c) => `  - ${c.title}`).join("\n")}
 
-If your business looks like a good fit, we'll be in touch to talk about next steps. We review every application, but we can't accept every business.
+${(() => {
+  const prices = priceListFor(a.servicesOffered ?? [], a.leadTypes);
+  return prices
+    ? `How introductions are charged
+You pay for introductions from prepaid credit, and only when one is sent to you. Our current prices for the work you do:
+
+${prices}
+
+The full terms are at ${site.url}/supplier-terms
+
+`
+    : `We'll send you our prices for the work you do when we review your application. You can read how introductions and prepaid credit work at ${site.url}/supplier-terms
+
+`;
+})()}If your business looks like a good fit, we'll be in touch to talk about next steps. We review every application, but we can't accept every business.
 
 Reference: ${a.id}
 
@@ -328,7 +342,11 @@ export function supplierApplicationInternalEmail(a: SupplierApplication, service
 Companies House: ${a.companiesHouseNumber} (https://find-and-update.company-information.service.gov.uk/company/${a.companiesHouseNumber})
 Contact: ${a.contactName}, ${a.phone}, ${a.email}
 Website: ${a.website ?? "not given"}
-Main service: ${serviceName}
+Services: ${serviceName}${
+      a.leadTypes && Object.keys(a.leadTypes).length
+        ? `\nWork taken on: ${Object.entries(a.leadTypes).map(([slug, kinds]) => `${slug}: ${kinds.join(", ")}`).join("; ")}`
+        : ""
+    }${a.otherServices ? `\nAlso does: ${a.otherServices}` : ""}
 Areas: ${[...a.areasCovered, a.otherAreas].filter(Boolean).join(", ")}
 Competent Person Scheme: ${a.competentPersonScheme}
 Insurance-backed guarantee provider: ${a.insuranceBackedGuaranteeProvider}

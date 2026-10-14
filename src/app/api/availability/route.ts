@@ -1,5 +1,6 @@
 import { getCatalogueService } from "@/lib/catalogue";
 import { coverageCount } from "@/lib/matching";
+import { getFunnel } from "@/funnels";
 import { normalisePostcode, regionForPostcode } from "@/lib/postcode";
 import { regions } from "@/config/regions";
 import { jsonError } from "@/lib/request";
@@ -25,6 +26,9 @@ export async function GET(request: NextRequest) {
     ? regionForPostcode(postcode)
     : (regions.find((r) => r.postcodeAreas.some((a) => a.code === area))?.slug ?? null);
   const covered = region !== null && service.regions.includes(region);
-  const count = covered ? await coverageCount(service.slug, target) : 0;
+  // Only count specialists who take this kind of job, for services that have kinds.
+  const kinds = getFunnel(service.slug)?.leadTypes?.options.map((o) => o.value) ?? [];
+  const leadType = params.get("leadType");
+  const count = covered ? await coverageCount(service.slug, target, leadType && kinds.includes(leadType) ? leadType : null) : 0;
   return Response.json({ available: count > 0, count });
 }

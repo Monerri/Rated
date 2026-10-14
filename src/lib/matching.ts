@@ -9,12 +9,22 @@ function covers(s: Specialist, area: string, outward: string | null): boolean {
   return s.areasCovered.includes(area) || (outward !== null && s.areasCovered.includes(outward));
 }
 
-function candidates(serviceSlug: string, areaOrPostcode: string): Specialist[] {
+/** Whether a specialist takes this kind of job. No preference set means they take every kind. */
+function takesLeadType(s: Specialist, serviceSlug: string, leadType: string | null): boolean {
+  const accepted = s.leadTypes?.[serviceSlug];
+  return !leadType || !accepted || accepted.includes(leadType);
+}
+
+function candidates(serviceSlug: string, areaOrPostcode: string, leadType: string | null): Specialist[] {
   const isFull = areaOrPostcode.includes(" ");
   const area = isFull ? postcodeArea(areaOrPostcode) : areaOrPostcode;
   const outward = isFull ? outwardCode(areaOrPostcode) : null;
   return specialists.filter(
-    (s) => s.services.includes(serviceSlug) && covers(s, area, outward) && isCurrentlyVetted(s),
+    (s) =>
+      s.services.includes(serviceSlug) &&
+      covers(s, area, outward) &&
+      takesLeadType(s, serviceSlug, leadType) &&
+      isCurrentlyVetted(s),
   );
 }
 
@@ -45,6 +55,8 @@ export interface Allocation {
 export async function allocateLead(opts: {
   serviceSlug: string;
   postcode: string;
+  /** The kind of job, for services that have kinds (for example new builds). */
+  leadType: string | null;
   requested: number;
   later: boolean;
   enquiryId: string;
@@ -52,7 +64,7 @@ export async function allocateLead(opts: {
   note: string;
 }): Promise<Allocation> {
   const pool = shuffle(
-    candidates(opts.serviceSlug, opts.postcode).filter(
+    candidates(opts.serviceSlug, opts.postcode, opts.leadType).filter(
       (s) => !(opts.later && s.skipLaterLeadsFor?.includes(opts.serviceSlug)),
     ),
   );
@@ -75,8 +87,8 @@ export async function allocateLead(opts: {
  * How many vetted specialists cover an area or postcode and could currently
  * take a lead, without revealing who.
  */
-export async function coverageCount(serviceSlug: string, areaOrPostcode: string): Promise<number> {
+export async function coverageCount(serviceSlug: string, areaOrPostcode: string, leadType: string | null): Promise<number> {
   const balances = await recordStore.getBalances();
-  const price = cheapestLeadPrice(serviceSlug);
-  return candidates(serviceSlug, areaOrPostcode).filter((s) => canAfford(s, balances, price)).length;
+  const price = cheapestLeadPrice(serviceSlug, leadType);
+  return candidates(serviceSlug, areaOrPostcode, leadType).filter((s) => canAfford(s, balances, price)).length;
 }

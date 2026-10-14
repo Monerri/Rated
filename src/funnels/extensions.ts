@@ -1,27 +1,49 @@
-import type { FunnelConfig } from "@/funnels/types";
+import type { FunnelConfig, Question } from "@/funnels/types";
 import {
   fullPostcodeQuestion,
   listedQuestion,
   postcodeAreaQuestion,
+  PROPERTY_USE,
   propertyTypeQuestion,
   RESEARCHING,
   specialistCountQuestion,
   timescaleQuestion,
 } from "@/funnels/shared";
 
+const NEW_BUILD = "new-build";
+const isNewBuild = (a: Record<string, unknown>) => a.extensionType === NEW_BUILD;
+
+/** Kinds of job builders can choose to take. "Not sure" goes to builders who do both sizes of extension. */
+const leadTypeOf = (a: Record<string, unknown>) =>
+  a.extensionType === "single-storey" ? "single-storey" : isNewBuild(a) ? NEW_BUILD : "multi-storey";
+
+const homeTypeQuestion: Question = {
+  ...propertyTypeQuestion,
+  showIf: (a) => a[PROPERTY_USE] !== "business" && !isNewBuild(a),
+};
+
 export const extensionsFunnel: FunnelConfig = {
   serviceSlug: "extensions",
-  heading: "Extensions",
+  heading: "Extensions & New Builds",
   researching: { questionId: "timescale", value: RESEARCHING },
+  leadTypes: {
+    options: [
+      { value: "single-storey", label: "Single-storey extensions" },
+      { value: "multi-storey", label: "Two and three-storey extensions" },
+      { value: NEW_BUILD, label: "New-build houses" },
+    ],
+    of: leadTypeOf,
+  },
   questions: [
     {
       id: "extensionType",
       type: "single",
-      title: "What kind of extension are you thinking about?",
-      summaryLabel: "Extension type",
+      title: "What are you looking to build?",
+      summaryLabel: "Project",
       options: [
-        { value: "single-storey", label: "Single-storey", icon: "single-storey" },
-        { value: "two-storey", label: "Two-storey", icon: "two-storey" },
+        { value: "single-storey", label: "Single-storey extension", icon: "single-storey" },
+        { value: "multi-storey", label: "Two or three-storey extension", icon: "two-storey" },
+        { value: NEW_BUILD, label: "A new house", hint: "For example, on a plot of land", icon: "new-build" },
         { value: "not-sure", label: "Not sure yet", icon: "unsure" },
       ],
     },
@@ -33,6 +55,7 @@ export const extensionsFunnel: FunnelConfig = {
       title: "Where would it go?",
       summaryLabel: "Position",
       layout: "list",
+      showIf: (a) => !isNewBuild(a),
       options: [
         { value: "rear", label: "At the back" },
         { value: "side", label: "At the side" },
@@ -48,6 +71,7 @@ export const extensionsFunnel: FunnelConfig = {
       summaryLabel: "Use of space",
       max: 3,
       layout: "list",
+      showIf: (a) => !isNewBuild(a),
       options: [
         { value: "kitchen", label: "A bigger kitchen" },
         { value: "open-plan", label: "Open-plan living or dining" },
@@ -64,11 +88,39 @@ export const extensionsFunnel: FunnelConfig = {
       hint: "A rough idea is fine. A small kitchen extension might be around 3m × 4m.",
       summaryLabel: "Approximate size",
       layout: "list",
+      showIf: (a) => !isNewBuild(a),
       options: [
         { value: "small", label: "Small", hint: "Under about 15 m²" },
         { value: "medium", label: "Medium", hint: "About 15 to 30 m²" },
         { value: "large", label: "Large", hint: "Over about 30 m²" },
         { value: "not-sure", label: "Not sure" },
+      ],
+    },
+    {
+      id: "newBuildSize",
+      type: "single",
+      title: "How big a house are you thinking of?",
+      summaryLabel: "House size",
+      layout: "list",
+      showIf: isNewBuild,
+      options: [
+        { value: "1-2-bed", label: "1 or 2 bedrooms" },
+        { value: "3-bed", label: "3 bedrooms" },
+        { value: "4-plus-bed", label: "4 or more bedrooms" },
+        { value: "not-sure", label: "Not sure yet" },
+      ],
+    },
+    {
+      id: "plot",
+      type: "single",
+      title: "Do you have the plot?",
+      summaryLabel: "Plot",
+      layout: "list",
+      showIf: isNewBuild,
+      options: [
+        { value: "own-it", label: "Yes, I own it" },
+        { value: "buying", label: "I'm in the process of buying it" },
+        { value: "replacing", label: "I'd replace an existing house I own" },
       ],
     },
     {
@@ -85,10 +137,10 @@ export const extensionsFunnel: FunnelConfig = {
       ],
       goodToKnow: {
         when: (v) => v === "idea" || v === "not-sure",
-        text: "Many extensions can be built without a planning application, but not all, especially two-storey extensions and homes that are listed or in a conservation area. Most extensions also need Building Regulations approval. Your specialist can explain what applies to your home.",
+        text: "Many single-storey extensions can be built without a planning application, but two and three-storey extensions often need one, and a new house always does. Almost all extensions and every new house also need Building Regulations approval. Your specialist can explain what applies.",
       },
     },
-    propertyTypeQuestion,
+    homeTypeQuestion,
     listedQuestion,
     specialistCountQuestion,
     timescaleQuestion,

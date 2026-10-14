@@ -83,7 +83,7 @@ export default function AboutPage() {
           Where we work
         </h2>
         <p className="text-lg text-muted">
-          We&apos;re starting in {primaryRegion.name}, with windows, doors, conservatory roofs, extensions and roof replacement. We&apos;ll add more
+          We&apos;re starting in {primaryRegion.name}, with home improvements from windows and roofs to extensions, solar and insulation. We&apos;ll add more
           services and areas as we build our network.{" "}
           <Link href="/areas" className="text-blue">
             Areas we cover

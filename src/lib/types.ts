@@ -130,6 +130,34 @@ export interface Specialist {
   checks: VettingCheckResult[];
   /** ISO date the checks were last confirmed. */
   checksLastConfirmed: string;
+  /** Services for which they don't want discounted "in 3 to 6 months" leads. */
+  skipLaterLeadsFor?: string[];
+}
+
+/**
+ * One line in a specialist's prepaid account. Never edited or deleted: a
+ * correction is a new line. The balance is the sum of all lines.
+ * Amounts are in pence; money in is positive, a lead is negative.
+ */
+export interface LedgerEntry {
+  id: string;
+  supplierSlug: string;
+  createdAt: string;
+  kind: "topup" | "lead" | "refund" | "adjustment" | "forfeit";
+  amountPence: number;
+  enquiryId: string | null;
+  note: string;
+}
+
+/** A lead a specialist wasn't considered for because their balance was too low. */
+export interface MissedLead {
+  id: string;
+  supplierSlug: string;
+  enquiryId: string;
+  serviceSlug: string;
+  area: string;
+  pricePence: number;
+  createdAt: string;
 }
 
 /** A homeowner's request to be put in touch with a specialist. */
@@ -155,6 +183,8 @@ export interface Enquiry {
   customerNotifiedAt: string | null;
   /** When each specialist was sent the enquiry. Always after customerNotifiedAt. */
   specialistNotifications: { slug: string; notifiedAt: string }[];
+  /** Price per specialist for this lead, in pence. Demo specialists aren't charged. */
+  pricePence?: number;
 }
 
 /** Answers saved by someone who isn't ready yet. Deleted on request. */

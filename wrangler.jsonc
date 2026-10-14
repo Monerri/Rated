@@ -1,7 +1,8 @@
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "vetted-north",
-	"main": ".open-next/worker.js",
+	// worker.ts wraps the built site (.open-next/worker.js) and adds the weekly scheduled job.
+	"main": "worker.ts",
 	"compatibility_date": "2026-10-01",
 	"compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
 	"assets": {
@@ -32,6 +33,10 @@
 		}
 	],
 	// RESEND_API_KEY is a secret: set it in the Cloudflare dashboard, never here.
+	// Weekly reports to specialists and to us: Mondays at 07:05 UTC.
+	"triggers": {
+		"crons": ["5 7 * * 1"]
+	},
 	"observability": {
 		"enabled": true
 	}

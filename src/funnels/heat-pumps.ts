@@ -11,9 +11,34 @@ import {
 
 export const heatPumpsFunnel: FunnelConfig = {
   serviceSlug: "heat-pumps",
-  heading: "Heat Pumps",
+  heading: "Heat Pumps & Air Conditioning",
   researching: { questionId: "timescale", value: RESEARCHING },
+  // Some installers only fit air conditioning, some only heating heat pumps.
+  leadTypes: {
+    options: [
+      { value: "heat-pump", label: "Heat pumps for heating and hot water" },
+      { value: "air-con", label: "Air conditioning" },
+    ],
+    of: (a) => (a.system === "air-con" ? "air-con" : "heat-pump"),
+  },
   questions: [
+    {
+      id: "system",
+      type: "single",
+      title: "What are you looking for?",
+      summaryLabel: "Looking for",
+      options: [
+        { value: "heat-pump", label: "Heating and hot water", hint: "An air source heat pump", icon: "heat-pump" },
+        { value: "air-con", label: "Air conditioning", hint: "Cooling, and often heating too", icon: "air-con" },
+        { value: "not-sure", label: "Not sure yet", icon: "unsure" },
+      ],
+      goodToKnow: {
+        when: (v) => v !== "air-con",
+        text: "In England and Wales, the government's Boiler Upgrade Scheme can help with the cost of a heat pump. Your installer must be MCS certified and applies on your behalf. Check the current amounts and rules on GOV.UK before you commit.",
+      },
+    },
+    postcodeAreaQuestion,
+    fullPostcodeQuestion,
     {
       id: "currentHeating",
       type: "single",
@@ -27,16 +52,11 @@ export const heatPumpsFunnel: FunnelConfig = {
         { value: "other", label: "Something else" },
         { value: "not-sure", label: "Not sure" },
       ],
-      goodToKnow: {
-        when: () => true,
-        text: "In England and Wales, the government's Boiler Upgrade Scheme can help with the cost of a heat pump. Your installer must be MCS certified and applies on your behalf. Check the current amounts and rules on GOV.UK before you commit.",
-      },
     },
-    postcodeAreaQuestion,
-    fullPostcodeQuestion,
     {
       id: "insulation",
       type: "single",
+      showIf: (a) => a.system !== "air-con",
       title: "How well insulated is the property?",
       summaryLabel: "Insulation",
       layout: "list",

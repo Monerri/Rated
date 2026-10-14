@@ -49,8 +49,8 @@ export const services: Service[] = [
   },
   {
     slug: "heat-pumps",
-    name: "Heat Pumps",
-    summary: "Air source heat pumps for heating and hot water.",
+    name: "Heat Pumps & Air Conditioning",
+    summary: "Air source heat pumps for heating and hot water, and air conditioning.",
     icon: "heat-pump",
     status: "live",
     regions: ["north-east-england"],
@@ -88,7 +88,6 @@ services.push(
   comingSoon("architecture-planning", "Architects & Planning", "Drawings, planning applications and Building Regulations plans.", "architecture"),
   comingSoon("kitchens", "Kitchens", "New fitted kitchens, from design to installation.", "kitchen"),
   comingSoon("bathrooms", "Bathrooms", "New bathrooms, en suites and wet rooms.", "bathroom"),
-  comingSoon("air-conditioning", "Air Conditioning", "Air conditioning and air-to-air heat pumps for cooling and heating.", "air-con"),
   comingSoon("gardens-driveways", "Gardens, Driveways & Landscaping", "Driveways, patios, fencing and garden landscaping.", "garden"),
   comingSoon("flooring", "Flooring", "Wood, laminate, vinyl, tiles and carpets, supplied and fitted.", "flooring"),
   comingSoon("plumbing", "Plumbing", "Plumbing repairs and installations around the home.", "plumbing"),

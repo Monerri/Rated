@@ -8,6 +8,8 @@
  * - shared: the homeowner asked to hear from two or three specialists
  * - exclusive: the homeowner asked to hear from one specialist only
  *
+ * "heat-pumps" covers heat pumps and air conditioning (one category in the sheet).
+ *
  * A kind of job can have its own price with a "service/kind" key, for
  * example "extensions/new-build". Without one, the service's price applies.
  */
@@ -16,12 +18,12 @@ type Prices = Record<string, { shared: number; exclusive: number }>;
 /** North East England and the rest of the UK. */
 const basePrices: Prices = {
   extensions: { exclusive: 10000, shared: 5000 },
+  "extensions/new-build": { exclusive: 20000, shared: 10000 },
   "loft-conversions": { exclusive: 10000, shared: 5000 },
   "architecture-planning": { exclusive: 10000, shared: 5000 },
   "conservatory-roofs": { exclusive: 6000, shared: 3000 },
-  "solar-battery": { exclusive: 7000, shared: 3000 },
+  "solar-battery": { exclusive: 7000, shared: 3500 },
   "heat-pumps": { exclusive: 6000, shared: 3000 },
-  "air-conditioning": { exclusive: 6000, shared: 3000 },
   bathrooms: { exclusive: 6000, shared: 3000 },
   kitchens: { exclusive: 6000, shared: 3000 },
   roofing: { exclusive: 6000, shared: 3000 },
@@ -38,12 +40,12 @@ const basePrices: Prices = {
 /** London and the South East, used once that region is added. */
 const londonSouthEastPrices: Prices = {
   extensions: { exclusive: 12000, shared: 6000 },
+  "extensions/new-build": { exclusive: 24000, shared: 12000 },
   "loft-conversions": { exclusive: 12000, shared: 6000 },
   "architecture-planning": { exclusive: 12000, shared: 6000 },
   "conservatory-roofs": { exclusive: 9000, shared: 4500 },
   "solar-battery": { exclusive: 9000, shared: 4500 },
   "heat-pumps": { exclusive: 8000, shared: 4000 },
-  "air-conditioning": { exclusive: 8000, shared: 4000 },
   bathrooms: { exclusive: 9000, shared: 4500 },
   kitchens: { exclusive: 9000, shared: 4500 },
   roofing: { exclusive: 9000, shared: 4500 },

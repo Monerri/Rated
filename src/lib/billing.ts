@@ -104,9 +104,17 @@ export function priceListFor(servicesOffered: string[], leadTypes: Record<string
   for (const slug of servicesOffered) {
     const name = getService(slug)?.name ?? slug;
     const kinds = getFunnel(slug)?.leadTypes?.options.filter((o) => leadTypes[slug]?.includes(o.value));
-    const samePrice = kinds?.every((k) => pricesFor(slug, k.value) === pricesFor(slug, null));
-    if (kinds?.length && !samePrice) for (const k of kinds) lines.push(line(`${name}: ${k.label}`, pricesFor(slug, k.value)));
-    else lines.push(line(kinds?.length ? `${name} (${kinds.map((k) => k.label.toLowerCase()).join(", ")})` : name, pricesFor(slug, null)));
+    if (!kinds?.length) {
+      lines.push(line(name, pricesFor(slug, null)));
+      continue;
+    }
+    // Kinds of job that share a price are listed together.
+    const groups = new Map<ReturnType<typeof pricesFor>, string[]>();
+    for (const k of kinds) groups.set(pricesFor(slug, k.value), [...(groups.get(pricesFor(slug, k.value)) ?? []), k.label]);
+    for (const [prices, labels] of groups) {
+      const list = labels.join(", ").replace(/, ([^,]*)$/, " and $1");
+      lines.push(line(`${name}: ${list.charAt(0).toUpperCase()}${list.slice(1).toLowerCase()}`, prices));
+    }
   }
   return `${lines.join("\n\n")}
 

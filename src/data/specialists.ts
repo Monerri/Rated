@@ -71,9 +71,9 @@ export const specialists: Specialist[] = [
   demo("example-homes", "Example Homes Ltd", ["extensions"], ["NE", "DH", "SR", "DL"], 4.7, 41, "00000011", null, "A small housebuilder for self-build and replacement homes.", { leadTypes: { extensions: ["new-build"] } }),
   // Solar and battery
   demo("example-solar", "Example Solar Ltd", ["solar-battery", "ev-charging"], ALL_NE, 4.8, 156, "00000012", "Example microgeneration scheme", "Solar panels, home batteries and charge points."),
-  demo("sample-renewables", "Sample Renewables Ltd", ["solar-battery", "heat-pumps"], ["NE", "DH", "SR", "TS"], 4.6, 89, "00000013", "Example microgeneration scheme", "Solar, battery and heat pump installer."),
-  // Heat pumps
-  demo("demo-heat-pumps", "Demo Heat Pumps Ltd", ["heat-pumps"], ALL_NE, 4.7, 64, "00000014", "Example microgeneration scheme", "Air source heat pump specialists."),
+  demo("sample-renewables", "Sample Renewables Ltd", ["solar-battery", "heat-pumps"], ["NE", "DH", "SR", "TS"], 4.6, 89, "00000013", "Example microgeneration scheme", "Solar, battery and heat pump installer.", { leadTypes: { "heat-pumps": ["heat-pump"] } }),
+  // Heat pumps and air conditioning
+  demo("demo-heat-pumps", "Demo Heat Pumps Ltd", ["heat-pumps"], ALL_NE, 4.7, 64, "00000014", "Example microgeneration scheme", "Heat pump and air conditioning specialists."),
   // EV charging
   demo("illustrative-charging", "Illustrative Charging Co Ltd", ["ev-charging"], ["NE", "DH", "SR", "DL", "TS"], 4.5, 112, "00000015", "Example electrical scheme", "Home and workplace charge points."),
   // Insulation

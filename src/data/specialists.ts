@@ -36,6 +36,7 @@ function demo(
   companyNo: string,
   scheme: string | null,
   about: string,
+  extra: Partial<Specialist> = {},
 ): Specialist {
   return {
     slug,
@@ -49,6 +50,7 @@ function demo(
     googleReviewCount: reviews,
     checks: checks(companyNo, rating, reviews, scheme),
     checksLastConfirmed: CONFIRMED,
+    ...extra,
   };
 }
 
@@ -59,13 +61,24 @@ export const specialists: Specialist[] = [
   demo("demo-windows-conservatories", "Demo Windows & Conservatories Ltd", ["windows-doors", "conservatory-roofs"], ALL_NE, 4.5, 96, "00000003", "Example scheme", "A regional installer of windows, doors and conservatory roofs."),
   demo("illustrative-glazing", "Illustrative Glazing Co Ltd", ["windows-doors"], ["NE", "SR", "DL", "TS"], 4.8, 61, "00000004", "Example scheme", "A small specialist in replacement windows and composite doors."),
   // Extensions
-  demo("example-extensions", "Example Extensions Ltd", ["extensions"], ALL_NE, 4.6, 87, "00000005", null, "A builder specialising in single and two-storey extensions."),
-  demo("sample-build-extend", "Sample Build & Extend Ltd", ["extensions"], ["NE", "DH", "SR", "TS"], 4.7, 133, "00000006", null, "A design-and-build extension company."),
-  demo("demo-builders", "Demo Builders Ltd", ["extensions"], ["NE", "DL", "TS"], 4.4, 52, "00000007", null, "A general builder with an in-house extensions team."),
+  demo("example-extensions", "Example Extensions Ltd", ["extensions"], ALL_NE, 4.6, 87, "00000005", null, "A builder specialising in extensions of every size, and new-build houses.", { leadTypes: { extensions: ["single-storey", "multi-storey", "new-build"] } }),
+  demo("sample-build-extend", "Sample Build & Extend Ltd", ["extensions"], ["NE", "DH", "SR", "TS"], 4.7, 133, "00000006", null, "A design-and-build extension company.", { leadTypes: { extensions: ["single-storey", "multi-storey"] } }),
+  demo("demo-builders", "Demo Builders Ltd", ["extensions"], ["NE", "DL", "TS"], 4.4, 52, "00000007", null, "A general builder with an in-house extensions team.", { leadTypes: { extensions: ["single-storey"] } }),
   // Roofing
   demo("example-roofing", "Example Roofing Ltd", ["roofing"], ALL_NE, 4.8, 174, "00000008", "Example roofing scheme", "Pitched and flat roof replacement and repairs."),
   demo("demo-roofline", "Demo Roofline Ltd", ["roofing"], ["NE", "DH", "DL", "TS"], 4.5, 79, "00000009", "Example roofing scheme", "Re-roofing, fascias, soffits and guttering."),
   demo("sample-slate-tile", "Sample Slate & Tile Ltd", ["roofing"], ["NE", "SR", "TS", "TD15"], 4.6, 58, "00000010", "Example roofing scheme", "Slate and tile roofing, including period homes."),
+  demo("example-homes", "Example Homes Ltd", ["extensions"], ["NE", "DH", "SR", "DL"], 4.7, 41, "00000011", null, "A small housebuilder for self-build and replacement homes.", { leadTypes: { extensions: ["new-build"] } }),
+  // Solar and battery
+  demo("example-solar", "Example Solar Ltd", ["solar-battery", "ev-charging"], ALL_NE, 4.8, 156, "00000012", "Example microgeneration scheme", "Solar panels, home batteries and charge points."),
+  demo("sample-renewables", "Sample Renewables Ltd", ["solar-battery", "heat-pumps"], ["NE", "DH", "SR", "TS"], 4.6, 89, "00000013", "Example microgeneration scheme", "Solar, battery and heat pump installer."),
+  // Heat pumps
+  demo("demo-heat-pumps", "Demo Heat Pumps Ltd", ["heat-pumps"], ALL_NE, 4.7, 64, "00000014", "Example microgeneration scheme", "Air source heat pump specialists."),
+  // EV charging
+  demo("illustrative-charging", "Illustrative Charging Co Ltd", ["ev-charging"], ["NE", "DH", "SR", "DL", "TS"], 4.5, 112, "00000015", "Example electrical scheme", "Home and workplace charge points."),
+  // Insulation
+  demo("example-insulation", "Example Insulation Ltd", ["insulation"], ALL_NE, 4.6, 203, "00000016", "Example insulation scheme", "Loft, cavity wall and underfloor insulation."),
+  demo("sample-warm-homes", "Sample Warm Homes Ltd", ["insulation"], ["NE", "DH", "TS", "DL"], 4.5, 77, "00000017", "Example insulation scheme", "Internal and external wall insulation."),
 ];
 
 /** Shown on the homepage hero as an example of the evidence we display. */

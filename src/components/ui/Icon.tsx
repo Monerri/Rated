@@ -99,6 +99,13 @@ const paths: Record<IconName, React.ReactNode> = {
       <path d="M1.5 27h29" />
     </>
   ),
+  "new-build": (
+    <>
+      <path d="M5 16 16 7l11 9" />
+      <path d="M8 13.5V26h16V13.5M14 26v-6h4v6" />
+      <path d="M2 28h28M4 28l2-2M9 28l2-2M21 28l2-2M26 28l2-2" />
+    </>
+  ),
   "solar-battery": (
     <>
       <path d="M2.5 17 7 7h11l-4.5 10z" />

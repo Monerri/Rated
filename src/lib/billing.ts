@@ -1,4 +1,6 @@
-import { defaultLeadPrice, LATER_TIMESCALE, laterLeadDiscountPercent, leadPrices } from "@/config/pricing";
+import { defaultLeadPrice, LATER_TIMESCALE, laterLeadDiscountPercent, leadPrices, pricesConfirmed } from "@/config/pricing";
+import { getService } from "@/config/services";
+import { getFunnel } from "@/funnels";
 import { recordStore } from "@/lib/records";
 import type { Answers } from "@/funnels/types";
 import type { LedgerEntry, Specialist } from "@/lib/types";
@@ -13,16 +15,21 @@ export function isLaterLead(answers: Answers): boolean {
   return answers.timescale === LATER_TIMESCALE;
 }
 
+/** The prices for a service, or for one kind of job within it if it has its own (for example "extensions/new-build"). */
+export function pricesFor(serviceSlug: string, leadType: string | null) {
+  return (leadType ? leadPrices[`${serviceSlug}/${leadType}`] : undefined) ?? leadPrices[serviceSlug] ?? defaultLeadPrice;
+}
+
 /** Price per specialist, in pence. Exclusive when the homeowner asked for one specialist only. */
-export function leadPrice(serviceSlug: string, requested: number, later: boolean): number {
-  const prices = leadPrices[serviceSlug] ?? defaultLeadPrice;
+export function leadPrice(serviceSlug: string, leadType: string | null, requested: number, later: boolean): number {
+  const prices = pricesFor(serviceSlug, leadType);
   const base = requested === 1 ? prices.exclusive : prices.shared;
   return later ? Math.round((base * (100 - laterLeadDiscountPercent)) / 100) : base;
 }
 
 /** The cheapest lead for a service, used to check coverage before the price is known. */
-export function cheapestLeadPrice(serviceSlug: string): number {
-  return leadPrice(serviceSlug, 2, true);
+export function cheapestLeadPrice(serviceSlug: string, leadType: string | null): number {
+  return leadPrice(serviceSlug, leadType, 2, true);
 }
 
 export function formatPence(pence: number): string {
@@ -65,4 +72,25 @@ export async function addCredit(
 /** Whether a specialist can currently afford a lead at this price. */
 export function canAfford(s: Specialist, balances: Record<string, number>, pricePence: number): boolean {
   return s.isDemo || (balances[s.slug] ?? 0) >= pricePence;
+}
+
+/**
+ * The price list for the work a business does, and nothing else, so an
+ * applicant only sees the fees for their own field. Null until prices are
+ * confirmed in config/pricing.ts.
+ */
+export function priceListFor(servicesOffered: string[], leadTypes: Record<string, string[]> = {}): string | null {
+  if (!pricesConfirmed || servicesOffered.length === 0) return null;
+  const line = (label: string, p: { shared: number; exclusive: number }) =>
+    `  ${label}\n    Shared with up to two other specialists: ${formatPence(p.shared)}\n    Exclusive (the homeowner chose only you): ${formatPence(p.exclusive)}`;
+  const lines: string[] = [];
+  for (const slug of servicesOffered) {
+    const name = getService(slug)?.name ?? slug;
+    const kinds = getFunnel(slug)?.leadTypes?.options.filter((o) => leadTypes[slug]?.includes(o.value));
+    if (kinds?.length) for (const k of kinds) lines.push(line(`${name}: ${k.label}`, pricesFor(slug, k.value)));
+    else lines.push(line(name, pricesFor(slug, null)));
+  }
+  return `${lines.join("\n\n")}
+
+Prices exclude VAT where VAT applies. Introductions for work the homeowner plans in 3 to 6 months are ${laterLeadDiscountPercent}% less, and you can choose not to receive them.`;
 }

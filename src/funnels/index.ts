@@ -4,6 +4,10 @@ import { windowsDoorsFunnel } from "@/funnels/windows-doors";
 import { conservatoryRoofsFunnel } from "@/funnels/conservatory-roofs";
 import { extensionsFunnel } from "@/funnels/extensions";
 import { roofingFunnel } from "@/funnels/roofing";
+import { solarBatteryFunnel } from "@/funnels/solar-battery";
+import { heatPumpsFunnel } from "@/funnels/heat-pumps";
+import { evChargingFunnel } from "@/funnels/ev-charging";
+import { insulationFunnel } from "@/funnels/insulation";
 
 /**
  * Adds the questions every questionnaire must ask (do you own the property,
@@ -20,7 +24,16 @@ function withStandardQuestions(config: FunnelConfig): FunnelConfig {
  * Adding a service is a new config file plus one line below.
  */
 const funnels: Record<string, FunnelConfig> = Object.fromEntries(
-  [windowsDoorsFunnel, conservatoryRoofsFunnel, extensionsFunnel, roofingFunnel].map((f) => [
+  [
+    windowsDoorsFunnel,
+    conservatoryRoofsFunnel,
+    extensionsFunnel,
+    roofingFunnel,
+    solarBatteryFunnel,
+    heatPumpsFunnel,
+    evChargingFunnel,
+    insulationFunnel,
+  ].map((f) => [
     f.serviceSlug,
     withStandardQuestions(f),
   ]),

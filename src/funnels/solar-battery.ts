@@ -1,0 +1,80 @@
+import type { FunnelConfig } from "@/funnels/types";
+import {
+  fullPostcodeQuestion,
+  listedQuestion,
+  postcodeAreaQuestion,
+  propertyTypeQuestion,
+  RESEARCHING,
+  specialistCountQuestion,
+  timescaleQuestion,
+} from "@/funnels/shared";
+
+export const solarBatteryFunnel: FunnelConfig = {
+  serviceSlug: "solar-battery",
+  heading: "Solar & Battery",
+  researching: { questionId: "timescale", value: RESEARCHING },
+  questions: [
+    {
+      id: "system",
+      type: "single",
+      title: "What are you interested in?",
+      summaryLabel: "Looking for",
+      layout: "list",
+      options: [
+        { value: "solar-battery", label: "Solar panels and a battery" },
+        { value: "solar", label: "Solar panels only" },
+        { value: "battery", label: "A battery for panels I already have" },
+        { value: "not-sure", label: "Not sure yet" },
+      ],
+    },
+    postcodeAreaQuestion,
+    fullPostcodeQuestion,
+    {
+      id: "roofDirection",
+      type: "single",
+      title: "Which way does the main part of your roof face?",
+      hint: "A rough idea is fine. South-facing roofs usually generate the most.",
+      summaryLabel: "Roof faces",
+      layout: "list",
+      showIf: (a) => a.system !== "battery",
+      options: [
+        { value: "south", label: "South, or roughly south" },
+        { value: "east-west", label: "East or west" },
+        { value: "north", label: "North" },
+        { value: "not-sure", label: "Not sure" },
+      ],
+    },
+    {
+      id: "shade",
+      type: "single",
+      title: "Is the roof shaded for much of the day?",
+      hint: "For example, by trees, chimneys or taller buildings.",
+      summaryLabel: "Shading",
+      showIf: (a) => a.system !== "battery",
+      options: [
+        { value: "no", label: "No" },
+        { value: "some", label: "Partly" },
+        { value: "yes", label: "Yes" },
+        { value: "not-sure", label: "Not sure" },
+      ],
+    },
+    {
+      id: "bill",
+      type: "single",
+      title: "Roughly how much is your electricity bill each month?",
+      hint: "This helps the specialist suggest the right size of system.",
+      summaryLabel: "Monthly electricity bill",
+      layout: "list",
+      options: [
+        { value: "under-75", label: "Under £75" },
+        { value: "75-150", label: "£75 to £150" },
+        { value: "over-150", label: "Over £150" },
+        { value: "not-sure", label: "Not sure" },
+      ],
+    },
+    propertyTypeQuestion,
+    listedQuestion,
+    specialistCountQuestion,
+    timescaleQuestion,
+  ],
+};

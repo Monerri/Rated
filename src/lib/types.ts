@@ -20,6 +20,7 @@ export type IconName =
   | "roof"
   | "single-storey"
   | "two-storey"
+  | "new-build"
   | "solar-battery"
   | "heat-pump"
   | "ev-charging"
@@ -132,6 +133,8 @@ export interface Specialist {
   checksLastConfirmed: string;
   /** Services for which they don't want discounted "in 3 to 6 months" leads. */
   skipLaterLeadsFor?: string[];
+  /** Per service, the kinds of job they take (see FunnelConfig.leadTypes). Missing means all. */
+  leadTypes?: Record<string, string[]>;
 }
 
 /**
@@ -216,7 +219,14 @@ export interface SupplierApplication {
   email: string;
   phone: string;
   website: string | null;
+  /** The first service they chose, kept for older records. */
   mainService: string;
+  /** Every service they offer, by slug. */
+  servicesOffered?: string[];
+  /** Per service, the kinds of job they take (for example extension sizes). */
+  leadTypes?: Record<string, string[]>;
+  /** Anything they do that isn't one of our services. */
+  otherServices?: string | null;
   areasCovered: string[];
   otherAreas: string | null;
   companiesHouseNumber: string;

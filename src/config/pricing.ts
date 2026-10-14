@@ -14,6 +14,12 @@ export const leadPrices: Record<string, { shared: number; exclusive: number }> =
   roofing: { shared: 2500, exclusive: 4000 },
 };
 
+/**
+ * Whether the prices above are final. While false, applicants are told we'll
+ * send prices when we review their application, instead of being shown them.
+ */
+export const pricesConfirmed = false;
+
 /** Used for any service not listed above. */
 export const defaultLeadPrice = { shared: 2000, exclusive: 3500 };
 

@@ -1,4 +1,11 @@
-import { defaultLeadPrice, LATER_TIMESCALE, laterLeadDiscountPercent, leadPrices, pricesConfirmed } from "@/config/pricing";
+import {
+  defaultLeadPrice,
+  LATER_TIMESCALE,
+  laterLeadDiscountPercent,
+  leadPrices,
+  pricesConfirmed,
+  regionalLeadPrices,
+} from "@/config/pricing";
 import { getService } from "@/config/services";
 import { getFunnel } from "@/funnels";
 import { recordStore } from "@/lib/records";
@@ -16,13 +23,20 @@ export function isLaterLead(answers: Answers): boolean {
 }
 
 /** The prices for a service, or for one kind of job within it if it has its own (for example "extensions/new-build"). */
-export function pricesFor(serviceSlug: string, leadType: string | null) {
-  return (leadType ? leadPrices[`${serviceSlug}/${leadType}`] : undefined) ?? leadPrices[serviceSlug] ?? defaultLeadPrice;
+export function pricesFor(serviceSlug: string, leadType: string | null, regionSlug: string | null = null) {
+  const table = (regionSlug && regionalLeadPrices[regionSlug]) || leadPrices;
+  return (leadType ? table[`${serviceSlug}/${leadType}`] : undefined) ?? table[serviceSlug] ?? defaultLeadPrice;
 }
 
 /** Price per specialist, in pence. Exclusive when the homeowner asked for one specialist only. */
-export function leadPrice(serviceSlug: string, leadType: string | null, requested: number, later: boolean): number {
-  const prices = pricesFor(serviceSlug, leadType);
+export function leadPrice(
+  serviceSlug: string,
+  leadType: string | null,
+  requested: number,
+  later: boolean,
+  regionSlug: string | null = null,
+): number {
+  const prices = pricesFor(serviceSlug, leadType, regionSlug);
   const base = requested === 1 ? prices.exclusive : prices.shared;
   return later ? Math.round((base * (100 - laterLeadDiscountPercent)) / 100) : base;
 }
@@ -81,16 +95,20 @@ export function canAfford(s: Specialist, balances: Record<string, number>, price
  */
 export function priceListFor(servicesOffered: string[], leadTypes: Record<string, string[]> = {}): string | null {
   if (!pricesConfirmed || servicesOffered.length === 0) return null;
+  const later = (pence: number) => formatPence(Math.round((pence * (100 - laterLeadDiscountPercent)) / 100));
   const line = (label: string, p: { shared: number; exclusive: number }) =>
-    `  ${label}\n    Shared with up to two other specialists: ${formatPence(p.shared)}\n    Exclusive (the homeowner chose only you): ${formatPence(p.exclusive)}`;
+    `  ${label}
+    Exclusive (the homeowner chose only you): ${formatPence(p.exclusive)}, or ${later(p.exclusive)} if the work is 3 to 6 months away
+    Shared with up to two other specialists: ${formatPence(p.shared)}, or ${later(p.shared)} if the work is 3 to 6 months away`;
   const lines: string[] = [];
   for (const slug of servicesOffered) {
     const name = getService(slug)?.name ?? slug;
     const kinds = getFunnel(slug)?.leadTypes?.options.filter((o) => leadTypes[slug]?.includes(o.value));
-    if (kinds?.length) for (const k of kinds) lines.push(line(`${name}: ${k.label}`, pricesFor(slug, k.value)));
-    else lines.push(line(name, pricesFor(slug, null)));
+    const samePrice = kinds?.every((k) => pricesFor(slug, k.value) === pricesFor(slug, null));
+    if (kinds?.length && !samePrice) for (const k of kinds) lines.push(line(`${name}: ${k.label}`, pricesFor(slug, k.value)));
+    else lines.push(line(kinds?.length ? `${name} (${kinds.map((k) => k.label.toLowerCase()).join(", ")})` : name, pricesFor(slug, null)));
   }
   return `${lines.join("\n\n")}
 
-Prices exclude VAT where VAT applies. Introductions for work the homeowner plans in 3 to 6 months are ${laterLeadDiscountPercent}% less, and you can choose not to receive them.`;
+Prices are for North East England and exclude VAT where VAT applies. You can choose not to receive introductions for work that's 3 to 6 months away.`;
 }

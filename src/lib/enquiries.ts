@@ -78,7 +78,7 @@ export async function submitEnquiry(input: SubmitInput): Promise<SubmitResult> {
   const enquiryId = crypto.randomUUID();
   const later = isLaterLead(answers);
   const leadType = funnel.leadTypes?.of(answers) ?? null;
-  const pricePence = leadPrice(service.slug, leadType, requested, later);
+  const pricePence = leadPrice(service.slug, leadType, requested, later, regionSlug);
   const area = postcodeArea(postcode);
   const { chosen: specialists, underfunded } = await allocateLead({
     serviceSlug: service.slug,

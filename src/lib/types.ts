@@ -198,6 +198,34 @@ export interface Enquiry {
   specialistNotifications: { slug: string; notifiedAt: string }[];
   /** Price per specialist for this lead, in pence. Demo specialists aren't charged. */
   pricePence?: number;
+  /** When we emailed the homeowner to ask how it went (once, about two weeks later). */
+  feedbackRequestedAt?: string | null;
+}
+
+/** What a homeowner told us about one specialist we introduced. */
+export interface SpecialistFeedback {
+  contacted: "yes" | "no" | "not-yet";
+  /** 1 to 5, or null if they didn't rate. */
+  rating: number | null;
+  comment: string | null;
+  /** Permission to quote the comment, with the exact wording agreed to. */
+  publishConsent: { wordingId: string; wording: string; givenAt: string } | null;
+}
+
+/** One feedback request, sent once per enquiry. Responses are added when the homeowner answers. */
+export interface FeedbackRequest {
+  kind: "feedback";
+  /** Unguessable token used in the feedback link. */
+  token: string;
+  enquiryId: string;
+  serviceSlug: string;
+  firstName: string;
+  /** Postcode area only, for attributing a published comment ("Sam, NE"). */
+  area: string;
+  specialistSlugs: string[];
+  createdAt: string;
+  respondedAt: string | null;
+  responses: Record<string, SpecialistFeedback>;
 }
 
 /** Answers saved by someone who isn't ready yet. Deleted on request. */

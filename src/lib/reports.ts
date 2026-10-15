@@ -5,7 +5,22 @@ import { formatPence } from "@/lib/billing";
 import { bindings } from "@/lib/cloudflare";
 import { recordStore } from "@/lib/records";
 import { trySend, type Email } from "@/lib/notifications";
-import type { LedgerEntry, MissedLead, Specialist } from "@/lib/types";
+import { summariseFeedback } from "@/lib/feedback";
+import type { Enquiry, LedgerEntry, MissedLead, Specialist } from "@/lib/types";
+
+/** Where an enquiry came from, for measuring adverts: the campaign tags if any, else the referring site. */
+export function sourceLabel(e: Pick<Enquiry, "source">): string {
+  const { utm, referrer } = e.source;
+  if (utm.source) return [utm.source, utm.medium, utm.campaign].filter(Boolean).join(" / ");
+  if (referrer) {
+    try {
+      return new URL(referrer).hostname.replace(/^www\./, "");
+    } catch {
+      return "other";
+    }
+  }
+  return "direct or unknown";
+}
 
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -60,10 +75,13 @@ export async function sendWeeklyReports(now = new Date()): Promise<{ suppliers: 
   const since = new Date(now.getTime() - 7 * DAY).toISOString();
   const from = dateOnly(since);
   const to = dateOnly(now.toISOString());
-  const [entries, missed, balances] = await Promise.all([
+  const [entries, missed, balances, enquiries, feedback] = await Promise.all([
     recordStore.listLedger(since, 10_000),
     recordStore.listMissedLeads(since),
     recordStore.getBalances(),
+    recordStore.listEnquiries(since, now.toISOString()),
+    // Requests go out up to three weeks before they're answered, so look back further and filter by answer date.
+    recordStore.listFeedback(new Date(now.getTime() - 37 * DAY).toISOString()),
   ]);
 
   let sent = 0;
@@ -94,8 +112,44 @@ Money held as specialists' credit: ${formatPence(Object.values(balances).reduce(
 By specialist
 ${rows.join("\n")}
 
+Where enquiries came from (for judging adverts)
+${bySource(enquiries, entries)}
+
+Homeowner feedback this week
+${feedbackLines(feedback.filter((f) => f.respondedAt && f.respondedAt >= since))}
+
 Reports sent to ${sent} specialist${sent === 1 ? "" : "s"}.
 `,
   });
   return { suppliers: sent };
+}
+
+/** Enquiries and money charged for them, grouped by where the homeowner came from. */
+function bySource(enquiries: Enquiry[], entries: LedgerEntry[]): string {
+  if (enquiries.length === 0) return "  No enquiries this week.";
+  const charged = new Map<string, number>();
+  for (const e of entries) if (e.kind === "lead" && e.enquiryId) charged.set(e.enquiryId, (charged.get(e.enquiryId) ?? 0) - e.amountPence);
+  const groups = new Map<string, { count: number; pence: number }>();
+  for (const e of enquiries) {
+    const g = groups.get(sourceLabel(e)) ?? { count: 0, pence: 0 };
+    g.count++;
+    g.pence += charged.get(e.id) ?? 0;
+    groups.set(sourceLabel(e), g);
+  }
+  return [...groups.entries()]
+    .sort((a, b) => b[1].count - a[1].count)
+    .map(([label, g]) => `  ${label}: ${g.count} enquir${g.count === 1 ? "y" : "ies"}, ${formatPence(g.pence)} charged`)
+    .join("\n");
+}
+
+function feedbackLines(records: Parameters<typeof summariseFeedback>[0]): string {
+  const summary = Object.entries(summariseFeedback(records));
+  if (summary.length === 0) return "  None this week.";
+  return summary
+    .map(([slug, s]) => {
+      const name = specialists.find((x) => x.slug === slug)?.name ?? slug;
+      const avg = s.ratings.length ? (s.ratings.reduce((t, n) => t + n, 0) / s.ratings.length).toFixed(1) : "no ratings";
+      return `  ${name}: ${s.responses} answer${s.responses === 1 ? "" : "s"}, average ${avg}${s.notContacted ? `, ${s.notContacted} never contacted` : ""}`;
+    })
+    .join("\n");
 }

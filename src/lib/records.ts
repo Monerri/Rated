@@ -2,6 +2,7 @@ import { bindings, type D1 } from "@/lib/cloudflare";
 import { SAVED_PROGRESS_MONTHS } from "@/lib/consent";
 import type {
   Enquiry,
+  FeedbackRequest,
   InterestRegistration,
   LedgerEntry,
   MissedLead,
@@ -26,7 +27,17 @@ export interface RecordStore {
   ): Promise<void>;
 
   saveEnquiry(record: Enquiry): Promise<void>;
-  updateEnquiry(id: string, patch: Partial<Pick<Enquiry, "customerNotifiedAt" | "specialistNotifications">>): Promise<void>;
+  updateEnquiry(
+    id: string,
+    patch: Partial<Pick<Enquiry, "customerNotifiedAt" | "specialistNotifications" | "feedbackRequestedAt">>,
+  ): Promise<void>;
+  /** Enquiries created between two dates (ISO), oldest first. */
+  listEnquiries(from: string, to: string): Promise<Enquiry[]>;
+
+  saveFeedback(record: FeedbackRequest): Promise<void>;
+  getFeedback(token: string): Promise<FeedbackRequest | null>;
+  /** Feedback requests created since a date, newest first. */
+  listFeedback(since: string): Promise<FeedbackRequest[]>;
 
   saveProgress(record: SavedProgress): Promise<void>;
   getProgress(token: string): Promise<SavedProgress | null>;
@@ -66,6 +77,7 @@ interface Memory {
   suppliers: Map<string, SupplierApplication>;
   ledger: LedgerEntry[];
   missed: MissedLead[];
+  feedback: Map<string, FeedbackRequest>;
 }
 
 const g = globalThis as typeof globalThis & { __vnMemory?: Memory };
@@ -77,6 +89,7 @@ const memory: Memory = (g.__vnMemory ??= {
   suppliers: new Map(),
   ledger: [],
   missed: [],
+  feedback: new Map(),
 });
 
 function log(label: string, record: object) {
@@ -109,6 +122,18 @@ const prototypeStore: RecordStore = {
   async saveEnquiry(record) {
     memory.enquiries.set(record.id, record);
     log("enquiry", record);
+  },
+  async listEnquiries(from, to) {
+    return [...memory.enquiries.values()].filter((e) => e.createdAt >= from && e.createdAt < to);
+  },
+  async saveFeedback(record) {
+    memory.feedback.set(record.token, record);
+  },
+  async getFeedback(token) {
+    return memory.feedback.get(token) ?? null;
+  },
+  async listFeedback(since) {
+    return [...memory.feedback.values()].filter((f) => f.createdAt >= since).reverse();
   },
   async updateEnquiry(id, patch) {
     const e = memory.enquiries.get(id);
@@ -185,6 +210,7 @@ const SCHEMA = [
   // A specialist can only ever be charged once for the same enquiry.
   "CREATE UNIQUE INDEX IF NOT EXISTS ledger_one_charge_per_lead ON ledger (enquiry_id, supplier_slug) WHERE kind = 'lead'",
   "CREATE TABLE IF NOT EXISTS missed_leads (id TEXT PRIMARY KEY, supplier_slug TEXT NOT NULL, created_at TEXT NOT NULL, data TEXT NOT NULL)",
+  "CREATE TABLE IF NOT EXISTS feedback (token TEXT PRIMARY KEY, enquiry_id TEXT NOT NULL UNIQUE, created_at TEXT NOT NULL, data TEXT NOT NULL)",
 ];
 
 /**
@@ -197,6 +223,7 @@ const RETENTION = [
   `DELETE FROM saved_progress WHERE created_at < strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-${SAVED_PROGRESS_MONTHS} months')`,
   "DELETE FROM enquiries WHERE created_at < strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-24 months')",
   "DELETE FROM interest_registrations WHERE created_at < strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-24 months')",
+  "DELETE FROM feedback WHERE created_at < strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-24 months')",
   "DELETE FROM missed_leads WHERE created_at < strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-24 months')",
   // The ledger is a financial record and is kept: it holds no homeowner details, only enquiry ids.
 ];
@@ -283,6 +310,27 @@ function d1Queries(db: D1): RecordStore {
         .run();
     },
     updateEnquiry: (id, patch) => patchJson<Enquiry>("enquiries", "id", id, patch),
+    async listEnquiries(from, to) {
+      const { results } = await db
+        .prepare("SELECT data FROM enquiries WHERE created_at >= ? AND created_at < ? ORDER BY created_at")
+        .bind(from, to)
+        .all<{ data: string }>();
+      return results.map((row) => JSON.parse(row.data) as Enquiry);
+    },
+    async saveFeedback(f) {
+      await db
+        .prepare("INSERT OR REPLACE INTO feedback (token, enquiry_id, created_at, data) VALUES (?, ?, ?, ?)")
+        .bind(f.token, f.enquiryId, f.createdAt, JSON.stringify(f))
+        .run();
+    },
+    getFeedback: (token) => one<FeedbackRequest>("SELECT data FROM feedback WHERE token = ?", token),
+    async listFeedback(since) {
+      const { results } = await db
+        .prepare("SELECT data FROM feedback WHERE created_at >= ? ORDER BY created_at DESC")
+        .bind(since)
+        .all<{ data: string }>();
+      return results.map((row) => JSON.parse(row.data) as FeedbackRequest);
+    },
 
     async saveProgress(p) {
       await db
@@ -395,6 +443,10 @@ export const recordStore: RecordStore = {
   updateInterestRegistration: (t, p) => currentStore().updateInterestRegistration(t, p),
   saveEnquiry: (e) => currentStore().saveEnquiry(e),
   updateEnquiry: (id, p) => currentStore().updateEnquiry(id, p),
+  listEnquiries: (from, to) => currentStore().listEnquiries(from, to),
+  saveFeedback: (f) => currentStore().saveFeedback(f),
+  getFeedback: (t) => currentStore().getFeedback(t),
+  listFeedback: (since) => currentStore().listFeedback(since),
   saveProgress: (p) => currentStore().saveProgress(p),
   getProgress: (t) => currentStore().getProgress(t),
   deleteProgress: (t) => currentStore().deleteProgress(t),

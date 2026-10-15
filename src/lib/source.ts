@@ -21,6 +21,10 @@ export function getSourceInfo(): SourceInfo {
     const v = params.get(`utm_${k}`);
     if (v) utm[k] = v.slice(0, 200);
   }
+  // Ads and shared posts add a click id even when the link has no campaign tags.
+  // We only note which platform it came from, never the id itself.
+  if (!utm.source && params.get("fbclid")) utm.source = "facebook";
+  if (!utm.source && params.get("gclid")) Object.assign(utm, { source: "google", medium: "cpc" });
   const info: SourceInfo = {
     referrer: document.referrer || null,
     landingPath: window.location.pathname,

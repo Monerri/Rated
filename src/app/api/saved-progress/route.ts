@@ -1,3 +1,4 @@
+import { checkEmail } from "@/lib/contact-checks";
 import { getCatalogueService } from "@/lib/catalogue";
 import { getFunnel } from "@/funnels";
 import { validateAnswers } from "@/funnels/engine";
@@ -21,6 +22,8 @@ export async function POST(request: Request) {
 
   const email = str(body.email, 254);
   if (!email || !EMAIL.test(email)) return jsonError("Please enter a valid email address.");
+  const emailProblem = await checkEmail(email);
+  if (emailProblem) return jsonError(emailProblem);
 
   const expected = retainProgressWording();
   const consent = (body.consent ?? {}) as Record<string, unknown>;

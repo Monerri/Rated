@@ -2,7 +2,7 @@
 title: Privacy notice
 description: How Vetted North collects, uses, shares and protects your personal information.
 date: 2026-10-08
-updated: 2026-10-13
+updated: 2026-10-15
 ---
 
 **This is a draft and is being reviewed before launch.**
@@ -26,6 +26,8 @@ You can contact us about privacy at **privacy@vettednorth.com**.
 **Lawful basis:** your consent, which you give by ticking the box before you submit. The exact wording you agreed to is stored with your enquiry.
 
 **How long we keep it:** 24 months from your enquiry, so we can deal with any questions or complaints, then we delete it.
+
+**Asking how it went:** about two weeks after we introduce you, we email you once to ask whether each specialist got in touch and how you'd rate them. Answering is optional. We use your answers to check that our specialists are reliable, which is in our legitimate interests and yours. We only quote a comment on our website if you tick the box giving permission, and then only with your first name and postcode area. Feedback is kept for 24 months.
 
 ### When you're "just researching" and save your progress
 

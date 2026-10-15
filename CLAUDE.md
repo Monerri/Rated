@@ -8,6 +8,7 @@ Vetted North (vettednorth.com) introduces homeowners in North East England to ve
 
 - **Honesty first.** Never use "See if you qualify", fake urgency, invented grants or anything that implies a scheme or offer that doesn't exist. Say plainly what happens to people's details and how we're paid ("Specialists pay us a fee for introductions.").
 - **The homeowner is in control.** They choose to hear from one, two or three specialists, and we never introduce more. They're told who the specialists are, with their checks, before anyone contacts them.
+- **Separation from specialists.** Specialists are independent businesses, not "our specialists" or "our network". There is no public list or profile of specialists (`/specialists` redirects to How it works): homeowners only see who they are, with the evidence for each check, once introduced, so nobody can bypass the questionnaire.
 - **People who are "just researching" are never given company names** or shared with anyone. They can be put in touch, save their answers (kept up to 12 months) or delete them.
 - **Property owners only.** Every questionnaire asks "Do you own the property?" (sole owner, joint owner, or not the owner) and "Home or business?". Non-owners are stopped kindly; nothing is saved or shared.
 - **Writing style:** British English. Plain, calm, factual. No em dashes. No alarmist wording.
@@ -18,7 +19,7 @@ Vetted North (vettednorth.com) introduces homeowners in North East England to ve
 
 1. Registered company (Companies House). Registered companies only.
 2. Insurance-backed guarantee.
-3. Competent Person Scheme, where relevant (not applicable for builders who only do extensions or new builds; shown as "not applicable", never as a tick).
+3. Trade scheme registration, per service in `src/config/schemes.ts` (shown on /how-we-check). Some are legal requirements: Gas Safe for any gas work, F gas certification for handling refrigerant (air conditioning), ARB registration to use the title "architect". Not applicable for builders who only do extensions or new builds; shown as "not applicable", never as a tick. Scheme names only, never logos (using a trust mark without permission is a banned practice under consumer law).
 4. Google rating above 4.
 
 Checks are reconfirmed at least every 12 months; lapsed specialists stop being matched.
@@ -26,7 +27,7 @@ Checks are reconfirmed at least every 12 months; lapsed specialists stop being m
 ## Services
 
 - **Live (North East England):** Windows & Doors; Conservatory Roofs; Extensions & New Builds; Roof Replacement; Solar & Battery; Heat Pumps & Air Conditioning; EV Charging; Insulation.
-- **Coming soon (register interest):** Loft Conversions; Architects & Planning; Kitchens; Bathrooms; Gardens, Driveways & Landscaping; Flooring; Plumbing; Electrical; Security Systems.
+- **Coming soon (register interest):** Loft Conversions; Architects & Planning; Kitchens; Bathrooms; Gardens, Driveways & Landscaping; Flooring; Plumbing & Heating (slug `plumbing`); Electrical; Security Systems.
 - **Kinds of job:** some services have kinds that specialists opt into (`FunnelConfig.leadTypes`, `Specialist.leadTypes`). Extensions: single-storey, two and three-storey, new-build houses. Heat pumps: heating heat pumps, air conditioning. A lead only goes to specialists who take that kind.
 
 ## Leads and money
@@ -39,7 +40,7 @@ Checks are reconfirmed at least every 12 months; lapsed specialists stop being m
 - **Specialist terms** (`content/legal/supplier-terms.md`, draft for a solicitor): if a specialist leaves, unused credit is held 6 months then forfeited; if we remove them, it's refunded.
 - **Lead quality:** contact details are checked before anyone is charged (`src/lib/contact-checks.ts`): email domain typos, throwaway inboxes, domains with no email service, Ofcom drama numbers, fake or premium-rate phone numbers. When a check can't tell, it accepts.
 - **Homeowner feedback:** about 14 days after an introduction, a daily job emails the homeowner once to ask whether each specialist got in touch and how they'd rate them (`src/lib/feedback.ts`, `/feedback/[token]`). "Never got in touch" alerts us straight away. Comments are only quoted with ticked permission (first name and area).
-- **On/off switch** (`src/lib/listing.ts`): every specialist, demo or real, is only shown in the directory and sent leads while they're on. They switch off automatically when their balance is below their cheapest lead (emailed once; back on after a top-up), and the owner can switch anyone off or on by hand on `/admin` (recorded permanently in `listing_switches`). Demo companies aren't charged, so only the manual switch applies to them.
+- **On/off switch** (`src/lib/listing.ts`): every specialist, demo or real, is only sent leads while they're on. They switch off automatically when their balance is below their cheapest lead (emailed once; back on after a top-up), and the owner can switch anyone off or on by hand on `/admin` (recorded permanently in `listing_switches`). Demo companies aren't charged, so only the manual switch applies to them.
 - **Not yet:** Stripe, a business bank account and company registration. The owner wants to prove the idea first. Top-ups are added by hand on `/admin` for now.
 
 ## How it runs

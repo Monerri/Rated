@@ -1,6 +1,6 @@
 ---
 title: Why we started Vetted North
-description: What we do, how we check the specialists we work with, and what you can expect when you get in touch.
+description: What we do, how we check the specialists we introduce, and what you can expect when you get in touch.
 date: 2026-10-08
 updated: 2026-10-09
 tags: [about us]
@@ -16,7 +16,7 @@ You tell us what you're looking to improve and answer a few questions about your
 
 That's it. The number of specialists you choose, introduced openly, so you know who will contact you and why.
 
-## How we check the specialists we work with
+## How we check the specialists we introduce
 
 Every specialist we recommend has passed four checks:
 
@@ -25,7 +25,7 @@ Every specialist we recommend has passed four checks:
 3. Where the work needs it, they're registered with an appropriate Competent Person Scheme.
 4. They have a Google rating above four stars.
 
-We show the evidence on each specialist's profile, along with the date the checks were last confirmed. You can read more on [how we check our specialists](/how-we-check).
+We show you the evidence for each specialist we introduce, along with the date the checks were last confirmed. You can read more on [how we check specialists](/how-we-check).
 
 ## What you can expect from us
 
@@ -33,4 +33,4 @@ We show the evidence on each specialist's profile, along with the date the check
 - **No pressure.** Talking to a specialist doesn't commit you to anything.
 - **Openness about how we're paid.** Our service is free for homeowners. Specialists pay us a fee for introductions.
 
-We're starting with windows, doors and conservatory roofs, and we'll add more services as we build our network. If you'd like to hear when a service reaches your area, you can register your interest on our homepage.
+We're starting with windows, doors and conservatory roofs, and we'll add more services as more specialists pass our checks. If you'd like to hear when a service reaches your area, you can register your interest on our homepage.

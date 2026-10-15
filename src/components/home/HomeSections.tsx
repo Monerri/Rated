@@ -47,9 +47,9 @@ export function ChecksSection() {
   return (
     <Section
       id="checks"
-      eyebrow="How we check our specialists"
+      eyebrow="How we check specialists"
       title="Four checks before we recommend anyone"
-      intro="Every specialist we work with has passed these checks. We review them regularly and show you when they were last confirmed."
+      intro="Every specialist we introduce has passed these checks. We review them regularly and show you when they were last confirmed."
     >
       <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {vettingChecks.map((c) => (
@@ -67,7 +67,7 @@ export function ChecksSection() {
         so we&apos;ll always encourage you to ask questions and get everything agreed in writing.
       </p>
       <Link href="/how-we-check" className="inline-flex items-center gap-1.5 justify-self-start font-display font-semibold text-blue">
-        How we check our specialists <ArrowIcon />
+        How we check specialists <ArrowIcon />
       </Link>
     </Section>
   );

@@ -5,11 +5,16 @@ const nextConfig: NextConfig = {
   // Pages are pre-built, so the questionnaire and register-interest addresses
   // are redirected here rather than at request time.
   async redirects() {
-    return services.flatMap((s) =>
-      s.status === "live"
-        ? [{ source: `/register-interest/${s.slug}`, destination: `/find-a-specialist/${s.slug}`, permanent: false }]
-        : [{ source: `/find-a-specialist/${s.slug}`, destination: `/register-interest/${s.slug}`, permanent: false }],
-    );
+    return [
+      ...services.flatMap((s) =>
+        s.status === "live"
+          ? [{ source: `/register-interest/${s.slug}`, destination: `/find-a-specialist/${s.slug}`, permanent: false }]
+          : [{ source: `/find-a-specialist/${s.slug}`, destination: `/register-interest/${s.slug}`, permanent: false }],
+      ),
+      // We don't publish a list of specialists. Homeowners only learn who they are once introduced.
+      { source: "/specialists", destination: "/how-it-works#who-we-introduce", permanent: true },
+      { source: "/specialists/:slug", destination: "/how-it-works#who-we-introduce", permanent: true },
+    ];
   },
 };
 

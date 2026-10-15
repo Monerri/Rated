@@ -58,6 +58,7 @@ export async function POST(request: Request) {
   const companiesHouseNumber = typeof body.companiesHouseNumber === "string" ? normaliseCompanyNumber(body.companiesHouseNumber) : null;
   const scheme = competentPersonSchemes.find((s) => s.value === body.competentPersonScheme);
   const schemeOther = str(body.competentPersonSchemeOther, 120);
+  const otherSchemes = str(body.otherSchemes, 200);
   const ibgProvider = str(body.insuranceBackedGuaranteeProvider, 160);
   const googleProfileUrl = typeof body.googleProfileUrl === "string" ? normaliseUrl(body.googleProfileUrl) : null;
   const description = str(body.description, 2000);
@@ -112,7 +113,7 @@ export async function POST(request: Request) {
     areasCovered,
     otherAreas,
     companiesHouseNumber: companiesHouseNumber!,
-    competentPersonScheme: scheme!.value === "other" ? `Other: ${schemeOther}` : scheme!.label,
+    competentPersonScheme: `${scheme!.value === "other" ? `Other: ${schemeOther}` : scheme!.label}${otherSchemes ? `; also: ${otherSchemes}` : ""}`,
     insuranceBackedGuaranteeProvider: ibgProvider!,
     googleProfileUrl: googleProfileUrl!,
     description: description!,

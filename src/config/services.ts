@@ -90,7 +90,7 @@ services.push(
   comingSoon("bathrooms", "Bathrooms", "New bathrooms, en suites and wet rooms.", "bathroom"),
   comingSoon("gardens-driveways", "Gardens, Driveways & Landscaping", "Driveways, patios, fencing and garden landscaping.", "garden"),
   comingSoon("flooring", "Flooring", "Wood, laminate, vinyl, tiles and carpets, supplied and fitted.", "flooring"),
-  comingSoon("plumbing", "Plumbing", "Plumbing repairs and installations around the home.", "plumbing"),
+  comingSoon("plumbing", "Plumbing & Heating", "Boilers, radiators, central heating and plumbing installations and repairs.", "plumbing"),
   comingSoon("electrical", "Electrical", "Rewiring, new circuits, consumer units and electrical repairs.", "electrical"),
   comingSoon("security-systems", "Security Systems", "Burglar alarms, CCTV, smart doorbells and security lighting.", "security"),
 );

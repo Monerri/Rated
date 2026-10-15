@@ -47,6 +47,7 @@ export function SupplierForm({ services }: { services: Pick<Service, "slug" | "n
         companiesHouseNumber: get("companiesHouseNumber"),
         competentPersonScheme: get("competentPersonScheme"),
         competentPersonSchemeOther: get("competentPersonSchemeOther"),
+        otherSchemes: get("otherSchemes"),
         insuranceBackedGuaranteeProvider: get("insuranceBackedGuaranteeProvider"),
         googleProfileUrl: get("googleProfileUrl"),
         description: get("description"),
@@ -174,7 +175,7 @@ export function SupplierForm({ services }: { services: Pick<Service, "slug" | "n
       <fieldset className="grid gap-4">
         <legend className="mb-2 font-display text-lg font-bold">Accreditation and reputation</legend>
         <SelectField
-          label="Relevant Competent Person Scheme"
+          label="Main trade scheme you're registered with"
           name="competentPersonScheme"
           options={competentPersonSchemes}
           value={scheme}
@@ -183,6 +184,14 @@ export function SupplierForm({ services }: { services: Pick<Service, "slug" | "n
         />
         {scheme === "other" && (
           <TextField label="Which scheme?" name="competentPersonSchemeOther" maxLength={120} error={errors.competentPersonSchemeOther} />
+        )}
+        {scheme !== "none" && scheme !== "not-applicable" && (
+          <TextField
+            label="Any other schemes you're registered with (optional)"
+            name="otherSchemes"
+            maxLength={200}
+            hint="For example, Gas Safe and OFTEC for a heating engineer."
+          />
         )}
         <TextField
           label="Insurance-backed guarantee provider"
@@ -219,7 +228,7 @@ export function SupplierForm({ services }: { services: Pick<Service, "slug" | "n
         <ConsentCheckbox name="declaration" wording={declaration.wording} checked={agreed} onChange={setAgreed} />
         {errors.declaration && <p className="text-sm font-semibold">{errors.declaration}</p>}
         <p className="text-sm text-muted">
-          Submitting doesn&apos;t guarantee a place in the network. We review every business against our current
+          Submitting doesn&apos;t guarantee you&apos;ll receive introductions. We review every business against our current
           requirements.
         </p>
         {formError && <FormError>{formError}</FormError>}

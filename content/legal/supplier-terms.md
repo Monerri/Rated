@@ -1,7 +1,7 @@
 ---
 title: Specialist terms
 description: The terms for home-improvement specialists who receive introductions through Vetted North, including prepaid credit.
-date: 2026-10-15
+date: 2026-10-16
 ---
 
 **This is a draft and is being reviewed before launch. It should be checked by a solicitor before any specialist signs up.**
@@ -37,7 +37,7 @@ We only work with registered companies that pass our [current checks](/how-we-ch
 
 - You're only charged when an introduction is sent to you, and the price is taken from your balance at that moment. You don't receive the homeowner's details unless your balance covers the price.
 - If your balance doesn't cover an introduction, it goes to another eligible specialist, and we'll let you know you missed it.
-- If your balance falls below the price of your cheapest introduction, your listing is paused automatically: you won't be shown in our list of specialists or considered for introductions. We'll email you when this happens, and your listing switches back on as soon as your balance covers an introduction again.
+- If your balance falls below the price of your cheapest introduction, your listing is paused automatically: you won't be considered for introductions. We'll email you when this happens, and your listing switches back on as soon as your balance covers an introduction again.
 - We may also pause your listing by hand, for example while we reconfirm your checks or look into a complaint. We'll tell you when we do and why.
 - If an introduction can't be delivered to you, or the homeowner's own confirmation can't be sent, we refund it to your balance automatically.
 
@@ -54,8 +54,8 @@ We keep a permanent record of every top-up, introduction, refund and adjustment 
 ## 8. Leaving, and unused credit
 
 - **If you choose to leave**, we'll hold your unused balance for **6 months**. If you rejoin within that time, it's restored to your account. After 6 months, any unused balance is forfeited and won't be refunded.
-- **If we end your membership** because you no longer meet our checks, or because we stop providing the service in your area, we'll refund your unused balance within 30 days.
-- **If we end your membership** because of a serious breach of these terms, for example misusing homeowners' details, we'll refund your unused balance less any amount you owe us.
+- **If we stop introducing you** because you no longer meet our checks, or because we stop providing the service in your area, we'll refund your unused balance within 30 days.
+- **If we stop introducing you** because of a serious breach of these terms, for example misusing homeowners' details, we'll refund your unused balance less any amount you owe us.
 
 ## 9. Homeowners' details
 

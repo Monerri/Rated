@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { site } from "@/config/site";
 import { services } from "@/config/services";
 import { supplierCriteria } from "@/config/suppliers";
 import { primaryRegion } from "@/config/regions";
@@ -11,7 +10,7 @@ import { SupplierForm } from "@/components/suppliers/SupplierForm";
 
 export const metadata: Metadata = {
   title: "For suppliers",
-  description: `Become a ${site.name} specialist. We're building a network of trusted home-improvement specialists across ${primaryRegion.name}.`,
+  description: `Get introductions to homeowners across ${primaryRegion.name}. We introduce independent home-improvement businesses that pass our checks.`,
 };
 
 const process = [
@@ -34,19 +33,19 @@ export default function ForSuppliersPage() {
           <div className="grid max-w-2xl gap-5">
             <Eyebrow>For suppliers</Eyebrow>
             <h1 id="suppliers-heading" className="text-[36px] font-extrabold leading-[1.08] tracking-[-0.02em] sm:text-5xl">
-              Become a {site.name} specialist
+              Get introductions to local homeowners
             </h1>
             <p className="text-lg text-muted sm:text-xl">
-              We&apos;re building a network of trusted home-improvement specialists across {primaryRegion.name}. If you
-              run an established business and would like to be considered for our network, we&apos;d like to hear from
-              you.
+              We introduce homeowners across {primaryRegion.name} to independent home-improvement businesses that pass our
+              checks. If you run an established business and would like to be considered for introductions, we&apos;d like
+              to hear from you.
             </p>
             <Link href="#apply" className="inline-flex items-center gap-1.5 justify-self-start font-display font-semibold text-blue">
               Go to the form <ArrowIcon />
             </Link>
           </div>
           <div className="grid gap-3 rounded-[var(--radius-panel)] border border-line bg-ground p-5 sm:p-6">
-            <p className="font-display text-lg font-bold">How we work with specialists</p>
+            <p className="font-display text-lg font-bold">How introductions work</p>
             <ul className="grid gap-2 text-[15px]">
               <li>Homeowners choose to hear from one, two or three specialists. An enquiry is never shared with more than three.</li>
               <li>Homeowners are told who you are, and see your checks, before you contact them.</li>
@@ -88,7 +87,7 @@ export default function ForSuppliersPage() {
           Meeting these requirements doesn&apos;t guarantee a place. We also consider the services and areas we need
           to cover.{" "}
           <Link href="/how-we-check" className="text-blue">
-            How we check our specialists
+            How we check specialists
           </Link>
         </p>
       </section>

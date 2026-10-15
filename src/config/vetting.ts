@@ -50,14 +50,14 @@ export const vettingChecks: VettingCheckDefinition[] = [
   },
   {
     id: "competent_person_scheme",
-    title: "Competent Person Scheme",
-    summary: "Where relevant, we check registration with an appropriate Competent Person Scheme.",
+    title: "Trade scheme registration",
+    summary: "We check registration with the right trade scheme for the work, including those the law requires.",
     whatWeCheck:
-      "Where the work needs it, that the business is registered with an appropriate government-authorised Competent Person Scheme. For windows and doors, examples include FENSA, Certass and Assure. For roofing, an example is Competent Roofer. Extensions are approved by building control rather than a scheme, so this check doesn't apply to builders who only do extensions, and we show it as not applicable.",
+      "That the business is registered with the scheme its work needs. Some are legal requirements: anyone doing gas work must be on the Gas Safe Register, and businesses handling refrigerant gas, for example fitting air conditioning, need F gas certification. Others let the business certify that its work meets Building Regulations, such as FENSA or Certass for windows, NICEIC or NAPIT for electrical work, and MCS for solar panels and heat pumps. Extensions are approved by building control rather than a scheme, so for builders who only do extensions we show this check as not applicable.",
     whyItMatters:
-      "Replacement windows and doors must meet Building Regulations. A registered installer can certify that their work complies, so you don't need to arrange a separate inspection with your council.",
+      "Registration shows the business is qualified for that kind of work. Where a registered business certifies its own work, you get a compliance certificate without arranging a separate council inspection, and you'll need that certificate when you sell.",
     worthKnowing:
-      "Scheme registration is about meeting Building Regulations. It isn't a rating of overall quality, and we don't rank one scheme above another. Some work, such as certain conservatory roof replacements, may need approval from building control instead.",
+      "Scheme registration is about competence and meeting regulations. It isn't a rating of overall quality, and we don't rank one scheme above another. The full list for each service is further down this page.",
   },
   {
     id: "google_rating",

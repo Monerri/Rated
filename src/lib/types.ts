@@ -259,7 +259,7 @@ export type PublicSpecialist = Pick<
   "slug" | "name" | "isDemo" | "services" | "googleRating" | "checks" | "checksLastConfirmed"
 >;
 
-/** A business asking to be considered for the network. Not an approval. */
+/** A business asking to be considered for introductions. Not an approval. */
 export interface SupplierApplication {
   kind: "supplier_application";
   id: string;

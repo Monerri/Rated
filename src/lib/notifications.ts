@@ -102,7 +102,7 @@ function checksBlock(s: Specialist): string {
 }
 
 /** Sent to the homeowner first, so they know who will contact them and why. */
-export function customerMatchEmail(e: Enquiry, specialists: Specialist[], serviceName: string, origin: string): Email {
+export function customerMatchEmail(e: Enquiry, specialists: Specialist[], serviceName: string): Email {
   const n = specialists.length;
   const names = specialists.map((s) => s.name);
   const nameList = n === 1 ? names[0] : `${names.slice(0, -1).join(", ")} and ${names[n - 1]}`;
@@ -112,7 +112,7 @@ export function customerMatchEmail(e: Enquiry, specialists: Specialist[], servic
       ? `You asked to hear from ${numberWord(e.specialistsRequested)}. Right now ${numberWord(n)} vetted ${n === 1 ? "specialist covers" : "specialists cover"} your area, so we've introduced ${n === 1 ? "them" : "all of them"}.\n\n`
       : "";
   const blocks = specialists
-    .map((s) => `${s.name}\n${checksBlock(s)}\n  Profile: ${origin}/specialists/${s.slug}`)
+    .map((s) => `${s.name}\n${checksBlock(s)}`)
     .join("\n\n");
   return {
     to: e.contact.email,
@@ -214,7 +214,7 @@ export function listingPausedEmail(s: Specialist, balancePence: number, minimumF
     subject: `Your ${site.name} listing is paused until you top up`,
     text: `${s.isDemo ? DEMO_NOTE : ""}Hello ${s.name},
 
-Your prepaid balance is now ${formatPence(balancePence)}, which is less than your cheapest lead (${formatPence(minimumFeePence)}). Until you top up, you won't be considered for new leads or shown in our list of specialists.
+Your prepaid balance is now ${formatPence(balancePence)}, which is less than your cheapest lead (${formatPence(minimumFeePence)}). Until you top up, you won't be considered for new leads.
 
 Your listing switches back on by itself as soon as your balance covers a lead. To top up, reply to this email or contact ${site.supplierApplicationsEmail}.
 
@@ -246,7 +246,7 @@ About two weeks ago we introduced you to ${who} about your ${serviceName.toLower
 It takes about a minute: did they get in touch, and how would you rate them?
 ${link}
 
-Your answers help us keep only reliable specialists in our network. We won't share your answers with anyone unless you say we can quote you.
+Your answers help us decide which specialists we keep introducing. We won't share your answers with anyone unless you say we can quote you.
 
 This is the only email we'll send you about it.
 
@@ -369,7 +369,7 @@ export function supplierAcknowledgementEmail(a: SupplierApplication): Email {
     subject: `We've received your details: ${a.companyName}`,
     text: `Hello ${a.contactName},
 
-Thanks for your interest in joining the ${site.name} network. We've received your details and will review your business against our current requirements:
+Thanks for your interest in receiving introductions from ${site.name}. We've received your details and will review your business against our current requirements:
 
 ${vettingChecks.map((c) => `  - ${c.title}`).join("\n")}
 
@@ -411,7 +411,7 @@ Services: ${serviceName}${
         : ""
     }${a.otherServices ? `\nAlso does: ${a.otherServices}` : ""}
 Areas: ${[...a.areasCovered, a.otherAreas].filter(Boolean).join(", ")}
-Competent Person Scheme: ${a.competentPersonScheme}
+Trade schemes: ${a.competentPersonScheme}
 Insurance-backed guarantee provider: ${a.insuranceBackedGuaranteeProvider}
 Google profile: ${a.googleProfileUrl}
 
@@ -431,7 +431,7 @@ export const contactTopics = [
   { value: "enquiry", label: "An enquiry I've made" },
   { value: "specialist", label: "A specialist you introduced" },
   { value: "privacy", label: "My personal information" },
-  { value: "supplier", label: "Joining the network" },
+  { value: "supplier", label: "Receiving introductions (for businesses)" },
   { value: "other", label: "Something else" },
 ];
 

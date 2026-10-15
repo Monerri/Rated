@@ -63,7 +63,7 @@ export async function ArticleView({ article, related }: { article: Article; rela
             ) : (
               <>
                 <p className="font-display text-lg font-bold">{service.name} is coming soon</p>
-                <p className="text-muted">We&apos;re building our network. Leave your details and we&apos;ll let you know when it&apos;s available.</p>
+                <p className="text-muted">We&apos;re still checking specialists for this service. Leave your details and we&apos;ll let you know when it&apos;s available.</p>
                 <ButtonLink href={`/register-interest/${service.slug}`} variant="secondary">
                   Register your interest
                 </ButtonLink>

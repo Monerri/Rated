@@ -162,6 +162,18 @@ export interface LedgerEntry {
   note: string;
 }
 
+/**
+ * A manual on/off switch for a specialist's listing. Never edited or deleted:
+ * the latest line for a specialist is their current setting. No line means on.
+ */
+export interface ListingSwitch {
+  id: string;
+  supplierSlug: string;
+  createdAt: string;
+  on: boolean;
+  note: string;
+}
+
 /** A lead a specialist wasn't considered for because their balance was too low. */
 export interface MissedLead {
   id: string;

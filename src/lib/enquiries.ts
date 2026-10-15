@@ -5,8 +5,11 @@ import { isResearching, summarise, validateAnswers } from "@/funnels/engine";
 import { MAX_SPECIALISTS, shareWithSpecialistWording } from "@/lib/consent";
 import { allocateLead } from "@/lib/matching";
 import { describeLead, isLaterLead, leadPrice, refundLead } from "@/lib/billing";
+import { minimumLeadFee } from "@/lib/listing";
 import {
   customerMatchEmail,
+  listingPausedAlertEmail,
+  listingPausedEmail,
   lostLeadAlertEmail,
   missedLeadEmail,
   specialistEnquiryEmail,
@@ -157,8 +160,27 @@ export async function submitEnquiry(input: SubmitInput): Promise<SubmitResult> {
     enquiry.specialistNotifications.push({ slug: specialist.slug, notifiedAt: new Date().toISOString() });
   }
   await recordStore.updateEnquiry(enquiry.id, { specialistNotifications: enquiry.specialistNotifications });
+  await notifyLowBalances(enquiry, specialists, pricePence);
 
   return { ok: true, enquiry, specialists };
+}
+
+/**
+ * Tells a specialist (and us) when this lead took their balance below their
+ * cheapest lead, which switches them off until they top up. Sent once, at the
+ * moment they cross the line, not with every lead they then miss.
+ */
+async function notifyLowBalances(enquiry: Enquiry, specialists: Specialist[], pricePence: number) {
+  const paid = specialists.filter((s) => !s.isDemo && enquiry.specialistNotifications.some((n) => n.slug === s.slug));
+  if (paid.length === 0) return;
+  const balances = await recordStore.getBalances();
+  for (const s of paid) {
+    const minimum = minimumLeadFee(s);
+    const after = balances[s.slug] ?? 0;
+    if (after >= minimum || after + pricePence < minimum) continue;
+    await trySend(listingPausedEmail(s, after, minimum));
+    await trySend(listingPausedAlertEmail(s, after, minimum));
+  }
 }
 
 /** Records and tells each specialist who missed a lead because of a low balance. No homeowner details are shared. */

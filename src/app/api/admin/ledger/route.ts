@@ -1,17 +1,31 @@
 import { specialists } from "@/data/specialists";
 import { authorised } from "@/lib/admin";
 import { addCredit } from "@/lib/billing";
+import { listingStatuses } from "@/lib/listing";
 import { recordStore } from "@/lib/records";
 import { jsonError, readJson, str } from "@/lib/request";
 import type { LedgerEntry } from "@/lib/types";
 
-/** Balances for every specialist, and the last 90 days of account lines. */
+/** Balances and on/off status for every specialist, and the last 90 days of account lines. */
 export async function GET(request: Request) {
   if (!authorised(request)) return jsonError("Not found.", 404);
-  const balances = await recordStore.getBalances();
+  const statuses = await listingStatuses();
   const since = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
   return Response.json({
-    suppliers: specialists.map((s) => ({ slug: s.slug, name: s.name, isDemo: s.isDemo, balancePence: balances[s.slug] ?? 0 })),
+    suppliers: specialists.map((s) => {
+      const st = statuses[s.slug];
+      return {
+        slug: s.slug,
+        name: s.name,
+        isDemo: s.isDemo,
+        balancePence: st.balancePence,
+        on: st.on,
+        reason: st.reason,
+        minimumFeePence: st.minimumFeePence,
+        switchedAt: st.lastSwitch?.createdAt ?? null,
+        switchNote: st.lastSwitch?.note ?? null,
+      };
+    }),
     entries: await recordStore.listLedger(since, 200),
   });
 }

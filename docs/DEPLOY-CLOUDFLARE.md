@@ -77,7 +77,8 @@ Resend's free plan allows 100 emails a day and 3,000 a month. Each enquiry uses 
 
 Specialists pay for leads in advance. A lead's price is taken from their balance at the moment it's sent, and they only receive the homeowner's details if their balance covers it. Prices are in `src/config/pricing.ts`. Demo specialists are never charged.
 
-- **Admin page:** `/admin` shows every specialist's balance and the last 90 days of account lines, and lets you add top-ups, refunds, corrections and forfeits. It needs the `ADMIN_API_TOKEN` secret: **Workers & Pages → vetted-north → Settings → Variables and Secrets → Add**, type **Secret**, name `ADMIN_API_TOKEN`, value a long random password. Sign in to `/admin` with the same value.
+- **Admin page:** `/admin` shows every specialist's balance, whether they're on or off, and the last 90 days of account lines. It lets you switch specialists on or off (including all demo companies at once) and add top-ups, refunds, corrections and forfeits. It needs the `ADMIN_API_TOKEN` secret: **Workers & Pages → vetted-north → Settings → Variables and Secrets → Add**, type **Secret**, name `ADMIN_API_TOKEN`, value a long random password. Sign in to `/admin` with the same value.
+- **On/off:** a specialist is only listed and sent leads while they're on. They switch off by themselves when their balance is below their cheapest lead (and are emailed once), and back on after a top-up. Manual switches are kept as a permanent record in the `listing_switches` table.
 - **Weekly reports:** every Monday at 07:05 UTC the Worker emails each real specialist a statement and sends you an overview (`worker.ts` and `triggers` in `wrangler.jsonc`). This doesn't need the admin token.
 - **Records:** every top-up, lead, refund and correction is a permanent line in the `ledger` table. A balance is the sum of its lines; nothing is edited or deleted.
 

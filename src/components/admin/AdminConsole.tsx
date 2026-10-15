@@ -24,6 +24,18 @@ interface Supplier {
   name: string;
   isDemo: boolean;
   balancePence: number;
+  on: boolean;
+  reason: "switched-off" | "low-balance" | null;
+  minimumFeePence: number | null;
+  switchedAt: string | null;
+  switchNote: string | null;
+}
+
+/** Status in words and a symbol, never colour alone. */
+function statusText(s: Supplier): string {
+  if (s.on) return "✓ On";
+  if (s.reason === "switched-off") return `✕ Off (switched off${s.switchedAt ? ` ${s.switchedAt.slice(0, 10)}` : ""})`;
+  return `✕ Off (balance below ${money(s.minimumFeePence ?? 0)}; back on after a top-up)`;
 }
 
 const TOKEN_KEY = "vn_admin_token";
@@ -58,6 +70,7 @@ export function AdminConsole() {
   const [feedback, setFeedback] = useState<FeedbackRow[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [switchMessage, setSwitchMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const [supplier, setSupplier] = useState("");
@@ -120,6 +133,22 @@ export function AdminConsole() {
     await load(token);
   }
 
+  async function switchListing(target: { supplierSlug: string } | { allDemo: true }, on: boolean, label: string) {
+    setError(null);
+    setSwitchMessage(null);
+    setBusy(true);
+    const res = await fetch("/api/admin/listing", {
+      method: "POST",
+      headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
+      body: JSON.stringify({ ...target, on }),
+    });
+    setBusy(false);
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) return setSwitchMessage(body.error ?? "That didn't work.");
+    setSwitchMessage(`${label} switched ${on ? "on" : "off"}.`);
+    await load(token);
+  }
+
   if (!token || !data) {
     return (
       <form onSubmit={signIn} className="grid max-w-md gap-4">
@@ -142,35 +171,84 @@ export function AdminConsole() {
   const names = Object.fromEntries(data.suppliers.map((s) => [s.slug, s.name]));
   const real = data.suppliers.filter((s) => !s.isDemo);
   const demo = data.suppliers.filter((s) => s.isDemo);
+  const demoOn = demo.filter((s) => s.on);
 
   return (
     <div className="grid min-w-0 gap-10">
+      {demoOn.length > 0 && (
+        <section
+          aria-labelledby="demo-reminder"
+          className="grid min-w-0 gap-3 rounded-[var(--radius-card)] border-2 border-dashed border-ink bg-surface p-4"
+        >
+          <h2 id="demo-reminder" className="text-lg font-bold">
+            ⚠ Before you go live: switch off the demo companies
+          </h2>
+          <p className="text-[15px]">
+            {demoOn.length} fictional demo {demoOn.length === 1 ? "company is" : "companies are"} still switched on, so real
+            homeowners could be introduced to {demoOn.length === 1 ? "it" : "them"}. Switch them off once your real
+            specialists are on and topped up.
+          </p>
+          <button
+            type="button"
+            className={buttonClass("secondary")}
+            disabled={busy}
+            onClick={() => {
+              if (window.confirm("Switch off every demo company? You can switch them back on here.")) {
+                void switchListing({ allDemo: true }, false, "All demo companies");
+              }
+            }}
+          >
+            Switch off all demo companies
+          </button>
+        </section>
+      )}
+
       <section aria-labelledby="balances" className="grid min-w-0 gap-3">
         <h2 id="balances" className="text-2xl font-bold">
-          Balances
+          Specialists
         </h2>
+        <p className="text-[15px] text-muted">
+          A specialist is only shown and sent leads while they&apos;re on. They switch off by themselves when their
+          balance is below their cheapest lead, and back on after a top-up. You can also switch anyone off by hand.
+        </p>
         {real.length === 0 && (
           <p className="text-muted">No real specialists yet. Demo specialists aren&apos;t charged and are listed below.</p>
         )}
-        <table className="w-full text-left text-[15px]">
-          <thead>
-            <tr className="border-b border-line">
-              <th className="py-2 font-semibold">Specialist</th>
-              <th className="py-2 text-right font-semibold">Balance</th>
-            </tr>
-          </thead>
-          <tbody>
-            {[...real, ...demo].map((s) => (
-              <tr key={s.slug} className="border-b border-line">
-                <td className="py-2">
+        {switchMessage && (
+          <p role="status" className="font-semibold">
+            {switchMessage}
+          </p>
+        )}
+        <ul className="grid gap-3">
+          {[...real, ...demo].map((s) => (
+            <li
+              key={s.slug}
+              className={`grid min-w-0 gap-2 rounded-[var(--radius-card)] border bg-surface p-4 text-[15px] ${
+                s.on ? "border-line" : "border-dashed border-ink"
+              }`}
+            >
+              <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                <p className="font-semibold">
                   {s.name}
                   {s.isDemo && <span className="ml-2 font-mono text-xs text-muted">DEMO, NOT CHARGED</span>}
-                </td>
-                <td className="py-2 text-right font-mono">{money(s.balancePence)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                </p>
+                <p className="font-mono">{s.isDemo ? "No charge" : money(s.balancePence)}</p>
+              </div>
+              <p className="font-semibold">{statusText(s)}</p>
+              {!s.isDemo && s.minimumFeePence !== null && (
+                <p className="text-muted">Cheapest lead: {money(s.minimumFeePence)}</p>
+              )}
+              <button
+                type="button"
+                className={`${buttonClass("secondary")} justify-self-start`}
+                disabled={busy}
+                onClick={() => void switchListing({ supplierSlug: s.slug }, s.reason === "switched-off", s.name)}
+              >
+                {s.reason === "switched-off" ? "Switch on" : "Switch off"}
+              </button>
+            </li>
+          ))}
+        </ul>
       </section>
 
       <section aria-labelledby="change" className="grid min-w-0 max-w-md gap-4">

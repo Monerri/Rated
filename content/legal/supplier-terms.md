@@ -1,7 +1,7 @@
 ---
 title: Specialist terms
 description: The terms for home-improvement specialists who receive introductions through Vetted North, including prepaid credit.
-date: 2026-10-13
+date: 2026-10-15
 ---
 
 **This is a draft and is being reviewed before launch. It should be checked by a solicitor before any specialist signs up.**
@@ -37,6 +37,8 @@ We only work with registered companies that pass our [current checks](/how-we-ch
 
 - You're only charged when an introduction is sent to you, and the price is taken from your balance at that moment. You don't receive the homeowner's details unless your balance covers the price.
 - If your balance doesn't cover an introduction, it goes to another eligible specialist, and we'll let you know you missed it.
+- If your balance falls below the price of your cheapest introduction, your listing is paused automatically: you won't be shown in our list of specialists or considered for introductions. We'll email you when this happens, and your listing switches back on as soon as your balance covers an introduction again.
+- We may also pause your listing by hand, for example while we reconfirm your checks or look into a complaint. We'll tell you when we do and why.
 - If an introduction can't be delivered to you, or the homeowner's own confirmation can't be sent, we refund it to your balance automatically.
 
 ## 6. Disputes

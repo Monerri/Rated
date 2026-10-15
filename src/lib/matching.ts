@@ -4,6 +4,7 @@ import { isCurrentlyVetted } from "@/lib/vetting";
 import type { Specialist } from "@/lib/types";
 import { canAfford, chargeForLead, cheapestLeadPrice } from "@/lib/billing";
 import { recordStore } from "@/lib/records";
+import { switchedOffByHand } from "@/lib/listing";
 
 function covers(s: Specialist, area: string, outward: string | null): boolean {
   return s.areasCovered.includes(area) || (outward !== null && s.areasCovered.includes(outward));
@@ -15,12 +16,15 @@ function takesLeadType(s: Specialist, serviceSlug: string, leadType: string | nu
   return !leadType || !accepted || accepted.includes(leadType);
 }
 
-function candidates(serviceSlug: string, areaOrPostcode: string, leadType: string | null): Specialist[] {
+/** Specialists who could take this lead, leaving out anyone switched off by hand. */
+async function candidates(serviceSlug: string, areaOrPostcode: string, leadType: string | null): Promise<Specialist[]> {
   const isFull = areaOrPostcode.includes(" ");
   const area = isFull ? postcodeArea(areaOrPostcode) : areaOrPostcode;
   const outward = isFull ? outwardCode(areaOrPostcode) : null;
+  const off = await switchedOffByHand();
   return specialists.filter(
     (s) =>
+      !off.has(s.slug) &&
       s.services.includes(serviceSlug) &&
       covers(s, area, outward) &&
       takesLeadType(s, serviceSlug, leadType) &&
@@ -50,7 +54,9 @@ export interface Allocation {
  * Everyone eligible has passed the same checks, so they're tried in random
  * order, which spreads leads fairly. Each is charged before being chosen; a
  * specialist whose balance doesn't cover the price is skipped and the next
- * one tried. The homeowner's choice of how many is never exceeded.
+ * one tried (this is the automatic "off" for a low balance; they're told
+ * they missed the lead so they can top up). Anyone switched off by hand
+ * isn't considered or told. The homeowner's choice of how many is never exceeded.
  */
 export async function allocateLead(opts: {
   serviceSlug: string;
@@ -64,7 +70,7 @@ export async function allocateLead(opts: {
   note: string;
 }): Promise<Allocation> {
   const pool = shuffle(
-    candidates(opts.serviceSlug, opts.postcode, opts.leadType).filter(
+    (await candidates(opts.serviceSlug, opts.postcode, opts.leadType)).filter(
       (s) => !(opts.later && s.skipLaterLeadsFor?.includes(opts.serviceSlug)),
     ),
   );
@@ -90,5 +96,5 @@ export async function allocateLead(opts: {
 export async function coverageCount(serviceSlug: string, areaOrPostcode: string, leadType: string | null): Promise<number> {
   const balances = await recordStore.getBalances();
   const price = cheapestLeadPrice(serviceSlug, leadType);
-  return candidates(serviceSlug, areaOrPostcode, leadType).filter((s) => canAfford(s, balances, price)).length;
+  return (await candidates(serviceSlug, areaOrPostcode, leadType)).filter((s) => canAfford(s, balances, price)).length;
 }

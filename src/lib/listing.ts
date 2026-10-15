@@ -5,7 +5,7 @@ import { recordStore } from "@/lib/records";
 import type { ListingSwitch, Specialist } from "@/lib/types";
 
 /**
- * Whether each specialist is switched on: shown in the directory and
+ * Whether each specialist is switched on, and so
  * considered for leads. A specialist is off when either
  * - they've been switched off by hand (on /admin), or
  * - their balance is below their minimum lead fee. This switches itself

@@ -142,10 +142,16 @@ const paths: Record<IconName, React.ReactNode> = {
       <path d="M19 28l3-12h4l3 12M2 28h28" />
     </>
   ),
+  // Herringbone floorboards, clipped to the square.
   flooring: (
     <>
-      <rect x="3" y="6" width="26" height="20" rx="1" />
-      <path d="M3 12.5h26M3 19.5h26M12 6v6.5M22 12.5v7M9 19.5V26M19 6v6.5M25 19.5V26" />
+      <defs>
+        <clipPath id="vn-icon-flooring">
+          <rect x="4" y="4" width="24" height="24" rx="1.5" />
+        </clipPath>
+      </defs>
+      <rect x="4" y="4" width="24" height="24" rx="1.5" />
+      <path clipPath="url(#vn-icon-flooring)" d="M4 2L10 -4L16 2L22 -4L28 2M10 -4l4 4M22 -4l4 4M16 2l-4 4M28 2l-4 4M4 2l-4 4M4 10L10 4L16 10L22 4L28 10M10 4l4 4M22 4l4 4M16 10l-4 4M28 10l-4 4M4 10l-4 4M4 18L10 12L16 18L22 12L28 18M10 12l4 4M22 12l4 4M16 18l-4 4M28 18l-4 4M4 18l-4 4M4 26L10 20L16 26L22 20L28 26M10 20l4 4M22 20l4 4M16 26l-4 4M28 26l-4 4M4 26l-4 4M4 34L10 28L16 34L22 28L28 34M10 28l4 4M22 28l4 4M16 34l-4 4M28 34l-4 4M4 34l-4 4" />
     </>
   ),
   plumbing: (

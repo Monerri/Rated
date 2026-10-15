@@ -5,6 +5,8 @@ import { Eyebrow } from "@/components/ui/Section";
 import { ButtonLink } from "@/components/ui/Button";
 import { ArrowIcon } from "@/components/ui/Icon";
 import { faqs, nextSteps, steps } from "@/components/home/HomeSections";
+import { EvidenceCard } from "@/components/home/EvidenceCard";
+import { demoSpecialist } from "@/data/specialists";
 
 export const metadata: Metadata = {
   title: "How it works",
@@ -83,6 +85,38 @@ export default function HowItWorksPage() {
         </div>
       </section>
 
+      <section id="who-we-introduce" aria-labelledby="who-heading" className="mx-auto grid max-w-6xl scroll-mt-20 gap-8 px-4 py-14 sm:px-6 lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:gap-12">
+        <div className="grid max-w-2xl gap-4">
+          <h2 id="who-heading" className="text-[28px] font-bold leading-tight">
+            Who we introduce
+          </h2>
+          <p className="text-lg">
+            Independent local businesses. They aren&apos;t part of {site.name} and we aren&apos;t part of them: we don&apos;t
+            do the work, and any contract is between you and the business you choose.
+          </p>
+          <ul className="grid gap-2 pl-5 text-muted [list-style:disc]">
+            <li>
+              Each one has passed{" "}
+              <Link href="/how-we-check" className="text-blue">
+                our four checks
+              </Link>
+              , including registration with the right trade scheme where the work needs one, such as Gas Safe for
+              gas work, which the law requires.
+            </li>
+            <li>They cover your postcode and do the kind of work you need.</li>
+            <li>Their checks have been confirmed within the last 12 months.</li>
+          </ul>
+          <p className="text-muted">
+            We don&apos;t publish a list of companies. Instead, once you&apos;ve told us about your project, we show you exactly
+            who we&apos;re introducing, with the evidence for each check, before anyone contacts you.
+          </p>
+        </div>
+        <div className="mx-auto w-full max-w-md">
+          <EvidenceCard specialist={demoSpecialist} />
+          <p className="mt-3 text-center text-[13px] text-muted">What you&apos;ll see for each specialist. This company is fictional.</p>
+        </div>
+      </section>
+
       <section aria-labelledby="faq-heading" className="mx-auto grid max-w-4xl gap-6 px-4 py-14 sm:px-6">
         <h2 id="faq-heading" className="text-[28px] font-bold leading-tight">
           Questions
@@ -107,9 +141,9 @@ export default function HowItWorksPage() {
           ))}
         </div>
         <p className="text-muted">
-          How do we choose who to work with? See{" "}
+          How do we decide who to introduce? See{" "}
           <Link href="/how-we-check" className="text-blue">
-            how we check our specialists
+            how we check specialists
           </Link>
           . {site.name} is free for homeowners. Specialists pay us a fee for introductions.
         </p>

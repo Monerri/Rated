@@ -2,7 +2,7 @@
 title: Terms of use
 description: The terms that apply when you use the Vetted North website and service.
 date: 2026-10-08
-updated: 2026-10-13
+updated: 2026-10-16
 ---
 
 **This is a draft and is being reviewed before launch.**
@@ -15,7 +15,7 @@ Vetted North is a trading name of [Company name] Ltd, registered in England and 
 
 ## 2. What our service is
 
-We help homeowners find a suitable local home-improvement specialist. You tell us about your project, and we introduce you to the number of specialists you choose, **one, two or three**, from our network who cover your area and do the work you need.
+We help homeowners find a suitable local home-improvement specialist. You tell us about your project, and we introduce you to the number of specialists you choose, **one, two or three**, who cover your area and do the work you need. The specialists are independent businesses. They aren't part of Vetted North, and we don't publish a list of them.
 
 Our service is free for homeowners. Specialists pay us a fee for introductions.
 
@@ -29,7 +29,7 @@ We tell you who your specialists are before passing your details to them. If you
 
 ## 4. Our checks
 
-Every specialist we recommend has passed the checks described on our [How we check](/how-we-check) page. Each profile shows when they were last confirmed.
+Every specialist we introduce has passed the checks described on our [How we check](/how-we-check) page. When we introduce them, we show you the evidence and when the checks were last confirmed.
 
 Our checks are a snapshot based on information available to us at the time. They help you start with a properly set-up business, but they **don't guarantee** the quality, price, timing or outcome of any work. We recommend you get quotes and specifications in writing, check what any guarantee covers, and read recent reviews.
 
@@ -37,7 +37,7 @@ Our checks are a snapshot based on information available to us at the time. They
 
 Any quote, contract, payment, warranty or guarantee is between you and the specialist. We are not a party to it and are not responsible for the specialist's work, products or advice. You're free to decide not to go ahead, and free to compare with other businesses.
 
-If you have a problem with a specialist we introduced, please tell us. We'll help where we can, and we may review whether they remain in our network.
+If you have a problem with a specialist we introduced, please tell us. We'll help where we can, and we may review whether we continue to introduce them.
 
 ## 6. Information on our site
 

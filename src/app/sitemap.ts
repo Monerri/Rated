@@ -2,7 +2,6 @@ import type { MetadataRoute } from "next";
 import { site } from "@/config/site";
 import { getArticles } from "@/lib/content";
 import { regions } from "@/config/regions";
-import { specialists } from "@/data/specialists";
 import { getCatalogue } from "@/lib/catalogue";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -12,7 +11,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/find-a-specialist",
     "/how-it-works",
     "/how-we-check",
-    "/specialists",
     "/areas",
     "/about",
     "/guides",
@@ -33,8 +31,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...staticPages,
     ...servicePages,
     ...regions.map((r) => ({ url: u(`/areas/${r.slug}`) })),
-    // Demonstration profiles are excluded from search engines.
-    ...specialists.filter((s) => !s.isDemo).map((s) => ({ url: u(`/specialists/${s.slug}`) })),
     ...getArticles("guides").map((a) => ({ url: u(`/guides/${a.slug}`), lastModified: a.updated ?? a.date })),
     ...getArticles("blog").map((a) => ({ url: u(`/blog/${a.slug}`), lastModified: a.updated ?? a.date })),
   ];

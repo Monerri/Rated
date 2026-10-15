@@ -4,12 +4,13 @@ import { vettingChecks, vettingStandard } from "@/config/vetting";
 import { demoSpecialist } from "@/data/specialists";
 import { formatMonthYear } from "@/lib/format";
 import { EvidenceCard } from "@/components/home/EvidenceCard";
+import { SchemesByService } from "@/components/checks/SchemesByService";
 import { Eyebrow } from "@/components/ui/Section";
 import { ButtonLink } from "@/components/ui/Button";
 import { ArrowIcon, TickIcon } from "@/components/ui/Icon";
 
 export const metadata: Metadata = {
-  title: "How we check our specialists",
+  title: "How we check specialists",
   description: "The four checks every specialist passes before we recommend them, and how we keep them up to date.",
 };
 
@@ -26,7 +27,7 @@ export default function HowWeCheckPage() {
       <section aria-labelledby="hwc-heading" className="border-b border-line bg-surface">
         <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:px-6 md:py-16 lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:gap-12">
           <div className="grid max-w-2xl gap-5">
-            <Eyebrow>How we check our specialists</Eyebrow>
+            <Eyebrow>How we check specialists</Eyebrow>
             <h1 id="hwc-heading" className="text-[36px] font-extrabold leading-[1.08] tracking-[-0.02em] sm:text-5xl">
               Four checks before we recommend anyone
             </h1>
@@ -40,7 +41,7 @@ export default function HowWeCheckPage() {
           </div>
           <div className="mx-auto w-full max-w-md">
             <EvidenceCard specialist={demoSpecialist} />
-            <p className="mt-3 text-center text-[13px] text-muted">How the checks appear on a specialist&apos;s profile. This company is fictional.</p>
+            <p className="mt-3 text-center text-[13px] text-muted">How the checks appear when we introduce a specialist. This company is fictional.</p>
           </div>
         </div>
       </section>
@@ -78,6 +79,20 @@ export default function HowWeCheckPage() {
         </ol>
       </section>
 
+      <section id="trade-schemes" aria-labelledby="schemes-heading" className="mx-auto grid max-w-6xl scroll-mt-20 gap-5 px-4 pb-14 sm:px-6 md:pb-20">
+        <div className="grid max-w-3xl gap-3">
+          <h2 id="schemes-heading" className="text-[28px] font-bold leading-tight">
+            Trade schemes, service by service
+          </h2>
+          <p className="text-lg text-muted">
+            Some work can only legally be done by a registered business. For example, anyone working on gas appliances
+            or pipes must be on the Gas Safe Register. For other work, registration lets the business certify that it
+            meets Building Regulations. Here&apos;s what we check for each kind of work.
+          </p>
+        </div>
+        <SchemesByService />
+      </section>
+
       <section aria-labelledby="uptodate-heading" className="border-y border-line bg-surface">
         <div className="mx-auto grid max-w-4xl gap-5 px-4 py-14 sm:px-6">
           <h2 id="uptodate-heading" className="text-[28px] font-bold leading-tight">
@@ -85,8 +100,8 @@ export default function HowWeCheckPage() {
           </h2>
           <ul className="grid gap-3 text-lg">
             <li>
-              We reconfirm every specialist&apos;s checks at least every {vettingStandard.checkValidityMonths} months. Each
-              profile shows <span className="font-mono text-base">Checks last confirmed: [date]</span>.
+              We reconfirm every specialist&apos;s checks at least every {vettingStandard.checkValidityMonths} months. When we
+              introduce them, we show <span className="font-mono text-base">Checks last confirmed: [date]</span>.
             </li>
             <li>If a specialist&apos;s checks lapse, or they no longer meet one of them, we stop recommending them.</li>
             <li>We review the standard itself and may add checks over time. When we do, we&apos;ll update this page.</li>
@@ -111,14 +126,14 @@ export default function HowWeCheckPage() {
           <ButtonLink href="/find-a-specialist">
             Find a specialist <ArrowIcon />
           </ButtonLink>
-          <ButtonLink href="/specialists" variant="secondary">
-            Our specialists
+          <ButtonLink href="/how-it-works" variant="secondary">
+            How it works
           </ButtonLink>
         </div>
         <p className="text-[15px] text-muted">
           Run a home-improvement business?{" "}
           <Link href="/for-suppliers" className="text-blue">
-            See how to be considered for our network
+            See how to be considered for introductions
           </Link>
           .
         </p>

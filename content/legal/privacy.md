@@ -2,7 +2,7 @@
 title: Privacy notice
 description: How Vetted North collects, uses, shares and protects your personal information.
 date: 2026-10-08
-updated: 2026-10-15
+updated: 2026-10-16
 ---
 
 **This is a draft and is being reviewed before launch.**
@@ -27,7 +27,7 @@ You can contact us about privacy at **privacy@vettednorth.com**.
 
 **How long we keep it:** 24 months from your enquiry, so we can deal with any questions or complaints, then we delete it.
 
-**Asking how it went:** about two weeks after we introduce you, we email you once to ask whether each specialist got in touch and how you'd rate them. Answering is optional. We use your answers to check that our specialists are reliable, which is in our legitimate interests and yours. We only quote a comment on our website if you tick the box giving permission, and then only with your first name and postcode area. Feedback is kept for 24 months.
+**Asking how it went:** about two weeks after we introduce you, we email you once to ask whether each specialist got in touch and how you'd rate them. Answering is optional. We use your answers to check that the specialists we introduce are reliable, which is in our legitimate interests and yours. We only quote a comment on our website if you tick the box giving permission, and then only with your first name and postcode area. Feedback is kept for 24 months.
 
 ### When you're "just researching" and save your progress
 
@@ -59,17 +59,17 @@ You can contact us about privacy at **privacy@vettednorth.com**.
 
 **How long we keep it:** 24 months.
 
-### When a business applies to join our network
+### When a business applies to receive introductions
 
 **What:** company and contact details, accreditation, guarantee and review information, and anything else you tell us.
 
 **Why:** to review the business against our requirements and, if it's suitable, to discuss working together.
 
-**Lawful basis:** our legitimate interest in vetting the businesses we work with.
+**Lawful basis:** our legitimate interest in vetting the businesses we introduce.
 
-**How long we keep it:** for unsuccessful applications, 24 months. For businesses that join our network, for as long as we work together and six years afterwards.
+**How long we keep it:** for unsuccessful applications, 24 months. For businesses we accept, for as long as they receive introductions and six years afterwards.
 
-For businesses in our network we also keep records of payments, introductions sent and refunds, for the same period, because they're financial records.
+For businesses that receive introductions we also keep records of payments, introductions sent and refunds, for the same period, because they're financial records.
 
 ### Technical information
 

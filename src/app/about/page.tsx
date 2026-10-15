@@ -22,7 +22,7 @@ const principles = [
   },
   {
     title: "Show the evidence",
-    body: "Each specialist's checks are shown on their profile, with the date they were last confirmed.",
+    body: "When we introduce a specialist, we show you their checks and the date they were last confirmed.",
   },
   {
     title: "Only promise what's true",
@@ -52,7 +52,7 @@ export default function AboutPage() {
         </p>
         <p>
           We understand the home-improvement industry, and we use that to help you navigate it. We explain your options
-          in plain English, check the businesses we work with, and introduce you to the number of suitable specialists you choose, up to three, who cover
+          in plain English, check the businesses we introduce, and introduce you to the number of suitable specialists you choose, up to three, who cover
           your area.
         </p>
       </section>
@@ -84,7 +84,7 @@ export default function AboutPage() {
         </h2>
         <p className="text-lg text-muted">
           We&apos;re starting in {primaryRegion.name}, with home improvements from windows and roofs to extensions, solar and insulation. We&apos;ll add more
-          services and areas as we build our network.{" "}
+          services and areas as more specialists pass our checks.{" "}
           <Link href="/areas" className="text-blue">
             Areas we cover
           </Link>

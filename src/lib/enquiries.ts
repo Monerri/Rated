@@ -132,7 +132,7 @@ export async function submitEnquiry(input: SubmitInput): Promise<SubmitResult> {
   await recordStore.saveEnquiry(enquiry);
 
   // The homeowner must be told who will contact them before anyone else gets their details.
-  if (!(await trySend(customerMatchEmail(enquiry, specialists, service.name, input.origin)))) {
+  if (!(await trySend(customerMatchEmail(enquiry, specialists, service.name)))) {
     // Nobody receives the lead, so nobody pays for it.
     for (const s of specialists) {
       await refundLead(s, enquiry.id, pricePence, "Refund: the homeowner's confirmation email couldn't be sent, so the lead wasn't passed on");

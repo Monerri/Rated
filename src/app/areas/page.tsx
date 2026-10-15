@@ -15,7 +15,7 @@ export default function AreasPage() {
       <header className="grid gap-4">
         <Eyebrow>Areas we cover</Eyebrow>
         <h1 className="text-[36px] font-extrabold leading-[1.08] tracking-[-0.02em] sm:text-5xl">Where we work</h1>
-        <p className="text-lg text-muted">We&apos;re starting in one region and will expand as we build our network.</p>
+        <p className="text-lg text-muted">We&apos;re starting in one region and will expand as more specialists pass our checks.</p>
       </header>
       <ul className="grid gap-4">
         {regions.map((r) => (

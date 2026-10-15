@@ -115,7 +115,7 @@ export function InterestForm({
         </Heading>
         <p className="text-muted">
           {intro ??
-            "We're currently building our network of vetted specialists in your area. Leave your details and we'll let you know when this service becomes available."}
+            "We're still checking specialists for this service in your area. Leave your details and we'll let you know when this service becomes available."}
         </p>
         <p className="rounded-[var(--radius-card)] bg-blue-tint px-4 py-3 text-[15px]">
           This isn&apos;t an enquiry. No company will contact you.

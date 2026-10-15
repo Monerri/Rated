@@ -115,7 +115,7 @@ export function FeedbackForm({ token }: { token: string }) {
       <div className="grid gap-3" role="status">
         <h1 className="text-[28px] font-bold leading-tight">Thank you, {data.firstName}</h1>
         <p className="text-muted">
-          Your answers help us keep only reliable specialists in our network. You can use the same link to change them.
+          Your answers help us decide which specialists we keep introducing. You can use the same link to change them.
         </p>
         <Link href="/guides" className="font-semibold text-blue">
           Read our guides

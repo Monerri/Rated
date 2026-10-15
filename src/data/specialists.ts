@@ -1,7 +1,7 @@
 import type { Specialist, VettingCheckResult } from "@/lib/types";
 
 /**
- * Prototype specialist directory. Every entry is fictional and flagged
+ * Prototype specialist records (never published as a list). Every entry is fictional and flagged
  * `isDemo`, and every page or email that shows one labels it as demonstration
  * data. Company numbers are placeholders. Replace with database records once
  * real specialists are vetted.

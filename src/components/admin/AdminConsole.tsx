@@ -208,7 +208,7 @@ export function AdminConsole() {
           Specialists
         </h2>
         <p className="text-[15px] text-muted">
-          A specialist is only shown and sent leads while they&apos;re on. They switch off by themselves when their
+          A specialist is only sent leads while they&apos;re on. They switch off by themselves when their
           balance is below their cheapest lead, and back on after a top-up. You can also switch anyone off by hand.
         </p>
         {real.length === 0 && (

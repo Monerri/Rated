@@ -1,3 +1,4 @@
+import { checkEmail, checkPhone } from "@/lib/contact-checks";
 import { primaryRegion } from "@/config/regions";
 import { getService, services } from "@/config/services";
 import { competentPersonSchemes, supplierDeclarationWording } from "@/config/suppliers";
@@ -66,6 +67,11 @@ export async function POST(request: Request) {
   if (!contactName) errors.contactName = "Please enter a contact name.";
   if (!email || !EMAIL.test(email)) errors.email = "Please enter a valid email address.";
   if (!phone) errors.phone = "Please enter a UK phone number.";
+  else if (checkPhone(phone)) errors.phone = checkPhone(phone)!;
+  if (email && EMAIL.test(email) && !errors.email) {
+    const problem = await checkEmail(email);
+    if (problem) errors.email = problem;
+  }
   if (websiteRaw && !website) errors.website = "Please enter a valid web address, or leave this blank.";
   if (servicesOffered.length === 0 && !otherServices) errors.servicesOffered = "Please choose at least one service.";
   for (const [slug, kinds] of Object.entries(leadTypes)) {

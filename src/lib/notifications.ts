@@ -128,7 +128,7 @@ ${fewer}What happens next
 2. ${n === 1 ? "They'll" : "Each will"} contact you ${site.specialistResponseTime} by phone or email to talk through your project.
 3. Any quote is between you and them, and there's no obligation to go ahead.
 
-No other company has been given your details.
+No other company has been given your details. In about two weeks we'll email you once to ask how it went.
 
 Your answers
 ${e.summary.map((r) => `  ${r.label}: ${r.value}`).join("\n")}
@@ -203,6 +203,43 @@ A homeowner in the ${area} area has just asked to be put in touch about ${servic
 Top up your balance to make sure you're considered for the next one: reply to this email or contact ${site.supplierApplicationsEmail}.
 
 ${site.name}
+`,
+  };
+}
+
+/** Sent once, about two weeks after an introduction. */
+export function feedbackRequestEmail(to: string, firstName: string, serviceName: string, specialistNames: string[], link: string): Email {
+  const who = specialistNames.length === 1 ? specialistNames[0] : `${specialistNames.slice(0, -1).join(", ")} and ${specialistNames[specialistNames.length - 1]}`;
+  return {
+    to,
+    subject: `How did it go with your ${serviceName.toLowerCase()} enquiry?`,
+    text: `Hello ${firstName},
+
+About two weeks ago we introduced you to ${who} about your ${serviceName.toLowerCase()} project. We'd like to know how it went.
+
+It takes about a minute: did they get in touch, and how would you rate them?
+${link}
+
+Your answers help us keep only reliable specialists in our network. We won't share your answers with anyone unless you say we can quote you.
+
+This is the only email we'll send you about it.
+
+${site.name}
+`,
+  };
+}
+
+/** A homeowner told us a specialist never got in touch. */
+export function noContactAlertEmail(serviceName: string, area: string, enquiryId: string, specialistNames: string[]): Email {
+  return {
+    to: adminEmail(),
+    subject: `Not contacted: ${serviceName} enquiry in ${area}`,
+    text: `A homeowner in ${area} says these specialists never got in touch about their ${serviceName.toLowerCase()} enquiry:
+${specialistNames.map((n) => `  - ${n}`).join("\n")}
+
+Enquiry reference: ${enquiryId}
+
+Worth following up with the specialist. If the lead was paid for, this may also be grounds for a refund to their balance.
 `,
   };
 }

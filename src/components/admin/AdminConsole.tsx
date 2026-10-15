@@ -5,6 +5,20 @@ import { buttonClass } from "@/components/ui/Button";
 import { FormError, TextField } from "@/components/ui/Form";
 import type { LedgerEntry } from "@/lib/types";
 
+interface FeedbackRow {
+  respondedAt: string;
+  specialist: string;
+  service: string;
+  area: string;
+  firstName: string;
+  contacted: "yes" | "no" | "not-yet";
+  rating: number | null;
+  comment: string | null;
+  mayQuote: boolean;
+}
+
+const CONTACTED_LABELS = { yes: "Got in touch", "not-yet": "Not yet", no: "Never got in touch" };
+
 interface Supplier {
   slug: string;
   name: string;
@@ -41,6 +55,7 @@ export function AdminConsole() {
   const [token, setToken] = useState("");
   const [draftToken, setDraftToken] = useState("");
   const [data, setData] = useState<{ suppliers: Supplier[]; entries: LedgerEntry[] } | null>(null);
+  const [feedback, setFeedback] = useState<FeedbackRow[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -59,6 +74,8 @@ export function AdminConsole() {
       return false;
     }
     setData(await res.json());
+    const fb = await fetch("/api/admin/feedback", { headers: { authorization: `Bearer ${t}` } }).catch(() => null);
+    if (fb?.ok) setFeedback(((await fb.json()) as { feedback: FeedbackRow[] }).feedback);
     return true;
   }, []);
 
@@ -217,6 +234,36 @@ export function AdminConsole() {
             {busy ? "Saving…" : "Save"}
           </button>
         </form>
+      </section>
+
+      <section aria-labelledby="feedback" className="grid min-w-0 gap-3">
+        <h2 id="feedback" className="text-2xl font-bold">
+          Homeowner feedback
+        </h2>
+        {feedback.length === 0 ? (
+          <p className="text-muted">No feedback yet. Homeowners are asked about two weeks after an introduction.</p>
+        ) : (
+          <ul className="grid gap-3">
+            {feedback.map((f, i) => (
+              <li key={i} className="grid gap-1 rounded-[var(--radius-card)] border border-line bg-surface p-4 text-[15px]">
+                <p className="font-semibold">
+                  {f.specialist} · {f.service} · {f.area}
+                </p>
+                <p>
+                  {f.contacted === "no" ? "⚠ " : ""}
+                  {CONTACTED_LABELS[f.contacted]}
+                  {f.rating ? ` · Rated ${f.rating} out of 5` : ""}
+                </p>
+                {f.comment && (
+                  <p className="text-muted">
+                    &ldquo;{f.comment}&rdquo; ({f.firstName}, {f.area}) {f.mayQuote ? "· May be quoted" : "· Not for publication"}
+                  </p>
+                )}
+                <p className="font-mono text-xs text-muted">{f.respondedAt.slice(0, 10)}</p>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
 
       <section aria-labelledby="history" className="grid min-w-0 gap-3">

@@ -19,6 +19,9 @@ interface Bindings {
   ADMIN_EMAIL?: string;
   /** "1" to log emails instead of sending them, for local previews (.dev.vars). */
   EMAIL_LOG_ONLY?: string;
+  /** The site address used in links in scheduled emails (see wrangler.jsonc). */
+  LINK_ORIGIN?: string;
+  SITE_URL?: string;
 }
 
 /**

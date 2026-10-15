@@ -37,11 +37,13 @@ Checks are reconfirmed at least every 12 months; lapsed specialists stop being m
 - **No guaranteed number of leads.** The owner decided against it for now.
 - **The ledger is permanent.** Every top-up, lead, refund, adjustment and forfeit is a new line in D1; nothing is edited or deleted.
 - **Specialist terms** (`content/legal/supplier-terms.md`, draft for a solicitor): if a specialist leaves, unused credit is held 6 months then forfeited; if we remove them, it's refunded.
+- **Lead quality:** contact details are checked before anyone is charged (`src/lib/contact-checks.ts`): email domain typos, throwaway inboxes, domains with no email service, Ofcom drama numbers, fake or premium-rate phone numbers. When a check can't tell, it accepts.
+- **Homeowner feedback:** about 14 days after an introduction, a daily job emails the homeowner once to ask whether each specialist got in touch and how they'd rate them (`src/lib/feedback.ts`, `/feedback/[token]`). "Never got in touch" alerts us straight away. Comments are only quoted with ticked permission (first name and area).
 - **Not yet:** Stripe, a business bank account and company registration. The owner wants to prove the idea first. Top-ups are added by hand on `/admin` for now.
 
 ## How it runs
 
-- **Stack:** Next.js 16 (App Router), React 19, TypeScript, Tailwind v4, deployed to Cloudflare Workers with OpenNext. `worker.ts` wraps the build and adds the Monday 07:05 UTC weekly reports.
+- **Stack:** Next.js 16 (App Router), React 19, TypeScript, Tailwind v4, deployed to Cloudflare Workers with OpenNext. `worker.ts` wraps the build and adds scheduled jobs: Monday 07:05 UTC weekly reports (including enquiries by source for judging adverts, and feedback), daily 09:40 UTC feedback emails.
 - **Deploys:** GitHub Actions deploys on every push to `main` and daily at 00:05 UTC (for scheduled blog posts). Work on a branch and open a pull request; the owner merges.
 - **Data:** Cloudflare D1 (`vetted-north-database`, binding `DB`). The site creates its own tables and deletes records past the privacy notice's retention periods (`src/lib/records.ts`).
 - **Email:** Resend, from hello@vettednorth.com (`RESEND_API_KEY` secret). Emails to demo specialists (`@example.com`) go to the admin inbox instead. On Cloudflare a missing key is a failure, so no record ever says an email was sent when it wasn't.
@@ -55,7 +57,7 @@ Checks are reconfirmed at least every 12 months; lapsed specialists stop being m
 
 ## Still to do (owner)
 
-- Connect vettednorth.com to the Worker (links in pages still point there).
+- Connect vettednorth.com to the Worker (links in pages still point there), then change `LINK_ORIGIN` in `wrangler.jsonc` to it.
 - Fill in the company name, number and ICO registration (placeholders in `src/config/site.ts`).
 - Have a solicitor review the Privacy notice, Terms and Specialist terms.
 - Recruit real specialists (a free beta at £0 per lead is an option), then Stripe top-ups and a supplier dashboard.

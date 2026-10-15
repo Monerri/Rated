@@ -1,3 +1,4 @@
+import { checkEmail } from "@/lib/contact-checks";
 import { getCatalogueService } from "@/lib/catalogue";
 import { notifyServiceAvailableWording } from "@/lib/consent";
 import { normalisePostcode, postcodeArea, regionForPostcode } from "@/lib/postcode";
@@ -35,6 +36,8 @@ export async function POST(request: Request) {
 
   const email = str(body.email, 254);
   if (!email || !EMAIL.test(email)) return jsonError("Please enter a valid email address.");
+  const emailProblem = await checkEmail(email);
+  if (emailProblem) return jsonError(emailProblem);
 
   // Consent must be given, and the wording must be the version we actually show.
   const expected = notifyServiceAvailableWording(service.name);

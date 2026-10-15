@@ -21,7 +21,10 @@
 		// Sender for every email. The domain must be verified in Resend.
 		"EMAIL_FROM": "Vetted North <hello@vettednorth.com>",
 		// Receives copies of emails meant for demonstration specialists.
-		"ADMIN_EMAIL": "hello@vettednorth.com"
+		"ADMIN_EMAIL": "hello@vettednorth.com",
+		// Address used in links in scheduled emails (feedback requests). Change to
+		// https://vettednorth.com once that domain is connected to this Worker.
+		"LINK_ORIGIN": "https://vetted-north.rxsilmon.workers.dev"
 	},
 	// Enquiries, saved answers, registrations and applications. The site
 	// creates its own tables (see src/lib/records.ts).
@@ -33,9 +36,9 @@
 		}
 	],
 	// RESEND_API_KEY is a secret: set it in the Cloudflare dashboard, never here.
-	// Weekly reports to specialists and to us: Mondays at 07:05 UTC.
 	"triggers": {
-		"crons": ["5 7 * * 1"]
+		// Mondays 07:05 UTC: weekly reports. Daily 09:40 UTC: feedback emails. See worker.ts.
+		"crons": ["5 7 * * 1", "40 9 * * *"]
 	},
 	"observability": {
 		"enabled": true

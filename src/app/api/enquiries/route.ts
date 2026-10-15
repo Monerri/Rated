@@ -1,3 +1,4 @@
+import { checkEmail, checkPhone } from "@/lib/contact-checks";
 import { submitEnquiry } from "@/lib/enquiries";
 import { EMAIL, jsonError, normalisePhone, parseSource, readJson, requestOrigin, str } from "@/lib/request";
 
@@ -13,6 +14,9 @@ export async function POST(request: Request) {
   if (!firstName || !lastName) return jsonError("Please enter your first and last name.");
   if (!email || !EMAIL.test(email)) return jsonError("Please enter a valid email address.");
   if (!phone) return jsonError("Please enter a UK phone number.");
+  // Specialists pay for each introduction, so make sure they can reach the homeowner.
+  const contactProblem = checkPhone(phone) ?? (await checkEmail(email));
+  if (contactProblem) return jsonError(contactProblem);
 
   const consent = (body.consent ?? {}) as Record<string, unknown>;
 

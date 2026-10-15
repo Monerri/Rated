@@ -5,6 +5,7 @@ import type {
   FeedbackRequest,
   InterestRegistration,
   LedgerEntry,
+  ListingSwitch,
   MissedLead,
   SavedProgress,
   ServiceOverride,
@@ -61,6 +62,11 @@ export interface RecordStore {
   listLedger(since: string, limit?: number): Promise<LedgerEntry[]>;
   saveMissedLead(record: MissedLead): Promise<void>;
   listMissedLeads(since: string): Promise<MissedLead[]>;
+
+  /** Records a manual on/off switch for a specialist's listing. */
+  addListingSwitch(record: ListingSwitch): Promise<void>;
+  /** The latest switch for every specialist who has one. */
+  getListingSwitches(): Promise<Record<string, ListingSwitch>>;
 }
 
 /**
@@ -78,6 +84,7 @@ interface Memory {
   ledger: LedgerEntry[];
   missed: MissedLead[];
   feedback: Map<string, FeedbackRequest>;
+  switches: ListingSwitch[];
 }
 
 const g = globalThis as typeof globalThis & { __vnMemory?: Memory };
@@ -90,6 +97,7 @@ const memory: Memory = (g.__vnMemory ??= {
   ledger: [],
   missed: [],
   feedback: new Map(),
+  switches: [],
 });
 
 function log(label: string, record: object) {
@@ -189,6 +197,15 @@ const prototypeStore: RecordStore = {
   async listMissedLeads(since) {
     return memory.missed.filter((m) => m.createdAt >= since);
   },
+  async addListingSwitch(record) {
+    (memory.switches ??= []).push(record);
+    log("listing switch", record);
+  },
+  async getListingSwitches() {
+    const out: Record<string, ListingSwitch> = {};
+    for (const r of memory.switches ?? []) out[r.supplierSlug] = r;
+    return out;
+  },
 };
 
 /**
@@ -211,6 +228,9 @@ const SCHEMA = [
   "CREATE UNIQUE INDEX IF NOT EXISTS ledger_one_charge_per_lead ON ledger (enquiry_id, supplier_slug) WHERE kind = 'lead'",
   "CREATE TABLE IF NOT EXISTS missed_leads (id TEXT PRIMARY KEY, supplier_slug TEXT NOT NULL, created_at TEXT NOT NULL, data TEXT NOT NULL)",
   "CREATE TABLE IF NOT EXISTS feedback (token TEXT PRIMARY KEY, enquiry_id TEXT NOT NULL UNIQUE, created_at TEXT NOT NULL, data TEXT NOT NULL)",
+  // Manual on/off switches for listings. Lines are only ever added; the latest one counts.
+  "CREATE TABLE IF NOT EXISTS listing_switches (id TEXT PRIMARY KEY, supplier_slug TEXT NOT NULL, created_at TEXT NOT NULL, is_on INTEGER NOT NULL, note TEXT NOT NULL)",
+  "CREATE INDEX IF NOT EXISTS listing_switches_by_supplier ON listing_switches (supplier_slug, created_at)",
 ];
 
 /**
@@ -226,6 +246,7 @@ const RETENTION = [
   "DELETE FROM feedback WHERE created_at < strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-24 months')",
   "DELETE FROM missed_leads WHERE created_at < strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '-24 months')",
   // The ledger is a financial record and is kept: it holds no homeowner details, only enquiry ids.
+  // Listing switches are kept too, as the record of when each specialist was on or off.
 ];
 
 /** How often the retention clean-up runs, at most. */
@@ -426,6 +447,25 @@ function d1Queries(db: D1): RecordStore {
         .all<{ data: string }>();
       return results.map((row) => JSON.parse(row.data) as MissedLead);
     },
+    async addListingSwitch(r) {
+      await db
+        .prepare("INSERT INTO listing_switches (id, supplier_slug, created_at, is_on, note) VALUES (?, ?, ?, ?, ?)")
+        .bind(r.id, r.supplierSlug, r.createdAt, r.on ? 1 : 0, r.note)
+        .run();
+    },
+    async getListingSwitches() {
+      const { results } = await db
+        .prepare(
+          `SELECT id, supplier_slug, created_at, is_on, note FROM listing_switches s
+           WHERE created_at = (SELECT MAX(created_at) FROM listing_switches WHERE supplier_slug = s.supplier_slug)`,
+        )
+        .all<{ id: string; supplier_slug: string; created_at: string; is_on: number; note: string }>();
+      const out: Record<string, ListingSwitch> = {};
+      for (const r of results) {
+        out[r.supplier_slug] = { id: r.id, supplierSlug: r.supplier_slug, createdAt: r.created_at, on: r.is_on === 1, note: r.note };
+      }
+      return out;
+    },
   };
 }
 
@@ -459,4 +499,6 @@ export const recordStore: RecordStore = {
   listLedger: (since, limit) => currentStore().listLedger(since, limit),
   saveMissedLead: (m) => currentStore().saveMissedLead(m),
   listMissedLeads: (since) => currentStore().listMissedLeads(since),
+  addListingSwitch: (r) => currentStore().addListingSwitch(r),
+  getListingSwitches: () => currentStore().getListingSwitches(),
 };

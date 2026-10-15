@@ -207,6 +207,32 @@ ${site.name}
   };
 }
 
+/** Sent when a lead takes a specialist's balance below their cheapest lead, which switches them off until they top up. */
+export function listingPausedEmail(s: Specialist, balancePence: number, minimumFeePence: number): Email {
+  return {
+    to: s.enquiryEmail,
+    subject: `Your ${site.name} listing is paused until you top up`,
+    text: `${s.isDemo ? DEMO_NOTE : ""}Hello ${s.name},
+
+Your prepaid balance is now ${formatPence(balancePence)}, which is less than your cheapest lead (${formatPence(minimumFeePence)}). Until you top up, you won't be considered for new leads or shown in our list of specialists.
+
+Your listing switches back on by itself as soon as your balance covers a lead. To top up, reply to this email or contact ${site.supplierApplicationsEmail}.
+
+${site.name}
+`,
+  };
+}
+
+/** Tells us a specialist has been switched off automatically by a low balance. */
+export function listingPausedAlertEmail(s: Specialist, balancePence: number, minimumFeePence: number): Email {
+  return {
+    to: adminEmail(),
+    subject: `Paused for low balance: ${s.name}`,
+    text: `${s.name}'s balance is now ${formatPence(balancePence)}, below their cheapest lead (${formatPence(minimumFeePence)}). They've been switched off automatically and told how to top up. They'll switch back on by themselves once a top-up is added on the admin page.
+`,
+  };
+}
+
 /** Sent once, about two weeks after an introduction. */
 export function feedbackRequestEmail(to: string, firstName: string, serviceName: string, specialistNames: string[], link: string): Email {
   const who = specialistNames.length === 1 ? specialistNames[0] : `${specialistNames.slice(0, -1).join(", ")} and ${specialistNames[specialistNames.length - 1]}`;

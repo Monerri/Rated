@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 export default function AdminPage() {
   return (
     <div className="mx-auto grid max-w-5xl grid-cols-1 gap-8 px-4 py-10 sm:px-6">
-      <h1 className="text-[32px] font-extrabold leading-tight">Specialist accounts</h1>
+      <h1 className="text-[32px] font-extrabold leading-tight">Specialists and accounts</h1>
       <AdminConsole />
     </div>
   );

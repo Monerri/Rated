@@ -39,6 +39,7 @@ Checks are reconfirmed at least every 12 months; lapsed specialists stop being m
 - **Specialist terms** (`content/legal/supplier-terms.md`, draft for a solicitor): if a specialist leaves, unused credit is held 6 months then forfeited; if we remove them, it's refunded.
 - **Lead quality:** contact details are checked before anyone is charged (`src/lib/contact-checks.ts`): email domain typos, throwaway inboxes, domains with no email service, Ofcom drama numbers, fake or premium-rate phone numbers. When a check can't tell, it accepts.
 - **Homeowner feedback:** about 14 days after an introduction, a daily job emails the homeowner once to ask whether each specialist got in touch and how they'd rate them (`src/lib/feedback.ts`, `/feedback/[token]`). "Never got in touch" alerts us straight away. Comments are only quoted with ticked permission (first name and area).
+- **On/off switch** (`src/lib/listing.ts`): every specialist, demo or real, is only shown in the directory and sent leads while they're on. They switch off automatically when their balance is below their cheapest lead (emailed once; back on after a top-up), and the owner can switch anyone off or on by hand on `/admin` (recorded permanently in `listing_switches`). Demo companies aren't charged, so only the manual switch applies to them.
 - **Not yet:** Stripe, a business bank account and company registration. The owner wants to prove the idea first. Top-ups are added by hand on `/admin` for now.
 
 ## How it runs
@@ -48,7 +49,7 @@ Checks are reconfirmed at least every 12 months; lapsed specialists stop being m
 - **Data:** Cloudflare D1 (`vetted-north-database`, binding `DB`). The site creates its own tables and deletes records past the privacy notice's retention periods (`src/lib/records.ts`).
 - **Email:** Resend, from hello@vettednorth.com (`RESEND_API_KEY` secret). Emails to demo specialists (`@example.com`) go to the admin inbox instead. On Cloudflare a missing key is a failure, so no record ever says an email was sent when it wasn't.
 - **Inboxes:** Cloudflare Email Routing forwards hello@, privacy@ and suppliers@vettednorth.com to the owner.
-- **Admin:** `/admin` (balances, top-ups, refunds, history) needs the `ADMIN_API_TOKEN` Worker secret (name matched in any capitalisation).
+- **Admin:** `/admin` (on/off switches, balances, top-ups, refunds, history) needs the `ADMIN_API_TOKEN` Worker secret (name matched in any capitalisation).
 - **Demo data:** all specialists in `src/data/specialists.ts` are fictional, marked `isDemo`, labelled "demo data" on the site and never charged.
 
 ## Checks before a pull request
@@ -56,6 +57,8 @@ Checks are reconfirmed at least every 12 months; lapsed specialists stop being m
 `npm run lint`, `npm run typecheck`, `npx opennextjs-cloudflare build`, then test in `npx opennextjs-cloudflare preview` (put `EMAIL_LOG_ONLY=1` in `.dev.vars` to log emails locally). See `docs/DEPLOY-CLOUDFLARE.md` and `docs/PUBLISHING.md`.
 
 ## Still to do (owner)
+
+- **Before going live: switch off the demo companies** on `/admin` ("Switch off all demo companies"). Until then, real homeowners can be introduced to fictional companies. The admin page and the Monday summary email remind the owner while any are on.
 
 - Connect vettednorth.com to the Worker (links in pages still point there), then change `LINK_ORIGIN` in `wrangler.jsonc` to it.
 - Fill in the company name, number and ICO registration (placeholders in `src/config/site.ts`).

@@ -6,6 +6,7 @@ import { bindings } from "@/lib/cloudflare";
 import { recordStore } from "@/lib/records";
 import { trySend, type Email } from "@/lib/notifications";
 import { summariseFeedback } from "@/lib/feedback";
+import { demoStillOn, listingStatuses, type ListingStatus } from "@/lib/listing";
 import type { Enquiry, LedgerEntry, MissedLead, Specialist } from "@/lib/types";
 
 /** Where an enquiry came from, for measuring adverts: the campaign tags if any, else the referring site. */
@@ -32,7 +33,15 @@ function dateOnly(iso: string) {
   return iso.slice(0, 10);
 }
 
-function supplierReport(s: Specialist, entries: LedgerEntry[], missed: MissedLead[], balance: number, from: string, to: string): Email {
+function supplierReport(
+  s: Specialist,
+  entries: LedgerEntry[],
+  missed: MissedLead[],
+  balance: number,
+  status: ListingStatus | undefined,
+  from: string,
+  to: string,
+): Email {
   const leads = entries.filter((e) => e.kind === "lead");
   const lines = leads.length
     ? leads.map((e) => `  ${dateOnly(e.createdAt)}  ${formatPence(-e.amountPence).padStart(8)}  ${e.note}`).join("\n")
@@ -49,6 +58,7 @@ Leads received: ${leads.length}
 Spent on leads: ${formatPence(-sum(entries, "lead"))}
 ${other.length ? `Top-ups and refunds: ${formatPence(other.reduce((t, e) => t + e.amountPence, 0))}\n` : ""}Leads missed because your balance was too low: ${missed.length}
 Balance now: ${formatPence(balance)}
+${listingLine(status)}
 
 Leads
 ${lines}
@@ -75,13 +85,14 @@ export async function sendWeeklyReports(now = new Date()): Promise<{ suppliers: 
   const since = new Date(now.getTime() - 7 * DAY).toISOString();
   const from = dateOnly(since);
   const to = dateOnly(now.toISOString());
-  const [entries, missed, balances, enquiries, feedback] = await Promise.all([
+  const [entries, missed, balances, enquiries, feedback, statuses] = await Promise.all([
     recordStore.listLedger(since, 10_000),
     recordStore.listMissedLeads(since),
     recordStore.getBalances(),
     recordStore.listEnquiries(since, now.toISOString()),
     // Requests go out up to three weeks before they're answered, so look back further and filter by answer date.
     recordStore.listFeedback(new Date(now.getTime() - 37 * DAY).toISOString()),
+    listingStatuses(),
   ]);
 
   let sent = 0;
@@ -91,18 +102,26 @@ export async function sendWeeklyReports(now = new Date()): Promise<{ suppliers: 
     const myMissed = missed.filter((m) => m.supplierSlug === s.slug);
     const balance = balances[s.slug] ?? 0;
     const leads = mine.filter((e) => e.kind === "lead").length;
+    const st = statuses[s.slug];
+    const state = st?.on ? "on" : st?.reason === "switched-off" ? "OFF (switched off)" : "OFF (low balance)";
     rows.push(
-      `  ${s.name}${s.isDemo ? " (demo, never charged, so not counted)" : ""}: ${leads} lead${leads === 1 ? "" : "s"}, ${formatPence(-sum(mine, "lead"))} spent, ${myMissed.length} missed, balance ${formatPence(balance)}`,
+      `  ${s.name}${s.isDemo ? " (demo, never charged, so not counted)" : ""}: ${state}, ${leads} lead${leads === 1 ? "" : "s"}, ${formatPence(-sum(mine, "lead"))} spent, ${myMissed.length} missed, balance ${formatPence(balance)}`,
     );
     if (s.isDemo) continue;
-    if (await trySend(supplierReport(s, mine, myMissed, balance, from, to))) sent++;
+    if (await trySend(supplierReport(s, mine, myMissed, balance, statuses[s.slug], from, to))) sent++;
   }
 
   const topups = sum(entries, "topup");
+  const demoOn = demoStillOn(statuses);
+  const reminder = demoOn.length
+    ? `REMINDER: ${demoOn.length} demo compan${demoOn.length === 1 ? "y is" : "ies are"} still switched on. Switch them off on the admin page before you go live, so real homeowners are only introduced to real specialists.
+
+`
+    : "";
   await trySend({
     to: bindings().ADMIN_EMAIL ?? site.contactEmail,
     subject: `${site.name} weekly summary: ${from} to ${to}`,
-    text: `Leads sent: ${entries.filter((e) => e.kind === "lead").length}
+    text: `${reminder}Leads sent: ${entries.filter((e) => e.kind === "lead").length}
 Charged for leads: ${formatPence(-sum(entries, "lead"))}
 Top-ups received: ${formatPence(topups)}
 Refunds to balances: ${formatPence(sum(entries, "refund"))}
@@ -122,6 +141,14 @@ Reports sent to ${sent} specialist${sent === 1 ? "" : "s"}.
 `,
   });
   return { suppliers: sent };
+}
+
+function listingLine(st: ListingStatus | undefined): string {
+  if (!st || st.on) return "Your listing: on";
+  if (st.reason === "low-balance") {
+    return `Your listing: paused, because your balance is below your cheapest lead (${formatPence(st.minimumFeePence ?? 0)}). It switches back on when you top up.`;
+  }
+  return `Your listing: switched off. Contact ${site.supplierApplicationsEmail} if you'd like it switched back on.`;
 }
 
 /** Enquiries and money charged for them, grouped by where the homeowner came from. */

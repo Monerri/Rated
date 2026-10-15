@@ -5,6 +5,7 @@ import { primaryRegion } from "@/config/regions";
 import { getService } from "@/config/services";
 import { formatMonthYear } from "@/lib/format";
 import { isCurrentlyVetted } from "@/lib/vetting";
+import { listingStatuses } from "@/lib/listing";
 import { Eyebrow } from "@/components/ui/Section";
 import { ButtonLink } from "@/components/ui/Button";
 import { ArrowIcon, TickIcon } from "@/components/ui/Icon";
@@ -14,9 +15,13 @@ export const metadata: Metadata = {
   description: `The vetted home-improvement specialists we work with across ${primaryRegion.name}.`,
 };
 
-export default function SpecialistsPage() {
-  const listed = specialists.filter((s) => isCurrentlyVetted(s));
-  const allDemo = listed.every((s) => s.isDemo);
+/** Read on every visit, so switching a specialist on or off shows straight away. */
+export const dynamic = "force-dynamic";
+
+export default async function SpecialistsPage() {
+  const statuses = await listingStatuses();
+  const listed = specialists.filter((s) => isCurrentlyVetted(s) && statuses[s.slug]?.on);
+  const allDemo = listed.length > 0 && listed.every((s) => s.isDemo);
 
   return (
     <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 md:py-16">
@@ -38,6 +43,12 @@ export default function SpecialistsPage() {
         <p className="rounded-[var(--radius-card)] border border-dashed border-line bg-surface px-4 py-3 text-[15px]">
           <strong>Demonstration data.</strong> The companies below are fictional and show how profiles will look. Real
           specialists will appear here once they&apos;ve been checked.
+        </p>
+      )}
+
+      {listed.length === 0 && (
+        <p className="rounded-[var(--radius-card)] border border-line bg-surface px-4 py-3 text-[15px]">
+          We&apos;re checking our first specialists. They&apos;ll appear here once they&apos;ve passed our checks.
         </p>
       )}
 

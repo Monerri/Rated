@@ -1,12 +1,12 @@
 ---
 title: Specialist terms
-description: The terms for home-improvement specialists who receive introductions through Vetted North, including prepaid credit.
+description: The terms for home-improvement specialists who receive introductions through {{name}}, including prepaid credit.
 date: 2026-10-16
 ---
 
 **This is a draft and is being reviewed before launch. It should be checked by a solicitor before any specialist signs up.**
 
-These terms apply to businesses ("you") that receive introductions to homeowners through Vetted North ("we", "us"). Our [terms of use](/terms) for homeowners and our [privacy notice](/privacy) explain how the service works from the homeowner's side.
+These terms apply to businesses ("you") that receive introductions to homeowners through {{name}} ("we", "us"). Our [terms of use](/terms) for homeowners and our [privacy notice](/privacy) explain how the service works from the homeowner's side.
 
 ## 1. Joining
 

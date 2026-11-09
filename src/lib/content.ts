@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
 import { marked } from "marked";
+import { fillPlaceholders, site } from "@/config/site";
 
 /**
  * Guides and blog posts are Markdown files in /content. Adding a file adds a
@@ -40,7 +41,8 @@ function toIsoDate(v: unknown): string | null {
 
 function readArticle(collection: Collection, file: string): Article {
   const raw = fs.readFileSync(path.join(ROOT, collection, file), "utf8");
-  const { data, content } = matter(raw);
+  const { data, content: body } = matter(raw);
+  const content = fillPlaceholders(body);
   const slug = file.replace(/\.md$/, "");
   const date = toIsoDate(data.date);
   if (!data.title || !data.description || !date) {
@@ -50,13 +52,13 @@ function readArticle(collection: Collection, file: string): Article {
   return {
     collection,
     slug,
-    title: String(data.title),
-    description: String(data.description),
+    title: fillPlaceholders(String(data.title)),
+    description: fillPlaceholders(String(data.description)),
     date,
     updated: toIsoDate(data.updated),
     service: data.service ? String(data.service) : null,
     tags: Array.isArray(data.tags) ? data.tags.map(String) : [],
-    author: data.author ? String(data.author) : "The Vetted North team",
+    author: data.author ? String(data.author) : `The ${site.name} team`,
     readingMinutes: Math.max(1, Math.round(words / 220)),
     order: typeof data.order === "number" ? data.order : 100,
     html: marked.parse(content, { async: false }),

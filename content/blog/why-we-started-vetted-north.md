@@ -1,5 +1,5 @@
 ---
-title: Why we started Vetted North
+title: Why we started {{name}}
 description: What we do, how we check the specialists we introduce, and what you can expect when you get in touch.
 date: 2026-10-08
 updated: 2026-10-09
@@ -8,7 +8,7 @@ tags: [about us]
 
 Improving your home should be exciting. Too often it starts with uncertainty instead: who do you call, how do you know they're any good, and what happens to your details once you've filled in a form?
 
-We started Vetted North to make that first step simpler and clearer for homeowners in North East England.
+We started {{name}} to make that first step simpler and clearer for homeowners in North East England.
 
 ## What we do
 

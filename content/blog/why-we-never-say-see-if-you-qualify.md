@@ -11,7 +11,7 @@ It's a powerful phrase. It suggests there's something valuable on offer, and tha
 
 ## What we do instead
 
-We built Vetted North around a simple idea: you should know exactly what happens before you share anything.
+We built {{name}} around a simple idea: you should know exactly what happens before you share anything.
 
 - **There's nothing to qualify for.** We ask questions so we can introduce the right specialists, not to test you.
 - **You choose how many companies contact you.** One, two or three. Never more.

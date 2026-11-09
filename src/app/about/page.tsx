@@ -100,8 +100,8 @@ export default function AboutPage() {
       </section>
 
       <p className="text-sm text-muted">
-        {site.name} is a trading name of {site.legal.companyName}, registered in England and Wales, company no.{" "}
-        {site.legal.companyNumber}.
+        {site.name} is a trading name of {site.legal.companyName}, registered in {site.legal.placeOfRegistration},
+        company no. {site.legal.companyNumber}. Registered office: {site.legal.registeredOffice}.
       </p>
     </div>
   );

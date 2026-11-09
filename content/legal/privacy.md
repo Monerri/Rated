@@ -1,6 +1,6 @@
 ---
 title: Privacy notice
-description: How Vetted North collects, uses, shares and protects your personal information.
+description: How {{name}} collects, uses, shares and protects your personal information.
 date: 2026-10-08
 updated: 2026-10-16
 ---
@@ -11,9 +11,9 @@ This notice explains what personal information we collect, why, who we share it 
 
 ## Who we are
 
-Vetted North is a trading name of [Company name] Ltd, registered in England and Wales (company number [to be confirmed]). We are the data controller for the information described in this notice. Our ICO registration number is [to be confirmed].
+{{name}} is a trading name of {{companyName}}, registered in {{placeOfRegistration}} (company number {{companyNumber}}, registered office {{registeredOffice}}). We are the data controller for the information described in this notice. Our ICO registration number is {{icoNumber}}.
 
-You can contact us about privacy at **privacy@vettednorth.com**.
+You can contact us about privacy at **{{privacyEmail}}**.
 
 ## What we collect and why
 
@@ -103,7 +103,7 @@ You have the right to:
 - withdraw your consent at any time, without affecting anything we did before you withdrew it
 - ask for your information in a portable format
 
-Email **privacy@vettednorth.com** and we'll respond within one month.
+Email **{{privacyEmail}}** and we'll respond within one month.
 
 If you're unhappy with how we've handled your information, please tell us first. You can also complain to the Information Commissioner's Office at [ico.org.uk](https://ico.org.uk) or on 0303 123 1113.
 

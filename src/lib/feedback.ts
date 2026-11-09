@@ -1,3 +1,4 @@
+import { site } from "@/config/site";
 import { getService } from "@/config/services";
 import { getSpecialist } from "@/data/specialists";
 import { feedbackRequestEmail, noContactAlertEmail, trySend } from "@/lib/notifications";
@@ -21,7 +22,7 @@ const FEEDBACK_WINDOW_DAYS = 7;
 export function publishConsentWording(firstName: string, area: string) {
   return {
     wordingId: "publish_feedback.v1",
-    wording: `You can quote my comment on the Vetted North website, with my first name and area ("${firstName}, ${area}").`,
+    wording: `You can quote my comment on the ${site.name} website, with my first name and area ("${firstName}, ${area}").`,
   };
 }
 

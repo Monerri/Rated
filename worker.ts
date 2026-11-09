@@ -27,7 +27,8 @@ const worker = {
     if (!path) return console.warn("No job for schedule", controller.cron);
     const key = crypto.randomUUID();
     (globalThis as { __vnCronKey?: string }).__vnCronKey = key;
-    const origin = env.LINK_ORIGIN ?? env.SITE_URL ?? "https://vettednorth.com";
+    const origin = env.LINK_ORIGIN ?? env.SITE_URL;
+    if (!origin) return console.error("Set SITE_URL in wrangler.jsonc so scheduled emails have working links.");
     const request = new Request(`${origin}${path}`, {
       method: "POST",
       headers: { authorization: `Bearer ${key}`, host: new URL(origin).host },

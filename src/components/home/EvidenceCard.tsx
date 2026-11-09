@@ -18,7 +18,7 @@ export function EvidenceCard({ specialist }: { specialist: PublicSpecialist }) {
     >
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="font-display text-lg font-bold leading-snug">{specialist.name}</p>
+          <p className="font-serif text-xl font-semibold leading-snug">{specialist.name}</p>
           <p className="text-sm text-muted">{serviceNames}</p>
         </div>
         {specialist.isDemo && (

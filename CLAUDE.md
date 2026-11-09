@@ -12,7 +12,7 @@ Vetted North (vettednorth.com), a trading name of Roberto Monerri Ltd, introduce
 - **People who are "just researching" are never given company names** or shared with anyone. They can be put in touch, save their answers (kept up to 12 months) or delete them.
 - **Property owners only.** Every questionnaire asks "Do you own the property?" (sole owner, joint owner, or not the owner) and "Home or business?". Non-owners are stopped kindly; nothing is saved or shared.
 - **Writing style:** British English. Plain, calm, factual. No em dashes. No alarmist wording.
-- **Design:** mobile first. Blue and green palette. **No purple.** The owner is colour-blind, so never rely on colour alone. Logo: the shield, hexagon and tick mark in `src/components/ui/Logo.tsx` (source files in `docs/brand/`); its blue, slate and green are the palette tokens.
+- **Design:** mobile first. The "Hearth" look (chosen November 2026): warm paper backgrounds, Fraunces serif headings with blue italic accents, DM Sans text, Trust Blue buttons, green only for ticks, honey-brown small labels. Tokens in `src/app/globals.css`; photos are optional slots in `src/config/photos.ts` (hidden until supplied). **No purple.** The owner is colour-blind, so never rely on colour alone. Logo: the shield, hexagon and tick mark in `src/components/ui/Logo.tsx` (source files in `docs/brand/`); its blue, slate and green are the palette tokens.
 - **The name will change** for a national or global rollout. Never type the name, domain, email addresses or company details: use `site` from `src/config/site.ts` in code and `{{name}}`-style placeholders in Markdown. See `docs/RENAMING.md`.
 - **Budget:** Cloudflare (free plan) and GitHub only. No Vercel or other paid hosting.
 

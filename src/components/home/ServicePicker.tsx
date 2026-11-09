@@ -16,10 +16,12 @@ export async function ServicePicker() {
           <li key={s.slug}>
             <CarryAreaLink
               href={`/find-a-specialist/${s.slug}`}
-              className="group grid h-full gap-3 rounded-[var(--radius-panel)] border-[1.5px] border-line bg-surface p-6 text-ink no-underline shadow-[var(--shadow-card)] transition-colors hover:border-blue motion-reduce:transition-none"
+              className="group grid h-full content-start gap-3 rounded-[var(--radius-panel)] border border-line bg-surface p-6 text-ink no-underline transition-colors hover:border-blue motion-reduce:transition-none sm:p-7"
             >
-              <Icon name={s.icon} className="size-10 text-blue" />
-              <h3 className="text-xl font-bold">{s.name}</h3>
+              <span className="grid size-14 place-items-center rounded-[var(--radius-card)] border border-line bg-ground">
+                <Icon name={s.icon} className="size-8 text-blue" />
+              </span>
+              <h3 className="text-[22px] font-semibold leading-tight">{s.name}</h3>
               <p className="text-[15px] text-muted">{s.summary}</p>
               <span className="mt-1 inline-flex items-center gap-1.5 font-display text-[15px] font-semibold text-blue">
                 Start here <ArrowIcon className="size-4 transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none" />

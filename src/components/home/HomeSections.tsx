@@ -7,6 +7,8 @@ import { vettingChecks } from "@/config/vetting";
 import { getArticles } from "@/lib/content";
 import { ArticleCard } from "@/components/content/ArticleCard";
 import { primaryRegion } from "@/config/regions";
+import { photos } from "@/config/photos";
+import { Photo } from "@/components/ui/Photo";
 
 export const steps = [
   {
@@ -25,17 +27,17 @@ export const steps = [
 
 export function HowItWorks() {
   return (
-    <Section id="how-it-works" eyebrow="How it works" title="Three simple steps" tone="surface">
-      <ol className="grid gap-8 md:grid-cols-3">
+    <Section id="how-it-works" eyebrow="How it works" title="Three simple steps" tone="linen">
+      <ol className="grid gap-5 md:grid-cols-3">
         {steps.map((s, i) => (
-          <li key={s.title} className="grid content-start gap-2">
+          <li key={s.title} className="grid content-start gap-3 rounded-[var(--radius-panel)] bg-surface p-7">
             <span
               className="grid size-10 place-items-center rounded-full border-[1.5px] border-blue font-display text-base font-bold text-blue"
               aria-hidden="true"
             >
               {i + 1}
             </span>
-            <h3 className="text-lg font-bold">{s.title}</h3>
+            <h3 className="text-2xl font-semibold">{s.title}</h3>
             <p className="text-[16px] text-muted">{s.body}</p>
           </li>
         ))}
@@ -52,17 +54,20 @@ export function ChecksSection() {
       title="Four checks before we recommend anyone"
       intro="Every specialist we introduce has passed these checks. We review them regularly and show you when they were last confirmed."
     >
-      <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {vettingChecks.map((c) => (
-          <li key={c.id} className="grid content-start gap-3 rounded-[var(--radius-card)] border border-line bg-surface p-5">
-            <span className="grid size-7 place-items-center rounded-full bg-green text-surface" aria-hidden="true">
-              <TickIcon className="size-3.5" />
-            </span>
-            <h3 className="text-[17px] font-bold">{c.title}</h3>
-            <p className="text-[15px] text-muted">{c.summary}</p>
-          </li>
-        ))}
-      </ul>
+      <div className={photos.homeChecks.src ? "grid items-center gap-8 lg:grid-cols-[0.9fr_1.1fr]" : "grid"}>
+        <Photo photo={photos.homeChecks} />
+        <ul className={`grid gap-4 sm:grid-cols-2 ${photos.homeChecks.src ? "" : "lg:grid-cols-4"}`}>
+          {vettingChecks.map((c) => (
+            <li key={c.id} className="grid content-start gap-3 rounded-[var(--radius-card)] border border-line bg-surface p-5">
+              <span className="grid size-7 place-items-center rounded-full bg-green text-surface" aria-hidden="true">
+                <TickIcon className="size-3.5" />
+              </span>
+              <h3 className="text-lg font-semibold">{c.title}</h3>
+              <p className="text-[15px] text-muted">{c.summary}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
       <p className="max-w-2xl text-[15px] text-muted">
         Checks help you start with a properly set-up business. They don&apos;t guarantee how a particular job will go,
         so we&apos;ll always encourage you to ask questions and get everything agreed in writing.
@@ -244,9 +249,9 @@ export function Faq() {
 
 export function FinalCta() {
   return (
-    <section aria-labelledby="final-cta-heading" className="border-t border-line bg-blue-tint">
+    <section aria-labelledby="final-cta-heading" className="border-t border-line bg-linen">
       <div className="mx-auto grid max-w-6xl justify-items-start gap-5 px-4 py-14 sm:px-6 md:py-16">
-        <h2 id="final-cta-heading" className="text-[28px] font-bold leading-tight md:text-[34px]">
+        <h2 id="final-cta-heading" className="text-[32px] font-medium leading-[1.1] md:text-[42px]">
           Tell us about your project
         </h2>
         <p className="max-w-xl text-lg text-muted">

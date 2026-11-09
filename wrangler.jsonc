@@ -18,10 +18,9 @@
 	],
 	"vars": {
 		"SITE_URL": "https://vettednorth.com",
-		// Sender for every email. The domain must be verified in Resend.
-		"EMAIL_FROM": "Vetted North <hello@vettednorth.com>",
-		// Receives copies of emails meant for demonstration specialists.
-		"ADMIN_EMAIL": "hello@vettednorth.com",
+		// Optional overrides. Without them, emails are sent from, and admin copies
+		// go to, the contact address in src/config/site.ts:
+		// "EMAIL_FROM": "Name <hello@example.com>", "ADMIN_EMAIL": "you@example.com",
 		// Address used in links in scheduled emails (feedback requests). Change to
 		// https://vettednorth.com once that domain is connected to this Worker.
 		"LINK_ORIGIN": "https://vetted-north.rxsilmon.workers.dev"

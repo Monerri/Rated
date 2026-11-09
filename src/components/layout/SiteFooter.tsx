@@ -31,8 +31,9 @@ export function SiteFooter() {
       <div className="border-t border-line">
         <div className="mx-auto grid max-w-6xl gap-1 px-4 py-6 text-[13px] text-muted sm:px-6">
           <p>
-            {site.name} is a trading name of {site.legal.companyName}, registered in England and Wales, company no.{" "}
-            {site.legal.companyNumber}. ICO registration {site.legal.icoNumber}.
+            {site.name} is a trading name of {site.legal.companyName}, registered in {site.legal.placeOfRegistration},
+            company no. {site.legal.companyNumber}. Registered office: {site.legal.registeredOffice}. ICO registration{" "}
+            {site.legal.icoNumber}.
           </p>
           <p>Our service is free for homeowners. Specialists pay us a fee for introductions.</p>
         </div>

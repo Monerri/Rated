@@ -1,3 +1,4 @@
+import { site } from "@/config/site";
 import Link from "next/link";
 import { Section } from "@/components/ui/Section";
 import { ButtonLink } from "@/components/ui/Button";
@@ -200,7 +201,7 @@ export const faqs: { q: string; a: string; link?: { href: string; label: string 
     a: "Tell us you're just researching. We'll let you know whether a vetted specialist covers your area, and you choose whether to be put in touch, save your progress, or delete your answers.",
   },
   {
-    q: "Can I use Vetted North if I rent?",
+    q: `Can I use ${site.name} if I rent?`,
     a: "We can only put property owners in touch with specialists, because the owner needs to agree to the work. If you rent, your landlord is usually responsible for repairs to things like windows, doors and roofs, so it's worth speaking to them.",
   },
   {

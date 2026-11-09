@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { site } from "@/config/site";
 import { useEffect, useState } from "react";
 import { mobileExtraNav, primaryNav, supplierNav } from "@/config/navigation";
 import { Logo } from "@/components/ui/Logo";
@@ -37,7 +38,7 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-surface/95 backdrop-blur supports-[backdrop-filter]:bg-surface/85">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
-        <Link href="/" aria-label="Vetted North home" className="no-underline" onClick={() => setOpen(false)}>
+        <Link href="/" aria-label={`${site.name} home`} className="no-underline" onClick={() => setOpen(false)}>
           <Logo />
         </Link>
 

@@ -10,7 +10,7 @@ date: 2026-10-10
 # Optional: links the post to a service (windows-doors, conservatory-roofs, extensions, roofing, solar-battery, heat-pumps, ev-charging, insulation).
 service: windows-doors
 tags: [windows]
-# Optional. Defaults to "The Vetted North team".
+# Optional. Defaults to "The {{name}} team".
 # author: Name
 ---
 

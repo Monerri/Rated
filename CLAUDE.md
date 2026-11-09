@@ -2,7 +2,7 @@
 
 # Vetted North: project brief
 
-Vetted North (vettednorth.com) introduces homeowners in North East England to vetted home-improvement specialists. Specialists pay for introductions; the service is free for homeowners. This file is the standing brief for anyone (or any Claude session) working on the site. Read it before changing anything.
+Vetted North (vettednorth.com), a trading name of Roberto Monerri Ltd, introduces homeowners in North East England to vetted home-improvement specialists. Specialists pay for introductions; the service is free for homeowners. This file is the standing brief for anyone (or any Claude session) working on the site. Read it before changing anything.
 
 ## The owner's rules
 
@@ -12,7 +12,8 @@ Vetted North (vettednorth.com) introduces homeowners in North East England to ve
 - **People who are "just researching" are never given company names** or shared with anyone. They can be put in touch, save their answers (kept up to 12 months) or delete them.
 - **Property owners only.** Every questionnaire asks "Do you own the property?" (sole owner, joint owner, or not the owner) and "Home or business?". Non-owners are stopped kindly; nothing is saved or shared.
 - **Writing style:** British English. Plain, calm, factual. No em dashes. No alarmist wording.
-- **Design:** mobile first. Blue and green palette. **No purple.** The owner is colour-blind, so never rely on colour alone.
+- **Design:** mobile first. Blue and green palette. **No purple.** The owner is colour-blind, so never rely on colour alone. Logo: the shield, hexagon and tick mark in `src/components/ui/Logo.tsx` (source files in `docs/brand/`); its blue, slate and green are the palette tokens.
+- **The name will change** for a national or global rollout. Never type the name, domain, email addresses or company details: use `site` from `src/config/site.ts` in code and `{{name}}`-style placeholders in Markdown. See `docs/RENAMING.md`.
 - **Budget:** Cloudflare (free plan) and GitHub only. No Vercel or other paid hosting.
 
 ## The four checks (every specialist)
@@ -62,6 +63,6 @@ Checks are reconfirmed at least every 12 months; lapsed specialists stop being m
 - **Before going live: switch off the demo companies** on `/admin` ("Switch off all demo companies"). Until then, real homeowners can be introduced to fictional companies. The admin page and the Monday summary email remind the owner while any are on.
 
 - Connect vettednorth.com to the Worker (links in pages still point there), then change `LINK_ORIGIN` in `wrangler.jsonc` to it.
-- Fill in the company name, number and ICO registration (placeholders in `src/config/site.ts`).
+- Fill in the company number, registered office address and ICO registration number (`legal` in `src/config/site.ts`).
 - Have a solicitor review the Privacy notice, Terms and Specialist terms.
 - Recruit real specialists (a free beta at £0 per lead is an option), then Stripe top-ups and a supplier dashboard.

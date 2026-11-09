@@ -5,9 +5,41 @@ import type { Specialist } from "@/lib/types";
 import { canAfford, chargeForLead, cheapestLeadPrice } from "@/lib/billing";
 import { recordStore } from "@/lib/records";
 import { switchedOffByHand } from "@/lib/listing";
+import { lookupPostcode, milesBetween } from "@/lib/geo";
+import { maxRadiusMiles } from "@/config/coverage";
 
-function covers(s: Specialist, area: string, outward: string | null): boolean {
-  return s.areasCovered.includes(area) || (outward !== null && s.areasCovered.includes(outward));
+/** Where a homeowner is: their postcode area and district, and the postcode's location when it could be looked up. */
+interface Place {
+  area: string;
+  outward: string | null;
+  point: { lat: number; lng: number } | null;
+}
+
+async function placeFor(areaOrPostcode: string): Promise<Place> {
+  if (!areaOrPostcode.includes(" ")) return { area: areaOrPostcode, outward: null, point: null };
+  const info = await lookupPostcode(areaOrPostcode);
+  return {
+    area: postcodeArea(areaOrPostcode),
+    outward: outwardCode(areaOrPostcode),
+    point: info ? { lat: info.lat, lng: info.lng } : null,
+  };
+}
+
+/**
+ * Whether a specialist covers a place. With a base and radius: within the
+ * radius (never more than the cap) and not in a postcode they've left out.
+ * If the postcode couldn't be located, the base's own postcode area counts.
+ * Without a base: the postcode areas or districts they listed.
+ */
+export function covers(s: Specialist, place: Place): boolean {
+  const c = s.coverage;
+  if (c) {
+    const excluded = (c.excluded ?? []).map((x) => x.toUpperCase());
+    if (excluded.includes(place.area) || (place.outward !== null && excluded.includes(place.outward))) return false;
+    if (place.point) return milesBetween(place.point, c) <= Math.min(c.radiusMiles, maxRadiusMiles);
+    return outwardCode(c.basePostcode.toUpperCase()).replace(/\d.*$/, "") === place.area;
+  }
+  return s.areasCovered.includes(place.area) || (place.outward !== null && s.areasCovered.includes(place.outward));
 }
 
 /** Whether a specialist takes this kind of job. No preference set means they take every kind. */
@@ -18,15 +50,12 @@ function takesLeadType(s: Specialist, serviceSlug: string, leadType: string | nu
 
 /** Specialists who could take this lead, leaving out anyone switched off by hand. */
 async function candidates(serviceSlug: string, areaOrPostcode: string, leadType: string | null): Promise<Specialist[]> {
-  const isFull = areaOrPostcode.includes(" ");
-  const area = isFull ? postcodeArea(areaOrPostcode) : areaOrPostcode;
-  const outward = isFull ? outwardCode(areaOrPostcode) : null;
-  const off = await switchedOffByHand();
+  const [place, off] = await Promise.all([placeFor(areaOrPostcode), switchedOffByHand()]);
   return specialists.filter(
     (s) =>
       !off.has(s.slug) &&
       s.services.includes(serviceSlug) &&
-      covers(s, area, outward) &&
+      covers(s, place) &&
       takesLeadType(s, serviceSlug, leadType) &&
       isCurrentlyVetted(s),
   );

@@ -1,23 +1,18 @@
 import type { Question } from "@/funnels/types";
-import { ELSEWHERE } from "@/funnels/types";
 
 /** Questions reused across services, so wording stays consistent. */
 
-export const postcodeAreaQuestion: Question = {
-  id: "postcodeArea",
-  type: "postcode-area",
-  title: "Where is the property?",
-  hint: "Choose the start of your postcode. We'll ask for the full postcode later.",
-  summaryLabel: "Area",
-};
-
-export const fullPostcodeQuestion: Question = {
-  id: "postcodeEarly",
+/**
+ * The full postcode, asked once near the start. It decides who covers the
+ * property, and the contact step reuses it. The postcode step shows our data promise.
+ */
+export const POSTCODE = "postcode";
+export const postcodeQuestion: Question = {
+  id: POSTCODE,
   type: "postcode",
   title: "What's the postcode of the property?",
-  hint: "We'll check whether we have vetted specialists in your area.",
+  hint: "We'll use it to check which specialists cover your area.",
   summaryLabel: "Postcode",
-  showIf: (a) => a.postcodeArea === ELSEWHERE,
 };
 
 /**

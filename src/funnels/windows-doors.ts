@@ -1,8 +1,7 @@
 import type { FunnelConfig } from "@/funnels/types";
 import {
-  fullPostcodeQuestion,
   listedQuestion,
-  postcodeAreaQuestion,
+  postcodeQuestion,
   propertyTypeQuestion,
   RESEARCHING,
   specialistCountQuestion,
@@ -28,9 +27,8 @@ export const windowsDoorsFunnel: FunnelConfig = {
         { value: "both", label: "Windows & doors", icon: "windows-doors" },
       ],
     },
-    postcodeAreaQuestion,
-    fullPostcodeQuestion,
-    propertyTypeQuestion,
+    postcodeQuestion,
+      propertyTypeQuestion,
     {
       id: "windowCount",
       type: "single",

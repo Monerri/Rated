@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { PublicSpecialist, Service } from "@/lib/types";
 import type { Answers } from "@/funnels/types";
-import { ELSEWHERE } from "@/funnels/types";
+import { POSTCODE } from "@/funnels/shared";
 import { MAX_SPECIALISTS, numberWord, shareWithSpecialistWording } from "@/lib/consent";
 import { normalisePostcode, postcodeArea } from "@/lib/postcode";
 import { getSourceInfo } from "@/lib/source";
@@ -22,26 +22,29 @@ export interface EnquiryResult {
   postcodeArea: string;
 }
 
-type Errors = Partial<Record<"postcode" | "firstName" | "lastName" | "email" | "phone", string>>;
+type Errors = Partial<Record<"firstName" | "lastName" | "email" | "phone", string>>;
 
 export function ContactStep({
   headingRef,
   service,
   answers,
   researchingConfirmed,
+  onChangePostcode,
   onSubmitted,
 }: {
   headingRef: React.RefObject<HTMLHeadingElement | null>;
   service: Service;
   answers: Answers;
   researchingConfirmed: boolean;
+  /** Goes back to the postcode question. */
+  onChangePostcode: () => void;
   onSubmitted: (r: EnquiryResult) => void;
 }) {
   const count = Math.min(Math.max(1, Number(answers.specialistCount ?? 1) || 1), MAX_SPECIALISTS);
   const consent = shareWithSpecialistWording(service.name, count);
   const many = count > 1;
-  const knownPostcode = answers.postcodeArea === ELSEWHERE ? String(answers.postcodeEarly ?? "") : "";
-  const area = answers.postcodeArea !== ELSEWHERE ? String(answers.postcodeArea ?? "") : null;
+  // Asked near the start of the questionnaire, so it isn't asked again here.
+  const postcode = normalisePostcode(String(answers[POSTCODE] ?? ""));
 
   const [errors, setErrors] = useState<Errors>({});
   const [formError, setFormError] = useState<string | null>(null);
@@ -54,10 +57,7 @@ export function ContactStep({
     const get = (k: string) => String(f.get(k) ?? "").trim();
 
     const next: Errors = {};
-    const postcode = normalisePostcode(get("postcode"));
-    if (!postcode) next.postcode = "Please enter a full UK postcode, for example NE1 4ST.";
-    else if (area && postcodeArea(postcode) !== area)
-      next.postcode = `This postcode doesn't start with ${area}. Please check it, or go back and change your area.`;
+    if (!postcode) return onChangePostcode();
     if (!get("firstName")) next.firstName = "Please enter your first name.";
     if (!get("lastName")) next.lastName = "Please enter your last name.";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(get("email"))) next.email = "Please enter a valid email address.";
@@ -105,14 +105,15 @@ export function ContactStep({
       </header>
 
       <div className="grid gap-4">
-        <TextField
-          label="Postcode of the property"
-          name="postcode"
-          autoComplete="postal-code"
-          autoCapitalize="characters"
-          defaultValue={knownPostcode}
-          error={errors.postcode}
-        />
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-[var(--radius-card)] border border-line bg-surface px-4 py-3">
+          <p className="text-[15px]">
+            <span className="text-muted">Postcode of the property: </span>
+            <strong className="font-semibold">{postcode}</strong>
+          </p>
+          <button type="button" onClick={onChangePostcode} className="min-h-11 font-display text-[15px] font-semibold text-blue">
+            Change<span className="sr-only"> postcode</span>
+          </button>
+        </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <TextField label="First name" name="firstName" autoComplete="given-name" maxLength={80} error={errors.firstName} />
           <TextField label="Last name" name="lastName" autoComplete="family-name" maxLength={80} error={errors.lastName} />

@@ -17,6 +17,8 @@ import {
 } from "@/lib/notifications";
 import { normalisePostcode, outwardCode, postcodeArea, regionForPostcode } from "@/lib/postcode";
 import { recordStore } from "@/lib/records";
+import { lookupPostcode } from "@/lib/geo";
+import { POSTCODE } from "@/funnels/shared";
 import type { Enquiry, SourceInfo, Specialist } from "@/lib/types";
 
 export type SubmitResult =
@@ -58,8 +60,12 @@ export async function submitEnquiry(input: SubmitInput): Promise<SubmitResult> {
     return { ok: false, status: 400, error: "Please confirm you'd like to be put in touch." };
   }
 
-  const postcode = normalisePostcode(input.postcode);
+  // The postcode is asked near the start of the questionnaire (older clients sent it separately).
+  const postcode = normalisePostcode(String(answers[POSTCODE] ?? input.postcode ?? ""));
   if (!postcode) return { ok: false, status: 400, error: "Please enter a valid UK postcode." };
+  if ((await lookupPostcode(postcode)) === null) {
+    return { ok: false, status: 400, error: "We couldn't find that postcode. Please check it and try again." };
+  }
   const regionSlug = regionForPostcode(postcode);
   if (!regionSlug || !service.regions.includes(regionSlug)) {
     return { ok: false, status: 422, error: "We don't cover that postcode yet." };
@@ -109,7 +115,7 @@ export async function submitEnquiry(input: SubmitInput): Promise<SubmitResult> {
     id: enquiryId,
     serviceSlug: service.slug,
     answers,
-    summary: [...summarise(funnel, answers), { questionId: "postcode", label: "Postcode", value: postcode }],
+    summary: summarise(funnel, { ...answers, [POSTCODE]: postcode }),
     postcode,
     regionSlug,
     contact: input.contact,

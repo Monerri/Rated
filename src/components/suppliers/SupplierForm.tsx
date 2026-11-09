@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import type { Service } from "@/lib/types";
-import { primaryRegion } from "@/config/regions";
+import { maxRadiusMiles, radiusOptions } from "@/config/coverage";
 import { competentPersonSchemes, supplierDeclarationWording } from "@/config/suppliers";
 import { getSourceInfo } from "@/lib/source";
 import { buttonClass } from "@/components/ui/Button";
@@ -42,8 +42,9 @@ export function SupplierForm({ services }: { services: Pick<Service, "slug" | "n
         servicesOffered: offered,
         leadTypes: Object.fromEntries(offered.map((slug) => [slug, f.getAll(`leadTypes:${slug}`).map(String)])),
         otherServices: get("otherServices"),
-        areasCovered: f.getAll("areasCovered").map(String),
-        otherAreas: get("otherAreas"),
+        basePostcode: get("basePostcode"),
+        radiusMiles: get("radiusMiles"),
+        excludedPostcodes: get("excludedPostcodes"),
         companiesHouseNumber: get("companiesHouseNumber"),
         competentPersonScheme: get("competentPersonScheme"),
         competentPersonSchemeOther: get("competentPersonSchemeOther"),
@@ -156,20 +157,34 @@ export function SupplierForm({ services }: { services: Pick<Service, "slug" | "n
         <TextField label="Anything else you do (optional)" name="otherServices" maxLength={300} />
       </fieldset>
 
-      <fieldset className="grid gap-3">
-        <legend className="mb-1 font-display text-lg font-bold">Areas you cover</legend>
-        <p className="-mt-1 text-sm text-muted">Choose the postcode areas you work in.</p>
-        <div className="flex flex-wrap gap-2">
-          {primaryRegion.postcodeAreas.map((a) => (
-            <label key={a.code} className="cursor-pointer">
-              <input type="checkbox" name="areasCovered" value={a.code} className="peer sr-only" />
-              <span className="inline-flex min-h-11 items-center rounded-full border-[1.5px] border-line px-4 font-display text-[15px] font-semibold peer-checked:border-blue peer-checked:bg-blue-tint peer-focus-visible:outline peer-focus-visible:outline-[3px] peer-focus-visible:outline-blue">
-                {a.code}
-              </span>
-            </label>
-          ))}
+      <fieldset className="grid gap-4">
+        <legend className="mb-1 font-display text-lg font-bold">Where you work</legend>
+        <p className="-mt-2 text-sm text-muted">
+          We introduce you to homeowners within a set distance of your base, up to {maxRadiusMiles} miles.
+        </p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <TextField
+            label="Your base postcode"
+            name="basePostcode"
+            autoComplete="postal-code"
+            autoCapitalize="characters"
+            hint="Where you usually travel from."
+            error={errors.basePostcode}
+          />
+          <SelectField
+            label="How far you'll travel"
+            name="radiusMiles"
+            options={radiusOptions.map((m) => ({ value: String(m), label: `Up to ${m} miles` }))}
+            error={errors.radiusMiles}
+          />
         </div>
-        <TextField label="Other areas or postcodes (optional)" name="otherAreas" maxLength={300} error={errors.areasCovered} />
+        <TextField
+          label="Postcodes you don't cover within that distance (optional)"
+          name="excludedPostcodes"
+          maxLength={300}
+          hint="Postcode areas or districts, for example TD, DG or NE71. Useful across a border, where different rules apply, or for places you can't easily reach."
+          error={errors.excludedPostcodes}
+        />
       </fieldset>
 
       <fieldset className="grid gap-4">

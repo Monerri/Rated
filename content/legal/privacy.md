@@ -2,7 +2,7 @@
 title: Privacy notice
 description: How {{name}} collects, uses, shares and protects your personal information.
 date: 2026-10-08
-updated: 2026-10-16
+updated: 2026-11-09
 ---
 
 **This is a draft and is being reviewed before launch.**
@@ -20,6 +20,8 @@ You can contact us about privacy at **{{privacyEmail}}**.
 ### When you ask us to find a specialist
 
 **What:** your answers to our questions about your home and project, your postcode, name, email address and phone number.
+
+**Checking your postcode:** we check that your postcode exists, and find roughly where it is so we can work out which specialists are within reach, using postcodes.io, a free service that looks postcodes up in official open data. Only the postcode is sent. If you choose "Use my location", your phone or computer shares your position once, we send it to postcodes.io to find the nearest postcode, and then we discard it. We don't store your location.
 
 **Why:** to identify suitable vetted specialists covering your area, up to the number you choose (one, two or three), to tell you who they are, and to pass your details to them so they can contact you about your project.
 
@@ -78,7 +80,7 @@ Our hosting provider keeps short-term technical logs, such as IP addresses, to k
 ## Who we share it with
 
 - **The specialists we introduce**, up to the number you chose, and only when you've asked us to put you in touch. Once they receive your details, they are responsible for how they use them and will have their own privacy notice.
-- **Service providers** who help us run the site, such as website hosting, our database and our email provider. They act on our instructions and must keep your information secure.
+- **Service providers** who help us run the site, such as website hosting, our database, our email provider and postcodes.io for postcode lookups. They act on our instructions and must keep your information secure.
 - **Authorities**, if the law requires us to.
 
 We never sell your personal information, and we never pass an enquiry to more specialists than you chose.

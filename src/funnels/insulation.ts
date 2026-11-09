@@ -1,8 +1,7 @@
 import type { FunnelConfig } from "@/funnels/types";
 import {
-  fullPostcodeQuestion,
   listedQuestion,
-  postcodeAreaQuestion,
+  postcodeQuestion,
   propertyTypeQuestion,
   RESEARCHING,
   specialistCountQuestion,
@@ -33,9 +32,8 @@ export const insulationFunnel: FunnelConfig = {
         text: "Cavity wall insulation isn't suitable for every home, for example walls exposed to driving rain. A good installer will survey the walls first and explain the guarantee they offer.",
       },
     },
-    postcodeAreaQuestion,
-    fullPostcodeQuestion,
-    {
+    postcodeQuestion,
+      {
       id: "age",
       type: "single",
       title: "Roughly when was the property built?",

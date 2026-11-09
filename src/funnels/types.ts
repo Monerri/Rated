@@ -45,17 +45,12 @@ export interface MultiChoiceQuestion extends BaseQuestion {
   layout?: "grid" | "list";
 }
 
-/** Postcode area chips for the region, plus "Elsewhere". */
-export interface PostcodeAreaQuestion extends BaseQuestion {
-  type: "postcode-area";
-}
-
-/** Full postcode, asked only when the person chose "Elsewhere". */
+/** The property's full postcode. */
 export interface PostcodeQuestion extends BaseQuestion {
   type: "postcode";
 }
 
-export type Question = SingleChoiceQuestion | MultiChoiceQuestion | PostcodeAreaQuestion | PostcodeQuestion;
+export type Question = SingleChoiceQuestion | MultiChoiceQuestion | PostcodeQuestion;
 
 export interface FunnelConfig {
   serviceSlug: string;
@@ -75,6 +70,3 @@ export interface FunnelConfig {
     of: (answers: Answers) => string;
   };
 }
-
-/** Value used by the postcode-area question when the area isn't listed. */
-export const ELSEWHERE = "elsewhere";

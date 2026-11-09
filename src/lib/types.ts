@@ -134,7 +134,14 @@ export interface Specialist {
   /** Where enquiries are sent. */
   enquiryEmail: string;
   services: string[];
+  /**
+   * Postcode areas or districts covered ("NE", "TD15"). Used when a
+   * specialist has no base and radius, and as a fallback when a postcode's
+   * location can't be looked up.
+   */
   areasCovered: string[];
+  /** Where they work: a base and a travel radius (capped in config/coverage.ts). */
+  coverage?: SpecialistCoverage;
   about: string;
   googleRating: number;
   googleReviewCount: number;
@@ -253,6 +260,17 @@ export interface SavedProgress {
   createdAt: string;
 }
 
+export interface SpecialistCoverage {
+  /** Their base, as a postcode or district, for example "DH1 3AA" or "DH1". */
+  basePostcode: string;
+  /** The base's location, looked up once when the specialist is added. */
+  lat: number;
+  lng: number;
+  radiusMiles: number;
+  /** Postcode areas or districts inside the radius they don't want, for example ["TD", "DG"]. */
+  excluded?: string[];
+}
+
 /** The parts of a specialist record that may be shown to homeowners. */
 export type PublicSpecialist = Pick<
   Specialist,
@@ -277,8 +295,13 @@ export interface SupplierApplication {
   leadTypes?: Record<string, string[]>;
   /** Anything they do that isn't one of our services. */
   otherServices?: string | null;
+  /** Older applications chose postcode areas; newer ones give a base and radius. */
   areasCovered: string[];
   otherAreas: string | null;
+  basePostcode?: string | null;
+  radiusMiles?: number | null;
+  /** Postcodes inside the radius they don't cover, as typed. */
+  excludedPostcodes?: string | null;
   companiesHouseNumber: string;
   competentPersonScheme: string;
   insuranceBackedGuaranteeProvider: string;

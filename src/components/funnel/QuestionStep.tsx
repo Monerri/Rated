@@ -1,13 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { primaryRegion } from "@/config/regions";
-import { ELSEWHERE, type Answers, type Option, type Question } from "@/funnels/types";
+import type { Answers, Option, Question } from "@/funnels/types";
 import { isAnswered } from "@/funnels/engine";
-import { normalisePostcode } from "@/lib/postcode";
 import { Icon } from "@/components/ui/Icon";
 import { buttonClass } from "@/components/ui/Button";
-import { GoodToKnow, TextField } from "@/components/ui/Form";
+import { GoodToKnow } from "@/components/ui/Form";
+import { PostcodeStep } from "@/components/funnel/PostcodeStep";
 
 const cardBase =
   "flex w-full rounded-[var(--radius-card)] border-[1.5px] bg-surface text-left text-ink transition-colors hover:border-blue motion-reduce:transition-none aria-pressed:border-blue aria-pressed:bg-blue-tint aria-pressed:shadow-[inset_0_0_0_1px_var(--blue)]";
@@ -21,39 +19,20 @@ export function QuestionStep({
   value,
   onAnswer,
   onContinue,
+  postcodeStart,
 }: {
   question: Question;
   value: Answers[string] | undefined;
   /** Records the answer; `advance` moves straight on to the next screen. */
   onAnswer: (value: string | string[], advance: boolean) => void;
   onContinue: () => void;
+  /** Start of a postcode to put in the box, for example "NE" from a homepage area link. */
+  postcodeStart?: string | null;
 }) {
   const note = question.goodToKnow && value !== undefined && question.goodToKnow.when(value) ? question.goodToKnow.text : null;
 
   if (question.type === "postcode") {
-    return <PostcodeInput initial={typeof value === "string" ? value : ""} onSubmit={(pc) => onAnswer(pc, true)} />;
-  }
-
-  if (question.type === "postcode-area") {
-    const choose = (code: string) => onAnswer(code, true);
-    return (
-      <ul className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
-        {primaryRegion.postcodeAreas.map((a) => (
-          <li key={a.code}>
-            <button type="button" aria-pressed={value === a.code} onClick={() => choose(a.code)} className={`${cardBase} min-h-[76px] flex-col gap-1 border-line p-3.5`}>
-              <span className="font-display text-2xl font-bold tracking-wide">{a.code}</span>
-              <span className="text-[13px] leading-snug text-muted">{a.places}</span>
-            </button>
-          </li>
-        ))}
-        <li>
-          <button type="button" aria-pressed={value === ELSEWHERE} onClick={() => choose(ELSEWHERE)} className={`${cardBase} min-h-[76px] flex-col gap-1 border-dashed border-line p-3.5`}>
-            <span className="font-display text-lg font-semibold">Elsewhere</span>
-            <span className="text-[13px] leading-snug text-muted">We&apos;ll check your area</span>
-          </button>
-        </li>
-      </ul>
-    );
+    return <PostcodeStep initial={typeof value === "string" ? value : (postcodeStart ?? "")} onSubmit={(pc) => onAnswer(pc, true)} />;
   }
 
   const multi = question.type === "multi";
@@ -127,34 +106,5 @@ export function QuestionStep({
         </button>
       )}
     </div>
-  );
-}
-
-function PostcodeInput({ initial, onSubmit }: { initial: string; onSubmit: (postcode: string) => void }) {
-  const [text, setText] = useState(initial);
-  const [error, setError] = useState<string | null>(null);
-  return (
-    <form
-      className="grid gap-5"
-      onSubmit={(e) => {
-        e.preventDefault();
-        const pc = normalisePostcode(text);
-        if (!pc) return setError("Please enter a full UK postcode, for example NE1 4ST.");
-        onSubmit(pc);
-      }}
-    >
-      <TextField
-        label="Postcode"
-        name="postcode"
-        autoComplete="postal-code"
-        autoCapitalize="characters"
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        error={error}
-      />
-      <button type="submit" className={buttonClass("primary", "md", "w-full sm:w-auto sm:justify-self-start")}>
-        Continue
-      </button>
-    </form>
   );
 }

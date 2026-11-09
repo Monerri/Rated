@@ -1,8 +1,7 @@
 import type { FunnelConfig } from "@/funnels/types";
 import {
-  fullPostcodeQuestion,
   listedQuestion,
-  postcodeAreaQuestion,
+  postcodeQuestion,
   propertyTypeQuestion,
   RESEARCHING,
   specialistCountQuestion,
@@ -37,9 +36,8 @@ export const heatPumpsFunnel: FunnelConfig = {
         text: "In England and Wales, the government's Boiler Upgrade Scheme can help with the cost of a heat pump. Your installer must be MCS certified and applies on your behalf. Check the current amounts and rules on GOV.UK before you commit.",
       },
     },
-    postcodeAreaQuestion,
-    fullPostcodeQuestion,
-    {
+    postcodeQuestion,
+      {
       id: "currentHeating",
       type: "single",
       title: "How is the property heated now?",

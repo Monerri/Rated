@@ -66,8 +66,8 @@ export const specialists: Specialist[] = [
   demo("demo-builders", "Demo Builders Ltd", ["extensions"], ["NE", "DL", "TS"], 4.4, 52, "00000007", null, "A general builder with an in-house extensions team.", { leadTypes: { extensions: ["single-storey"] } }),
   // Roofing
   demo("example-roofing", "Example Roofing Ltd", ["roofing"], ALL_NE, 4.8, 174, "00000008", "Example roofing scheme", "Pitched and flat roof replacement and repairs."),
-  demo("demo-roofline", "Demo Roofline Ltd", ["roofing"], ["NE", "DH", "DL", "TS"], 4.5, 79, "00000009", "Example roofing scheme", "Re-roofing, fascias, soffits and guttering."),
-  demo("sample-slate-tile", "Sample Slate & Tile Ltd", ["roofing"], ["NE", "SR", "TS", "TD15"], 4.6, 58, "00000010", "Example roofing scheme", "Slate and tile roofing, including period homes."),
+  demo("demo-roofline", "Demo Roofline Ltd", ["roofing"], ["DH"], 4.5, 79, "00000009", "Example roofing scheme", "Re-roofing, fascias, soffits and guttering.", { coverage: { basePostcode: "DH1", lat: 54.7761, lng: -1.5733, radiusMiles: 30 } }),
+  demo("sample-slate-tile", "Sample Slate & Tile Ltd", ["roofing"], ["NE"], 4.6, 58, "00000010", "Example roofing scheme", "Slate and tile roofing, including period homes.", { coverage: { basePostcode: "NE61", lat: 55.1675, lng: -1.6877, radiusMiles: 30, excluded: ["TD", "CA"] } }),
   demo("example-homes", "Example Homes Ltd", ["extensions"], ["NE", "DH", "SR", "DL"], 4.7, 41, "00000011", null, "A small housebuilder for self-build and replacement homes.", { leadTypes: { extensions: ["new-build"] } }),
   // Solar and battery
   demo("example-solar", "Example Solar Ltd", ["solar-battery", "ev-charging"], ALL_NE, 4.8, 156, "00000012", "Example microgeneration scheme", "Solar panels, home batteries and charge points."),

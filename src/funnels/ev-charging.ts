@@ -1,7 +1,6 @@
 import type { FunnelConfig } from "@/funnels/types";
 import {
-  fullPostcodeQuestion,
-  postcodeAreaQuestion,
+  postcodeQuestion,
   propertyTypeQuestion,
   RESEARCHING,
   specialistCountQuestion,
@@ -25,9 +24,8 @@ export const evChargingFunnel: FunnelConfig = {
         { value: "not-yet", label: "Not yet" },
       ],
     },
-    postcodeAreaQuestion,
-    fullPostcodeQuestion,
-    {
+    postcodeQuestion,
+      {
       id: "parking",
       type: "single",
       title: "Where do you park?",

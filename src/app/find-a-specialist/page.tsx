@@ -14,7 +14,7 @@ export default function FindASpecialistPage() {
         <h1 className="text-[32px] font-bold leading-tight md:text-[40px]">What are you looking to improve?</h1>
         <p className="text-lg text-muted">Choose a service. It takes about two minutes, one question at a time.</p>
       </div>
-      <ServicePicker />
+      <ServicePicker search />
     </div>
   );
 }

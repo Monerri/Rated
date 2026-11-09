@@ -410,7 +410,7 @@ Services: ${serviceName}${
         ? `\nWork taken on: ${Object.entries(a.leadTypes).map(([slug, kinds]) => `${slug}: ${kinds.join(", ")}`).join("; ")}`
         : ""
     }${a.otherServices ? `\nAlso does: ${a.otherServices}` : ""}
-Areas: ${[...a.areasCovered, a.otherAreas].filter(Boolean).join(", ")}
+Where they work: ${a.basePostcode ? `within ${a.radiusMiles} miles of ${a.basePostcode}${a.excludedPostcodes ? `, not ${a.excludedPostcodes}` : ""}` : [...a.areasCovered, a.otherAreas].filter(Boolean).join(", ")}
 Trade schemes: ${a.competentPersonScheme}
 Insurance-backed guarantee provider: ${a.insuranceBackedGuaranteeProvider}
 Google profile: ${a.googleProfileUrl}

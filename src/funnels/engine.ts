@@ -1,7 +1,6 @@
-import { regions } from "@/config/regions";
 import { normalisePostcode, regionForPostcode } from "@/lib/postcode";
-import { ELSEWHERE, type Answers, type FunnelConfig, type Question } from "@/funnels/types";
-import { NOT_OWNER, OWNERSHIP } from "@/funnels/shared";
+import type { Answers, FunnelConfig, Question } from "@/funnels/types";
+import { NOT_OWNER, OWNERSHIP, POSTCODE } from "@/funnels/shared";
 
 /** Questions that apply given the answers so far. */
 export function visibleQuestions(config: FunnelConfig, answers: Answers): Question[] {
@@ -11,7 +10,6 @@ export function visibleQuestions(config: FunnelConfig, answers: Answers): Questi
 /** Allowed values for questions with a fixed set of answers. */
 function allowedValues(q: Question): string[] | null {
   if (q.type === "single" || q.type === "multi") return q.options.map((o) => o.value);
-  if (q.type === "postcode-area") return [...regions.flatMap((r) => r.postcodeAreas.map((a) => a.code)), ELSEWHERE];
   return null;
 }
 
@@ -79,8 +77,6 @@ export function summarise(config: FunnelConfig, answers: Answers): SummaryRow[] 
       if (q.type === "single" || q.type === "multi") {
         const labels = (Array.isArray(v) ? v : [v]).map((x) => q.options.find((o) => o.value === x)?.label ?? x);
         value = labels.join(", ");
-      } else if (q.type === "postcode-area") {
-        value = v === ELSEWHERE ? "Elsewhere" : String(v);
       } else {
         value = String(v);
       }
@@ -92,9 +88,9 @@ export function isResearching(config: FunnelConfig, answers: Answers): boolean {
   return answers[config.researching.questionId] === config.researching.value;
 }
 
-/** Whether the early postcode (asked when "Elsewhere" was chosen) is inside a region we cover. */
-export function earlyPostcodeCovered(answers: Answers): boolean | null {
-  const pc = typeof answers.postcodeEarly === "string" ? normalisePostcode(answers.postcodeEarly) : null;
+/** Whether the postcode answer is inside a region we cover. Null if there isn't a valid postcode yet. */
+export function postcodeCovered(answers: Answers): boolean | null {
+  const pc = typeof answers[POSTCODE] === "string" ? normalisePostcode(answers[POSTCODE]) : null;
   if (!pc) return null;
   return regionForPostcode(pc) !== null;
 }

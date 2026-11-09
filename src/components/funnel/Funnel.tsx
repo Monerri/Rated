@@ -5,10 +5,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { Service } from "@/lib/types";
 import type { Answers } from "@/funnels/types";
 import { getFunnel } from "@/funnels";
-import { ELSEWHERE, type Question } from "@/funnels/types";
-import { NOT_OWNER, OWNERSHIP, SPECIALIST_COUNT } from "@/funnels/shared";
+import type { Question } from "@/funnels/types";
+import { NOT_OWNER, OWNERSHIP, POSTCODE, SPECIALIST_COUNT } from "@/funnels/shared";
 import { knownPostcodeArea } from "@/config/regions";
-import { earlyPostcodeCovered, isResearching, visibleQuestions } from "@/funnels/engine";
+import { isResearching, postcodeCovered, visibleQuestions } from "@/funnels/engine";
 import { getSourceInfo } from "@/lib/source";
 import { QuestionStep } from "@/components/funnel/QuestionStep";
 import { ContactStep, type EnquiryResult } from "@/components/funnel/ContactStep";
@@ -74,8 +74,7 @@ async function checkCoverage(serviceSlug: string, answers: Answers): Promise<num
   const params = new URLSearchParams({ service: serviceSlug });
   const leadType = getFunnel(serviceSlug)?.leadTypes?.of(answers);
   if (leadType) params.set("leadType", leadType);
-  if (answers.postcodeArea === ELSEWHERE) params.set("postcode", String(answers.postcodeEarly ?? ""));
-  else params.set("area", String(answers.postcodeArea ?? ""));
+  params.set("postcode", String(answers[POSTCODE] ?? ""));
   try {
     const res = await fetch(`/api/availability?${params}`);
     if (!res.ok) return 0;
@@ -111,9 +110,9 @@ export function Funnel({
   const config = getFunnel(service.slug)!;
   const key = storageKey(service.slug);
   const firstQuestion = config.questions[0].id;
-  // A postcode area chosen earlier (?area=NE) skips that question. Read in the browser so the page can be pre-built.
+  // A postcode area chosen on the homepage (?area=NE) starts the postcode box off. Read in the browser so the page can be pre-built.
   const [initialArea, setInitialArea] = useState<string | null>(null);
-  const prefilled: Answers = initialArea ? { postcodeArea: initialArea } : {};
+  const prefilled: Answers = {};
 
   const [state, setState] = useState<FunnelState>({
     answers: prefilled,
@@ -136,7 +135,6 @@ export function Funnel({
     /* eslint-disable react-hooks/set-state-in-effect */
     setInitialArea(area);
     if (saved) setState(saved);
-    else if (area) setState((s) => ({ ...s, answers: { ...s.answers, postcodeArea: area } }));
     setRestored(true);
     /* eslint-enable react-hooks/set-state-in-effect */
   }, [key]);
@@ -172,12 +170,12 @@ export function Funnel({
   /** Work out the next screen after answering question `fromId`. */
   async function advance(answers: Answers, fromId: string) {
     if (fromId === OWNERSHIP && answers[OWNERSHIP] === NOT_OWNER) return go("not-owner", answers);
-    if (fromId === "postcodeEarly" && !earlyPostcodeCovered(answers)) return go("out-of-area", answers);
+    if (fromId === POSTCODE && postcodeCovered(answers) === false) return go("out-of-area", answers);
 
-    const isAreaStep = (fromId === "postcodeArea" && answers.postcodeArea !== ELSEWHERE) || fromId === "postcodeEarly";
+    const isAreaStep = fromId === POSTCODE;
     const after = (a: Answers, id: string) => {
       const qs = visibleQuestions(config, a);
-      return qs.slice(qs.findIndex((q) => q.id === id) + 1).find((q) => !(initialArea && q.id === "postcodeArea"));
+      return qs[qs.findIndex((q) => q.id === id) + 1];
     };
     let next = after(answers, fromId);
     let coverage = isAreaStep ? null : (state.coverage ?? null);
@@ -220,9 +218,7 @@ export function Funnel({
 
   // Progress counts the questions that apply, plus the contact step.
   const questions = visibleQuestions(config, state.answers).filter(
-    (q) =>
-      !(initialArea && q.id === "postcodeArea") &&
-      !(q.id === SPECIALIST_COUNT && state.coverage != null && state.coverage <= 1),
+    (q) => !(q.id === SPECIALIST_COUNT && state.coverage != null && state.coverage <= 1),
   );
   const total = questions.length + 1;
   const position =
@@ -288,6 +284,7 @@ export function Funnel({
                 value={state.answers[current.id]}
                 onAnswer={(v, adv) => answer(current.id, v, adv)}
                 onContinue={() => void advance(state.answers, current.id)}
+                postcodeStart={initialArea}
               />
             </fieldset>
             {busy && <p className="text-sm text-muted" role="status">Checking your area…</p>}
@@ -298,8 +295,8 @@ export function Funnel({
           <NotifyMe
             headingRef={headingRef}
             service={service}
-            postcode={String(state.answers.postcodeEarly ?? "")}
-            title={`We don't cover ${state.answers.postcodeEarly} yet`}
+            postcode={String(state.answers[POSTCODE] ?? "")}
+            title={`We don't cover ${state.answers[POSTCODE]} yet`}
             body={`We're starting in North East England and will expand. Leave your details and we'll email you when ${service.name} is available in your area.`}
           />
         )}
@@ -308,8 +305,7 @@ export function Funnel({
           <NotifyMe
             headingRef={headingRef}
             service={service}
-            postcode={state.answers.postcodeArea === ELSEWHERE ? String(state.answers.postcodeEarly ?? "") : null}
-            postcodeArea={state.answers.postcodeArea === ELSEWHERE ? null : String(state.answers.postcodeArea ?? "")}
+            postcode={String(state.answers[POSTCODE] ?? "")}
             title="We don't have a specialist for your area yet"
             body={`We haven't yet vetted a ${service.name} specialist covering your area. Leave your details and we'll email you when we have.`}
           />
@@ -344,6 +340,7 @@ export function Funnel({
             service={service}
             answers={state.answers}
             researchingConfirmed={state.researchingConfirmed}
+            onChangePostcode={() => go(`q:${POSTCODE}`)}
             onSubmitted={(r) => {
               if (state.resumeToken) void fetch(`/api/saved-progress/${state.resumeToken}`, { method: "DELETE" });
               setResult(r);

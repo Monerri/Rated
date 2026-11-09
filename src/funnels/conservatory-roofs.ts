@@ -1,8 +1,7 @@
 import type { FunnelConfig } from "@/funnels/types";
 import {
-  fullPostcodeQuestion,
   listedQuestion,
-  postcodeAreaQuestion,
+  postcodeQuestion,
   propertyTypeQuestion,
   RESEARCHING,
   specialistCountQuestion,
@@ -27,9 +26,8 @@ export const conservatoryRoofsFunnel: FunnelConfig = {
         { value: "not-sure", label: "Not sure" },
       ],
     },
-    postcodeAreaQuestion,
-    fullPostcodeQuestion,
-    {
+    postcodeQuestion,
+      {
       id: "size",
       type: "single",
       title: "Roughly how big is the conservatory?",

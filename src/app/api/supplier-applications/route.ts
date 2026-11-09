@@ -1,5 +1,7 @@
 import { checkEmail, checkPhone } from "@/lib/contact-checks";
-import { primaryRegion } from "@/config/regions";
+import { maxRadiusMiles, radiusOptions } from "@/config/coverage";
+import { lookupPostcode } from "@/lib/geo";
+import { normalisePostcode } from "@/lib/postcode";
 import { getService, services } from "@/config/services";
 import { competentPersonSchemes, supplierDeclarationWording } from "@/config/suppliers";
 import { supplierAcknowledgementEmail, supplierApplicationInternalEmail, trySend } from "@/lib/notifications";
@@ -16,6 +18,9 @@ import {
   str,
 } from "@/lib/request";
 import type { SupplierApplication } from "@/lib/types";
+
+/** A postcode area ("TD") or district ("NE71", "EC1A"). */
+const POSTCODE_PART = /^[A-Z]{1,2}(\d[A-Z\d]?)?$/;
 
 const OTHER_SERVICE = "other";
 
@@ -51,10 +56,10 @@ export async function POST(request: Request) {
     leadTypes[slug] = [...new Set(chosen)];
   }
   const mainService = servicesOffered[0] ?? OTHER_SERVICE;
-  const areasCovered = Array.isArray(body.areasCovered)
-    ? body.areasCovered.map(String).filter((a) => primaryRegion.postcodeAreas.some((x) => x.code === a))
-    : [];
-  const otherAreas = str(body.otherAreas, 300);
+  const basePostcode = normalisePostcode(String(body.basePostcode ?? ""));
+  const radiusMiles = Number(body.radiusMiles);
+  const excludedPostcodes = str(body.excludedPostcodes, 300);
+  const excludedValid = !excludedPostcodes || excludedPostcodes.split(/[\s,;]+/).filter(Boolean).every((x) => POSTCODE_PART.test(x.toUpperCase()));
   const companiesHouseNumber = typeof body.companiesHouseNumber === "string" ? normaliseCompanyNumber(body.companiesHouseNumber) : null;
   const scheme = competentPersonSchemes.find((s) => s.value === body.competentPersonScheme);
   const schemeOther = str(body.competentPersonSchemeOther, 120);
@@ -78,7 +83,10 @@ export async function POST(request: Request) {
   for (const [slug, kinds] of Object.entries(leadTypes)) {
     if (kinds.length === 0) errors.servicesOffered = `Please tell us which ${getService(slug)?.name.toLowerCase()} work you take on.`;
   }
-  if (areasCovered.length === 0 && !otherAreas) errors.areasCovered = "Please tell us which areas you cover.";
+  if (!basePostcode) errors.basePostcode = "Please enter your base postcode, for example DH1 3AA.";
+  else if ((await lookupPostcode(basePostcode)) === null) errors.basePostcode = "We couldn't find that postcode. Please check it.";
+  if (!radiusOptions.includes(radiusMiles)) errors.radiusMiles = `Please choose how far you'll travel, up to ${maxRadiusMiles} miles.`;
+  if (!excludedValid) errors.excludedPostcodes = "Please list postcode areas or districts only, separated by commas, for example TD, DG, NE71.";
   if (!companiesHouseNumber) errors.companiesHouseNumber = "Please enter an 8-character Companies House number, for example 01234567 or SC123456.";
   if (!scheme) errors.competentPersonScheme = "Please choose an option.";
   if (scheme?.value === "other" && !schemeOther) errors.competentPersonSchemeOther = "Please tell us which scheme.";
@@ -110,8 +118,11 @@ export async function POST(request: Request) {
     servicesOffered,
     leadTypes,
     otherServices,
-    areasCovered,
-    otherAreas,
+    areasCovered: [],
+    otherAreas: null,
+    basePostcode,
+    radiusMiles,
+    excludedPostcodes: excludedPostcodes?.toUpperCase() ?? null,
     companiesHouseNumber: companiesHouseNumber!,
     competentPersonScheme: `${scheme!.value === "other" ? `Other: ${schemeOther}` : scheme!.label}${otherSchemes ? `; also: ${otherSchemes}` : ""}`,
     insuranceBackedGuaranteeProvider: ibgProvider!,

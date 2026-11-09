@@ -1,8 +1,7 @@
 import type { FunnelConfig } from "@/funnels/types";
 import {
-  fullPostcodeQuestion,
   listedQuestion,
-  postcodeAreaQuestion,
+  postcodeQuestion,
   propertyTypeQuestion,
   RESEARCHING,
   specialistCountQuestion,
@@ -27,9 +26,8 @@ export const solarBatteryFunnel: FunnelConfig = {
         { value: "not-sure", label: "Not sure yet" },
       ],
     },
-    postcodeAreaQuestion,
-    fullPostcodeQuestion,
-    {
+    postcodeQuestion,
+      {
       id: "roofDirection",
       type: "single",
       title: "Which way does the main part of your roof face?",

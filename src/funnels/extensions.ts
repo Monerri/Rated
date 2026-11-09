@@ -1,8 +1,7 @@
 import type { FunnelConfig, Question } from "@/funnels/types";
 import {
-  fullPostcodeQuestion,
   listedQuestion,
-  postcodeAreaQuestion,
+  postcodeQuestion,
   PROPERTY_USE,
   propertyTypeQuestion,
   RESEARCHING,
@@ -47,9 +46,8 @@ export const extensionsFunnel: FunnelConfig = {
         { value: "not-sure", label: "Not sure yet", icon: "unsure" },
       ],
     },
-    postcodeAreaQuestion,
-    fullPostcodeQuestion,
-    {
+    postcodeQuestion,
+      {
       id: "position",
       type: "single",
       title: "Where would it go?",

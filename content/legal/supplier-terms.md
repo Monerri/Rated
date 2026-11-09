@@ -1,7 +1,7 @@
 ---
 title: Specialist terms
 description: The terms for home-improvement specialists who receive introductions through {{name}}, including prepaid credit.
-date: 2026-10-16
+date: 2026-11-09
 ---
 
 **This is a draft and is being reviewed before launch. It should be checked by a solicitor before any specialist signs up.**
@@ -16,6 +16,7 @@ We only work with registered companies that pass our [current checks](/how-we-ch
 
 - A homeowner tells us about their project and chooses to hear from **one, two or three** specialists. We never introduce more specialists than they choose.
 - We only introduce homeowners who own the property, alone or jointly, and who have agreed to be contacted.
+- **Where you work** is set by your base postcode and a travel distance of up to **30 miles**, measured in a straight line from your base. You can also list postcode areas or districts within that distance that you don't cover. You can change these at any time by contacting us. We may decline a base or distance that doesn't reflect where you really work.
 - When more specialists cover an area than the homeowner asked for, we choose between eligible specialists at random, so introductions are shared fairly.
 - **We don't guarantee a number of introductions.** How many you receive depends on how many homeowners in your area ask for your service.
 

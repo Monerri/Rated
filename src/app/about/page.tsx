@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { photos } from "@/config/photos";
+import { Photo } from "@/components/ui/Photo";
 import { site } from "@/config/site";
 import { primaryRegion } from "@/config/regions";
 import { Eyebrow } from "@/components/ui/Section";
@@ -43,6 +45,8 @@ export default function AboutPage() {
           specialist.
         </p>
       </header>
+
+      <Photo photo={photos.about} priority />
 
       <section aria-labelledby="why-heading" className="prose max-w-none">
         <h2 id="why-heading">Why we exist</h2>

@@ -1,19 +1,20 @@
 import Link from "next/link";
 
-type Variant = "primary" | "secondary";
+type Variant = "primary" | "secondary" | "dark";
 type Size = "md" | "sm";
 
 const base =
   "inline-flex items-center justify-center gap-2 rounded-full font-display font-semibold no-underline transition-colors duration-150 motion-reduce:transition-none";
 
 const sizes: Record<Size, string> = {
-  md: "min-h-12 px-6 text-base",
+  md: "min-h-[52px] px-7 text-base",
   sm: "min-h-11 px-5 text-[15px]",
 };
 
 const variants: Record<Variant, string> = {
   primary: "bg-blue text-on-blue hover:bg-blue-deep",
-  secondary: "border-[1.5px] border-line text-blue hover:border-blue",
+  secondary: "border-[1.5px] border-line-strong text-ink hover:border-ink",
+  dark: "bg-ink text-ground hover:bg-blue-deep hover:text-on-blue",
 };
 
 /** Extra classes must not repeat display, height, padding or font size; use `size` instead. */

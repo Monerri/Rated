@@ -60,7 +60,7 @@ export function SiteHeader() {
         <div className="flex items-center gap-2">
           {!inFunnel && (
             <span className="hidden sm:block">
-              <Link href="/find-a-specialist" className={buttonClass("primary", "sm")}>
+              <Link href="/find-a-specialist" className={buttonClass("dark", "sm")}>
                 Find a specialist
               </Link>
             </span>

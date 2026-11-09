@@ -1,39 +1,50 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
-/* Design tokens from the approved visual direction (step 4). */
+/*
+ * Design tokens: the "Hearth" direction (Option A, November 2026). Warm
+ * paper backgrounds, Trust Blue for actions, Confirmed Green only for ticks,
+ * a honey accent for small labels. Fraunces for headings, DM Sans for text.
+ * Every text pairing meets WCAG AA in both themes.
+ */
 :root {
-  --ink: #0e2239;
+  --ink: #1d2733;
   --blue: #1b5ca8;
   --blue-deep: #154a88;
   --blue-tint: #e7eff8;
   --green: #157a52;
   --green-tint: #e8f3ee;
-  --ground: #f2f6fa;
+  --ground: #faf6f0;
   --surface: #ffffff;
-  --muted: #52606f;
-  --line: #d8e1ea;
-  --sand: #fdf6e7;
-  --sand-line: #e9d3a0;
+  --linen: #f1e9dd;
+  --muted: #5b6470;
+  --line: #e8dfd2;
+  --line-strong: #d9cdbb;
+  --honey: #8a5a1f;
+  --sand: #fbf1e0;
+  --sand-line: #e5cfa6;
   --on-blue: #ffffff;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     color-scheme: dark;
-    --ink: #e6eef7;
+    --ink: #f2ece3;
     --blue: #7db3f0;
     --blue-deep: #a3cbf6;
-    --blue-tint: #15304f;
+    --blue-tint: #1b2a3d;
     --green: #52c993;
-    --green-tint: #123828;
-    --ground: #0b1826;
-    --surface: #122335;
-    --muted: #9fb0c2;
-    --line: #24384e;
-    --sand: #2e2716;
-    --sand-line: #5a4a22;
-    --on-blue: #0b1826;
+    --green-tint: #15291f;
+    --ground: #17140f;
+    --surface: #211d18;
+    --linen: #2a241d;
+    --muted: #b5aa9b;
+    --line: #3a332b;
+    --line-strong: #4a4136;
+    --honey: #e0b072;
+    --sand: #2a2318;
+    --sand-line: #5a4a2a;
+    --on-blue: #17140f;
   }
 }
 
@@ -46,19 +57,28 @@
   --color-green-tint: var(--green-tint);
   --color-ground: var(--ground);
   --color-surface: var(--surface);
+  --color-linen: var(--linen);
   --color-muted: var(--muted);
   --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-honey: var(--honey);
   --color-sand: var(--sand);
   --color-sand-line: var(--sand-line);
   --color-on-blue: var(--on-blue);
 
-  --font-display: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
-  --font-sans: var(--font-source-sans), ui-sans-serif, system-ui, sans-serif;
+  /* Headings use the serif; buttons, labels and text use DM Sans. */
+  --font-serif: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  --font-display: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-plex-mono), ui-monospace, monospace;
 
-  --radius-card: 10px;
-  --radius-panel: 14px;
-  --shadow-card: 0 1px 2px rgb(14 34 57 / 0.06), 0 6px 20px rgb(14 34 57 / 0.06);
+  /* Fraunces reads best lighter than a sans: large headings at 500, smaller ones at 600. */
+  --font-weight-extrabold: 500;
+  --font-weight-bold: 600;
+
+  --radius-card: 16px;
+  --radius-panel: 24px;
+  --shadow-card: 0 1px 2px rgb(60 40 15 / 0.05), 0 12px 32px rgb(60 40 15 / 0.08);
 }
 
 html {
@@ -77,16 +97,21 @@ body {
   color: var(--ink);
   font-family: var(--font-sans);
   font-size: 17px;
-  line-height: 1.55;
+  line-height: 1.6;
 }
 
 h1,
 h2,
 h3,
-h4 {
-  font-family: var(--font-display);
+h4,
+legend {
+  font-family: var(--font-serif);
   text-wrap: balance;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
+}
+
+h1 {
+  letter-spacing: -0.025em;
 }
 
 :focus-visible {
@@ -96,7 +121,7 @@ h4 {
 }
 
 dialog::backdrop {
-  background: rgb(14 34 57 / 0.45);
+  background: rgb(29 39 51 / 0.45);
 }
 
 /* Each funnel screen eases in. Disabled when reduced motion is preferred. */
@@ -136,8 +161,9 @@ dialog::backdrop {
 }
 
 .prose :where(h2, h3) {
-  font-family: var(--font-display);
-  letter-spacing: -0.01em;
+  font-family: var(--font-serif);
+  font-weight: 600;
+  letter-spacing: -0.015em;
 }
 
 .prose :where(a) {

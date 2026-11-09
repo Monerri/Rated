@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { photos } from "@/config/photos";
+import { Photo } from "@/components/ui/Photo";
 import { services } from "@/config/services";
 import { supplierCriteria } from "@/config/suppliers";
 import { primaryRegion } from "@/config/regions";
@@ -44,20 +46,23 @@ export default function ForSuppliersPage() {
               Go to the form <ArrowIcon />
             </Link>
           </div>
-          <div className="grid gap-3 rounded-[var(--radius-panel)] border border-line bg-ground p-5 sm:p-6">
-            <p className="font-display text-lg font-bold">How introductions work</p>
-            <ul className="grid gap-2 text-[15px]">
-              <li>Homeowners choose to hear from one, two or three specialists. An enquiry is never shared with more than three.</li>
-              <li>Homeowners are told who you are, and see your checks, before you contact them.</li>
-              <li>Every enquiry comes from a homeowner who owns the property and has agreed to be contacted by you.</li>
-              <li>
-                Pay as you go with prepaid credit. You&apos;re only charged when you receive an introduction, and every
-                charge is on your weekly statement.
-              </li>
-            </ul>
-            <Link href="/supplier-terms" className="text-[15px] font-semibold text-blue">
-              Read our specialist terms
-            </Link>
+          <div className="grid gap-5">
+            <Photo photo={photos.forSuppliers} priority />
+            <div className="grid gap-3 rounded-[var(--radius-panel)] border border-line bg-ground p-5 sm:p-6">
+              <p className="font-display text-lg font-bold">How introductions work</p>
+              <ul className="grid gap-2 text-[15px]">
+                <li>Homeowners choose to hear from one, two or three specialists. An enquiry is never shared with more than three.</li>
+                <li>Homeowners are told who you are, and see your checks, before you contact them.</li>
+                <li>Every enquiry comes from a homeowner who owns the property and has agreed to be contacted by you.</li>
+                <li>
+                  Pay as you go with prepaid credit. You&apos;re only charged when you receive an introduction, and every
+                  charge is on your weekly statement.
+                </li>
+              </ul>
+              <Link href="/supplier-terms" className="text-[15px] font-semibold text-blue">
+                Read our specialist terms
+              </Link>
+          </div>
           </div>
         </div>
       </section>

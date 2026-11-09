@@ -1,22 +1,26 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { site } from "@/config/site";
+import { photos } from "@/config/photos";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import "./globals.css";
 
 // Fonts are stored in the repository (src/fonts, SIL Open Font License) so
 // builds never depend on downloading them from Google.
-const figtree = localFont({
-  src: "../fonts/figtree-latin-wght-normal.woff2",
-  variable: "--font-figtree",
-  weight: "300 900",
+const fraunces = localFont({
+  src: [
+    { path: "../fonts/fraunces-latin-opsz-normal.woff2", style: "normal" },
+    { path: "../fonts/fraunces-latin-opsz-italic.woff2", style: "italic" },
+  ],
+  variable: "--font-fraunces",
+  weight: "100 900",
   display: "swap",
 });
-const sourceSans = localFont({
-  src: "../fonts/source-sans-3-latin-wght-normal.woff2",
-  variable: "--font-source-sans",
-  weight: "200 900",
+const dmSans = localFont({
+  src: "../fonts/dm-sans-latin-opsz-normal.woff2",
+  variable: "--font-dm-sans",
+  weight: "100 1000",
   display: "swap",
 });
 const plexMono = localFont({
@@ -30,7 +34,14 @@ const plexMono = localFont({
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
-  openGraph: { siteName: site.name, locale: "en_GB", type: "website" },
+  openGraph: {
+    siteName: site.name,
+    locale: "en_GB",
+    type: "website",
+    ...(photos.share.src
+      ? { images: [{ url: photos.share.src, width: photos.share.width, height: photos.share.height, alt: photos.share.alt }] }
+      : {}),
+  },
   alternates: { types: { "application/rss+xml": "/blog/rss.xml" } },
   title: {
     default: `${site.name}: find a vetted local home-improvement specialist`,
@@ -41,7 +52,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en-GB" className={`${figtree.variable} ${sourceSans.variable} ${plexMono.variable} antialiased`}>
+    <html lang="en-GB" className={`${fraunces.variable} ${dmSans.variable} ${plexMono.variable} antialiased`}>
       <body className="flex min-h-dvh flex-col">
         <a
           href="#main"

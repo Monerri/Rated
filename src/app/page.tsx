@@ -21,7 +21,7 @@ export default function HomePage() {
         title="What are you looking to improve?"
         intro="Choose a service and we'll ask a few quick questions about your home."
       >
-        <ServicePicker />
+        <ServicePicker search />
       </Section>
       <HowItWorks />
       <ChecksSection />

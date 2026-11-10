@@ -53,11 +53,12 @@ function takesLeadType(s: Specialist, serviceSlug: string, kinds: string[]): boo
 }
 
 /** Specialists who could take this lead, leaving out anyone switched off by hand. */
-async function candidates(serviceSlug: string, areaOrPostcode: string, kinds: string[]): Promise<Specialist[]> {
+async function candidates(serviceSlug: string, areaOrPostcode: string, kinds: string[], exclude: Set<string> = new Set()): Promise<Specialist[]> {
   const [place, off] = await Promise.all([placeFor(areaOrPostcode), switchedOffByHand()]);
   return specialists.filter(
     (s) =>
       !off.has(s.slug) &&
+      !exclude.has(s.slug) &&
       s.services.includes(serviceSlug) &&
       covers(s, place) &&
       takesLeadType(s, serviceSlug, kinds) &&
@@ -96,6 +97,8 @@ export async function allocateLead(opts: {
   postcode: string;
   /** The kinds of job asked for, for services that have kinds (for example new builds). Empty for any. */
   leadKinds: string[];
+  /** Specialists this homeowner has already been introduced to for this service, who are left out. */
+  exclude: Set<string>;
   requested: number;
   later: boolean;
   enquiryId: string;
@@ -103,7 +106,7 @@ export async function allocateLead(opts: {
   note: string;
 }): Promise<Allocation> {
   const pool = shuffle(
-    (await candidates(opts.serviceSlug, opts.postcode, opts.leadKinds)).filter(
+    (await candidates(opts.serviceSlug, opts.postcode, opts.leadKinds, opts.exclude)).filter(
       (s) => !(opts.later && s.skipLaterLeadsFor?.includes(opts.serviceSlug)),
     ),
   );

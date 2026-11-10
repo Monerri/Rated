@@ -41,8 +41,8 @@ export function Confirmation({
         {n < result.requested && (
           <p className="rounded-[var(--radius-card)] bg-blue-tint px-4 py-3 text-[15px]">
             You asked to hear from {numberWord(result.requested)}. At the moment {numberWord(n)} vetted{" "}
-            {n === 1 ? "specialist covers" : "specialists cover"} your area, so we&apos;ve introduced{" "}
-            {n === 1 ? "them" : "all of them"}.
+            {n === 1 ? "specialist is" : "specialists are"} available for your enquiry, so we&apos;ve introduced{" "}
+            {n === 1 ? "them" : "all of them"}. We never introduce the same specialist twice for the same kind of work.
           </p>
         )}
       </header>

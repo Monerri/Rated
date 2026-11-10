@@ -27,8 +27,9 @@ Checks are reconfirmed at least every 12 months; lapsed specialists stop being m
 
 ## Services
 
-- **Live (North East England):** Windows & Doors; Conservatory Roofs; Extensions & New Builds; Roof Replacement; Solar & Battery; Heat Pumps & Air Conditioning; EV Charging; Insulation.
-- **Coming soon (register interest):** Loft Conversions; Architects & Planning; Kitchens; Bathrooms; Gardens, Driveways & Landscaping; Flooring; Plumbing & Heating (slug `plumbing`); Electrical; Security Systems.
+- **Live (North East England), all 17:** Windows & Doors; Conservatory Roofs; Extensions & New Builds; Roof Replacement; Solar & Battery; Heat Pumps & Air Conditioning; EV Charging; Insulation; Loft Conversions; Architects & Planning; Kitchens; Bathrooms; Gardens, Driveways & Landscaping (lead types: driveways, gardens); Flooring; Plumbing & Heating (slug `plumbing`; lead types: heating, plumbing); Electrical; Security Systems.
+- A service can still be set to coming soon (register interest) in `config/services.ts` or at runtime on /admin.
+- **Search directory:** `config/serviceKeywords.ts` holds hidden everyday search words per service (a word may sit under several services). Filler words ("repair", "near me", "cheap") are ignored in `lib/serviceSearch.ts`.
 - **Finding a service:** /find-a-specialist has a search box ("Select below or type to search"). It matches names, summaries and everyday words in `src/config/serviceKeywords.ts` (add words for every new service), with small typos allowed. No match: we first ask people to look through every service, and only after "I've looked and it isn't listed" say we don't cover it.
 - **Postcode:** every questionnaire asks for the full postcode once, near the start, with our data promise and an optional "Use my location". It's checked with postcodes.io (free, no key; `src/lib/geo.ts`), and the contact step reuses it. If postcodes.io can't be reached, a correctly formatted postcode is accepted.
 - **Specialist coverage:** a base postcode and a travel radius, capped at 30 miles (`src/config/coverage.ts`) so national firms can't sweep up every lead, plus optional excluded postcode areas or districts (for example Scottish ones across the border). Matching is by straight-line distance from the homeowner's postcode. `areasCovered` remains for older records and as a fallback.

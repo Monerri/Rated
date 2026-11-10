@@ -31,8 +31,8 @@ export function ServiceSearch({ live, comingSoon }: { live: Service[]; comingSoo
   return (
     <div className="grid gap-6">
       <div className="grid gap-2">
-        <label htmlFor={id} className="text-[15px] font-semibold">
-          Select below or type to search
+        <label htmlFor={id} className="sr-only">
+          Search services
         </label>
         <div className="relative">
           <svg viewBox="0 0 24 24" className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-muted" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" aria-hidden="true">
@@ -44,13 +44,13 @@ export function ServiceSearch({ live, comingSoon }: { live: Service[]; comingSoo
             type="search"
             autoComplete="off"
             spellCheck={false}
-            placeholder="For example: boiler, bi-fold doors, loft"
+            placeholder="Select below or type here to search"
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);
               setLooked(false);
             }}
-            className="min-h-[56px] w-full rounded-full border-[1.5px] border-line-strong bg-surface pl-12 pr-24 [&::-webkit-search-cancel-button]:hidden text-[17px] text-ink placeholder:text-muted focus:border-blue focus:outline-none"
+            className={`min-h-[56px] w-full rounded-full border-[1.5px] border-line-strong bg-surface pl-12 ${query ? "pr-24" : "pr-4"} [&::-webkit-search-cancel-button]:hidden text-[17px] text-ink placeholder:text-muted focus:border-blue focus:outline-none`}
           />
           {query && (
             <button

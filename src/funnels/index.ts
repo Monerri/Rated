@@ -8,6 +8,15 @@ import { solarBatteryFunnel } from "@/funnels/solar-battery";
 import { heatPumpsFunnel } from "@/funnels/heat-pumps";
 import { evChargingFunnel } from "@/funnels/ev-charging";
 import { insulationFunnel } from "@/funnels/insulation";
+import { loftConversionsFunnel } from "@/funnels/loft-conversions";
+import { architecturePlanningFunnel } from "@/funnels/architecture-planning";
+import { kitchensFunnel } from "@/funnels/kitchens";
+import { bathroomsFunnel } from "@/funnels/bathrooms";
+import { gardensDrivewaysFunnel } from "@/funnels/gardens-driveways";
+import { flooringFunnel } from "@/funnels/flooring";
+import { plumbingFunnel } from "@/funnels/plumbing";
+import { electricalFunnel } from "@/funnels/electrical";
+import { securitySystemsFunnel } from "@/funnels/security-systems";
 
 /**
  * Adds the questions every questionnaire must ask (do you own the property,
@@ -33,6 +42,15 @@ const funnels: Record<string, FunnelConfig> = Object.fromEntries(
     heatPumpsFunnel,
     evChargingFunnel,
     insulationFunnel,
+    loftConversionsFunnel,
+    architecturePlanningFunnel,
+    kitchensFunnel,
+    bathroomsFunnel,
+    gardensDrivewaysFunnel,
+    flooringFunnel,
+    plumbingFunnel,
+    electricalFunnel,
+    securitySystemsFunnel,
   ].map((f) => [
     f.serviceSlug,
     withStandardQuestions(f),

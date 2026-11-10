@@ -73,26 +73,30 @@ export const services: Service[] = [
   },
 ];
 
-const comingSoon = (slug: string, name: string, summary: string, icon: Service["icon"]): Service => ({
+/** Services added in the second wave, live across North East England. */
+const live = (slug: string, name: string, summary: string, icon: Service["icon"]): Service => ({
   slug,
   name,
   summary,
   icon,
-  status: "coming_soon",
-  regions: [],
+  status: "live",
+  regions: ["north-east-england"],
 });
 
-/** Not yet live: people can register interest and be told when they launch. */
+/**
+ * A service can also be "coming_soon", where people register interest and are
+ * told when it launches. Set that here, or at runtime on /admin.
+ */
 services.push(
-  comingSoon("loft-conversions", "Loft Conversions", "Turn your loft into a bedroom, office or extra living space.", "loft"),
-  comingSoon("architecture-planning", "Architects & Planning", "Drawings, planning applications and Building Regulations plans.", "architecture"),
-  comingSoon("kitchens", "Kitchens", "New fitted kitchens, from design to installation.", "kitchen"),
-  comingSoon("bathrooms", "Bathrooms", "New bathrooms, en suites and wet rooms.", "bathroom"),
-  comingSoon("gardens-driveways", "Gardens, Driveways & Landscaping", "Driveways, patios, fencing and garden landscaping.", "garden"),
-  comingSoon("flooring", "Flooring", "Wood, laminate, vinyl, tiles and carpets, supplied and fitted.", "flooring"),
-  comingSoon("plumbing", "Plumbing & Heating", "Boilers, radiators, central heating and plumbing installations and repairs.", "plumbing"),
-  comingSoon("electrical", "Electrical", "Rewiring, new circuits, consumer units and electrical repairs.", "electrical"),
-  comingSoon("security-systems", "Security Systems", "Burglar alarms, CCTV, smart doorbells and security lighting.", "security"),
+  live("loft-conversions", "Loft Conversions", "Turn your loft into a bedroom, office or extra living space.", "loft"),
+  live("architecture-planning", "Architects & Planning", "Drawings, planning applications and Building Regulations plans.", "architecture"),
+  live("kitchens", "Kitchens", "New fitted kitchens, from design to installation.", "kitchen"),
+  live("bathrooms", "Bathrooms", "New bathrooms, en suites and wet rooms.", "bathroom"),
+  live("gardens-driveways", "Gardens, Driveways & Landscaping", "Driveways, patios, fencing and garden landscaping.", "garden"),
+  live("flooring", "Flooring", "Wood, laminate, vinyl, tiles and carpets, supplied and fitted.", "flooring"),
+  live("plumbing", "Plumbing & Heating", "Boilers, radiators, central heating and plumbing installations and repairs.", "plumbing"),
+  live("electrical", "Electrical", "Rewiring, new circuits, consumer units and electrical repairs.", "electrical"),
+  live("security-systems", "Security Systems", "Burglar alarms, CCTV, smart doorbells and security lighting.", "security"),
 );
 
 /**

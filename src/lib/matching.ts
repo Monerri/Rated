@@ -1,4 +1,4 @@
-import { specialists } from "@/data/specialists";
+import { activeSpecialists } from "@/lib/specialistDirectory";
 import { outwardCode, postcodeArea } from "@/lib/postcode";
 import { isCurrentlyVetted } from "@/lib/vetting";
 import type { Specialist } from "@/lib/types";
@@ -55,7 +55,7 @@ function takesLeadType(s: Specialist, serviceSlug: string, kinds: string[]): boo
 /** Specialists who could take this lead, leaving out anyone switched off by hand. */
 async function candidates(serviceSlug: string, areaOrPostcode: string, kinds: string[], exclude: Set<string> = new Set()): Promise<Specialist[]> {
   const [place, off] = await Promise.all([placeFor(areaOrPostcode), switchedOffByHand()]);
-  return specialists.filter(
+  return (await activeSpecialists()).filter(
     (s) =>
       !off.has(s.slug) &&
       !exclude.has(s.slug) &&

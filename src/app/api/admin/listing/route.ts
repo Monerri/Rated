@@ -1,4 +1,4 @@
-import { specialists } from "@/data/specialists";
+import { allSpecialists } from "@/lib/specialistDirectory";
 import { authorised } from "@/lib/admin";
 import { setListing } from "@/lib/listing";
 import { jsonError, readJson, str } from "@/lib/request";
@@ -14,6 +14,7 @@ export async function POST(request: Request) {
   if (typeof body?.on !== "boolean") return jsonError("Say whether to switch on or off.");
   const on = body.on as boolean;
 
+  const specialists = await allSpecialists();
   let slugs: string[];
   if (body?.allDemo === true) {
     slugs = specialists.filter((s) => s.isDemo).map((s) => s.slug);

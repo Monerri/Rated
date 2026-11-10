@@ -1,5 +1,5 @@
-import { specialists } from "@/data/specialists";
-import { authorised } from "@/lib/admin";
+import { adminRole } from "@/lib/admin";
+import { allSpecialists } from "@/lib/specialistDirectory";
 import { addCredit, cashValueOfBalance, recordPayout, recordTopUp } from "@/lib/billing";
 import { listingStatuses } from "@/lib/listing";
 import { recordStore } from "@/lib/records";
@@ -8,10 +8,12 @@ import type { LedgerEntry } from "@/lib/types";
 
 /** Balances and on/off status for every specialist, and the last 90 days of account lines. */
 export async function GET(request: Request) {
-  if (!authorised(request)) return jsonError("Not found.", 404);
-  const statuses = await listingStatuses();
+  const role = adminRole(request);
+  if (!role) return jsonError("Not found.", 404);
+  const [statuses, specialists] = await Promise.all([listingStatuses(), allSpecialists()]);
   const since = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
   return Response.json({
+    role,
     suppliers: specialists.map((s) => {
       const st = statuses[s.slug];
       return {
@@ -42,20 +44,27 @@ const KINDS = ["topup", "refund", "adjustment", "forfeit", "payout"] as const;
  *   introducing them. Send `preview: true` first to see the value.
  */
 export async function POST(request: Request) {
-  if (!authorised(request)) return jsonError("Not found.", 404);
+  const role = adminRole(request);
+  if (!role) return jsonError("Not found.", 404);
   const body = await readJson(request);
   const slug = String(body?.supplierSlug ?? "");
-  const supplier = specialists.find((s) => s.slug === slug);
+  const supplier = (await allSpecialists()).find((s) => s.slug === slug);
   if (!supplier) return jsonError("Unknown specialist.");
   const kind = body?.kind as (typeof KINDS)[number];
   if (!KINDS.includes(kind)) return jsonError("Choose a type.");
+  // Money leaving the business, or credits removed for good, is for the owner only.
+  if ((kind === "payout" || kind === "forfeit") && role !== "owner" && body?.preview !== true) {
+    return jsonError("Only the owner can pay out or forfeit credits.", 403);
+  }
 
   if (kind === "payout" && body?.preview === true) {
     return Response.json(cashValueOfBalance(await recordStore.listLedgerFor(slug)));
   }
 
-  const note = str(body?.note, 300);
-  if (!note) return jsonError("Please add a note, for example the bank transfer reference.");
+  const typed = str(body?.note, 300);
+  if (!typed) return jsonError("Please add a note, for example the bank transfer reference.");
+  // The permanent record shows who made each change.
+  const note = role === "assistant" ? `${typed} (recorded by assistant)` : typed;
 
   let entries: LedgerEntry[];
   if (kind === "topup") {

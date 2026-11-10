@@ -5,6 +5,7 @@ import { buttonClass } from "@/components/ui/Button";
 import { FormError, TextField } from "@/components/ui/Form";
 import type { LedgerEntry } from "@/lib/types";
 import { bonusCreditsFor, formatCredits, formatPounds } from "@/lib/credits";
+import { AdminOnboarding } from "@/components/admin/AdminOnboarding";
 
 /** "£500 = 500 credits + 50 bonus credits", for the top-up form. */
 function topUpHint(pounds: number): string {
@@ -34,7 +35,7 @@ interface Supplier {
   isDemo: boolean;
   balanceCredits: number;
   on: boolean;
-  reason: "switched-off" | "low-balance" | null;
+  reason: "awaiting-terms" | "switched-off" | "low-balance" | null;
   minimumFeeCredits: number | null;
   switchedAt: string | null;
   switchNote: string | null;
@@ -43,6 +44,7 @@ interface Supplier {
 /** Status in words and a symbol, never colour alone. */
 function statusText(s: Supplier): string {
   if (s.on) return "✓ On";
+  if (s.reason === "awaiting-terms") return "… Off until they accept the Specialist terms";
   if (s.reason === "switched-off") return `✕ Off (switched off${s.switchedAt ? ` ${s.switchedAt.slice(0, 10)}` : ""})`;
   return `✕ Off (balance below ${money(s.minimumFeeCredits ?? 0)}; back on after a top-up)`;
 }
@@ -75,7 +77,8 @@ function readToken(): string {
 export function AdminConsole() {
   const [token, setToken] = useState("");
   const [draftToken, setDraftToken] = useState("");
-  const [data, setData] = useState<{ suppliers: Supplier[]; entries: LedgerEntry[] } | null>(null);
+  const [data, setData] = useState<{ role: "owner" | "assistant"; suppliers: Supplier[]; entries: LedgerEntry[] } | null>(null);
+  const [tab, setTab] = useState<"onboarding" | "accounts" | "feedback">("onboarding");
   const [feedback, setFeedback] = useState<FeedbackRow[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -93,7 +96,7 @@ export function AdminConsole() {
     const res = await fetch("/api/admin/ledger", { headers: { authorization: `Bearer ${t}` } });
     if (!res.ok) {
       setData(null);
-      setError(res.status === 404 ? "That token isn't right, or ADMIN_API_TOKEN isn't set on the Worker." : "Couldn't load accounts.");
+      setError(res.status === 404 ? "That password isn't right." : "Couldn't load accounts.");
       return false;
     }
     setData(await res.json());
@@ -178,12 +181,12 @@ export function AdminConsole() {
     return (
       <form onSubmit={signIn} className="grid max-w-md gap-4">
         <TextField
-          label="Admin token"
+          label="Admin password"
           type="password"
           autoComplete="current-password"
           value={draftToken}
           onChange={(e) => setDraftToken(e.target.value)}
-          hint="The ADMIN_API_TOKEN secret set on the Worker in Cloudflare."
+          hint="The owner's or the assistant's password. You stay signed in until you close this tab."
         />
         {error && <FormError>{error}</FormError>}
         <button type="submit" className={buttonClass("primary")}>
@@ -198,8 +201,52 @@ export function AdminConsole() {
   const demo = data.suppliers.filter((s) => s.isDemo);
   const demoOn = demo.filter((s) => s.on);
 
+  const owner = data.role === "owner";
+  const tabs = [
+    { id: "onboarding", label: "Applications and specialists" },
+    { id: "accounts", label: "Accounts and top-ups" },
+    { id: "feedback", label: "Feedback" },
+  ] as const;
+
   return (
-    <div className="grid min-w-0 gap-10">
+    <div className="grid min-w-0 gap-8">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-[15px] text-muted">Signed in as {owner ? "the owner" : "an assistant"}.</p>
+        <button
+          type="button"
+          className={buttonClass("secondary", "sm")}
+          onClick={() => {
+            try {
+              sessionStorage.removeItem(TOKEN_KEY);
+            } catch {}
+            setToken("");
+            setData(null);
+          }}
+        >
+          Sign out
+        </button>
+      </div>
+      <nav aria-label="Admin sections" className="flex flex-wrap gap-2 border-b border-line pb-3">
+        {tabs.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            aria-current={tab === t.id ? "page" : undefined}
+            onClick={() => setTab(t.id)}
+            className={`min-h-11 rounded-full border-[1.5px] px-4 text-[15px] font-semibold ${
+              tab === t.id ? "border-ink bg-ink text-surface" : "border-line bg-surface text-ink"
+            }`}
+          >
+            {tab === t.id ? "● " : ""}
+            {t.label}
+          </button>
+        ))}
+      </nav>
+
+      {tab === "onboarding" && <AdminOnboarding token={token} onChanged={() => void load(token)} />}
+
+      {tab === "accounts" && (
+      <div className="grid min-w-0 gap-10">
       {demoOn.length > 0 && (
         <section
           aria-labelledby="demo-reminder"
@@ -316,8 +363,8 @@ export function AdminConsole() {
               <option value="topup">Top-up (they paid you)</option>
               <option value="refund">Refund credits to balance (for example, a disputed lead)</option>
               <option value="adjustment">Adjustment (correct a mistake; can be negative)</option>
-              <option value="forfeit">Forfeit all credits (left over 6 months ago)</option>
-              <option value="payout">Pay out unused credits as cash (we stopped introducing them)</option>
+              {owner && <option value="forfeit">Forfeit all credits (left over 6 months ago)</option>}
+              {owner && <option value="payout">Pay out unused credits as cash (we stopped introducing them)</option>}
             </select>
           </label>
           {kind === "topup" && (
@@ -368,6 +415,10 @@ export function AdminConsole() {
         </form>
       </section>
 
+      </div>
+      )}
+
+      {tab === "feedback" && (
       <section aria-labelledby="feedback" className="grid min-w-0 gap-3">
         <h2 id="feedback" className="text-2xl font-bold">
           Homeowner feedback
@@ -398,6 +449,9 @@ export function AdminConsole() {
         )}
       </section>
 
+      )}
+
+      {tab === "accounts" && (
       <section aria-labelledby="history" className="grid min-w-0 gap-3">
         <h2 id="history" className="text-2xl font-bold">
           Last 90 days
@@ -435,6 +489,7 @@ export function AdminConsole() {
           </div>
         )}
       </section>
+      )}
     </div>
   );
 }

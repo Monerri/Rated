@@ -152,6 +152,46 @@ export interface Specialist {
   skipLaterLeadsFor?: string[];
   /** Per service, the kinds of job they take (see FunnelConfig.leadTypes). Missing means all. */
   leadTypes?: Record<string, string[]>;
+  /** For specialists approved on /admin (stored in the database). Absent for demo specialists. */
+  onboarding?: SpecialistOnboarding;
+}
+
+/** Who did something on /admin. The owner can do everything; an assistant can't pay out or forfeit credits. */
+export type AdminRole = "owner" | "assistant";
+
+/** A specialist's agreement to the Specialist terms, stored word for word. */
+export interface TermsAcceptance {
+  /** The date of the terms version agreed to (config/suppliers.ts specialistTermsVersion). */
+  version: string;
+  wordingId: string;
+  wording: string;
+  /** The person who agreed, on the business's behalf. */
+  acceptedByName: string;
+  acceptedAt: string;
+}
+
+/**
+ * How a specialist joined. They're approved on /admin after their checks,
+ * then sent a link to accept the Specialist terms. Only once they've
+ * accepted are they "active" and considered for leads.
+ */
+export interface SpecialistOnboarding {
+  status: "awaiting_terms" | "active";
+  /** The application they came from, if any. */
+  applicationId: string | null;
+  contactName: string;
+  phone: string;
+  googleProfileUrl: string | null;
+  /** What was checked for each of our checks, for our records (never shown to homeowners). */
+  checkNotes: { company: string; guarantee: string; scheme: string; google: string };
+  checkedBy: AdminRole;
+  approvedAt: string;
+  approvedBy: AdminRole;
+  updatedAt: string;
+  updatedBy: AdminRole;
+  /** The latest terms link sent. The token is only valid until `expiresAt`. */
+  termsInvite: { token: string; sentAt: string; expiresAt: string; sentBy: AdminRole } | null;
+  terms: TermsAcceptance | null;
 }
 
 /**
@@ -292,6 +332,8 @@ export interface SupplierApplication {
   kind: "supplier_application";
   id: string;
   status: "received" | "under_review" | "accepted" | "declined";
+  /** Set when reviewed on /admin. */
+  review?: { at: string; by: AdminRole; specialistSlug: string | null; declineReason: string | null };
   companyName: string;
   contactName: string;
   email: string;

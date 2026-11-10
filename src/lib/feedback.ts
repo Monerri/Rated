@@ -1,6 +1,6 @@
 import { site } from "@/config/site";
 import { getService } from "@/config/services";
-import { getSpecialist } from "@/data/specialists";
+import { specialistNames } from "@/lib/specialistDirectory";
 import { feedbackRequestEmail, noContactAlertEmail, trySend } from "@/lib/notifications";
 import { postcodeArea } from "@/lib/postcode";
 import { recordStore } from "@/lib/records";
@@ -45,7 +45,8 @@ export async function sendDueFeedbackRequests(origin: string, now = new Date()):
       respondedAt: null,
       responses: {},
     };
-    const names = record.specialistSlugs.map((slug) => getSpecialist(slug)?.name ?? slug);
+    const known = await specialistNames();
+    const names = record.specialistSlugs.map((slug) => known[slug] ?? slug);
     const serviceName = getService(e.serviceSlug)?.name ?? e.serviceSlug;
     // Record the request first, so a failed save can never lead to a second email.
     await recordStore.saveFeedback(record);
@@ -90,7 +91,8 @@ export async function submitFeedback(
   await recordStore.saveFeedback({ ...record, responses: { ...record.responses, ...responses }, respondedAt: now });
 
   // A specialist who never got in touch is something we need to know about straight away.
-  const noContact = Object.entries(responses).filter(([, r]) => r.contacted === "no").map(([slug]) => getSpecialist(slug)?.name ?? slug);
+  const known = await specialistNames();
+  const noContact = Object.entries(responses).filter(([, r]) => r.contacted === "no").map(([slug]) => known[slug] ?? slug);
   if (noContact.length && firstTime) {
     await trySend(noContactAlertEmail(getService(record.serviceSlug)?.name ?? record.serviceSlug, record.area, record.enquiryId, noContact));
   }

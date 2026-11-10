@@ -425,6 +425,8 @@ Anything else:
 ${a.anythingElse ?? "Nothing"}
 
 Reference: ${a.id}
+
+Review and approve it on the admin page: ${site.url}/admin
 `,
   };
 }

@@ -8,7 +8,7 @@ import { getFunnel } from "@/funnels";
 import type { Question } from "@/funnels/types";
 import { NOT_OWNER, OWNERSHIP, POSTCODE, SPECIALIST_COUNT } from "@/funnels/shared";
 import { knownPostcodeArea } from "@/config/regions";
-import { isResearching, postcodeCovered, visibleQuestions } from "@/funnels/engine";
+import { isResearching, leadKinds, postcodeCovered, visibleQuestions } from "@/funnels/engine";
 import { getSourceInfo } from "@/lib/source";
 import { QuestionStep } from "@/components/funnel/QuestionStep";
 import { ContactStep, type EnquiryResult } from "@/components/funnel/ContactStep";
@@ -72,8 +72,9 @@ function save(key: string, state: FunnelState | null) {
 /** How many vetted specialists cover the area. Null if the check couldn't be made. */
 async function checkCoverage(serviceSlug: string, answers: Answers): Promise<number | null> {
   const params = new URLSearchParams({ service: serviceSlug });
-  const leadType = getFunnel(serviceSlug)?.leadTypes?.of(answers);
-  if (leadType) params.set("leadType", leadType);
+  const funnel = getFunnel(serviceSlug);
+  const kinds = funnel ? leadKinds(funnel, answers) : [];
+  if (kinds.length) params.set("leadType", kinds.join(","));
   params.set("postcode", String(answers[POSTCODE] ?? ""));
   try {
     const res = await fetch(`/api/availability?${params}`);

@@ -87,6 +87,7 @@ export const specialists: Specialist[] = [
   demo("example-landscapes", "Example Landscapes Ltd", ["gardens-driveways"], ALL_NE, 4.6, 83, "00000022", null, "Driveways, patios, fencing and garden landscaping."),
   demo("sample-driveways", "Sample Driveways Ltd", ["gardens-driveways"], ["NE", "DH", "TS"], 4.4, 51, "00000023", null, "Block paving and resin driveways.", { leadTypes: { "gardens-driveways": ["driveways"] } }),
   demo("demo-flooring", "Demo Flooring Ltd", ["flooring"], ALL_NE, 4.7, 140, "00000024", null, "Wood, laminate, vinyl, tiles and carpets, supplied and fitted."),
+  demo("sample-floors", "Sample Floors Ltd", ["flooring"], ["NE", "DH", "SR"], 4.8, 66, "00000029", null, "Engineered wood and LVT, supplied and fitted.", { leadTypes: { flooring: ["engineered-wood", "vinyl"] } }),
   demo("example-plumbing-heating", "Example Plumbing & Heating Ltd", ["plumbing"], ALL_NE, 4.7, 167, "00000025", "Example gas scheme", "Boilers, central heating and general plumbing."),
   demo("sample-boilers", "Sample Boilers Ltd", ["plumbing"], ["NE", "SR", "DH"], 4.6, 88, "00000026", "Example gas scheme", "Boiler installation, servicing and repairs.", { leadTypes: { plumbing: ["heating"] } }),
   demo("example-electrical", "Example Electrical Ltd", ["electrical", "ev-charging"], ALL_NE, 4.8, 129, "00000027", "Example electrical scheme", "Rewiring, fuse boxes, lighting and safety checks."),

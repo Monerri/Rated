@@ -1,7 +1,7 @@
 import { getCatalogueService } from "@/lib/catalogue";
 import { getFunnel } from "@/funnels";
 import type { FunnelConfig } from "@/funnels/types";
-import { isResearching, summarise, validateAnswers } from "@/funnels/engine";
+import { isResearching, leadKinds, priceKind, summarise, validateAnswers } from "@/funnels/engine";
 import { MAX_SPECIALISTS, shareWithSpecialistWording } from "@/lib/consent";
 import { allocateLead } from "@/lib/matching";
 import { describeLead, isLaterLead, leadPrice, refundLead } from "@/lib/billing";
@@ -16,6 +16,7 @@ import {
   trySend,
 } from "@/lib/notifications";
 import { normalisePostcode, outwardCode, postcodeArea, regionForPostcode } from "@/lib/postcode";
+import { normalisePhone } from "@/lib/request";
 import { recordStore } from "@/lib/records";
 import { lookupPostcode } from "@/lib/geo";
 import { POSTCODE } from "@/funnels/shared";
@@ -45,6 +46,32 @@ export interface SubmitInput {
  * 4. email the homeowner the specialists' details
  * 5. only then send the enquiry to each specialist
  */
+/** How far back we look for earlier introductions when someone asks again about the same service. */
+export const REPEAT_ENQUIRY_MONTHS = 12;
+
+/**
+ * Specialists already introduced to this homeowner for this service in the
+ * last REPEAT_ENQUIRY_MONTHS, so someone who asks again (for example because
+ * none of the first ones suited) hears from different companies. The same
+ * person is recognised by their email address or phone number.
+ */
+export async function previouslyIntroduced(serviceSlug: string, contact: { email: string; phone: string }, now = new Date()): Promise<Set<string>> {
+  const since = new Date(now);
+  since.setMonth(since.getMonth() - REPEAT_ENQUIRY_MONTHS);
+  const email = contact.email.trim().toLowerCase();
+  const phone = normalisePhone(contact.phone);
+  const earlier = await recordStore.listEnquiries(since.toISOString(), now.toISOString());
+  const slugs = new Set<string>();
+  for (const e of earlier) {
+    if (e.serviceSlug !== serviceSlug) continue;
+    const sameEmail = e.contact.email.trim().toLowerCase() === email;
+    const samePhone = phone !== null && normalisePhone(e.contact.phone) === phone;
+    if (!sameEmail && !samePhone) continue;
+    for (const n of e.specialistNotifications) slugs.add(n.slug);
+  }
+  return slugs;
+}
+
 export async function submitEnquiry(input: SubmitInput): Promise<SubmitResult> {
   const service = await getCatalogueService(input.serviceSlug);
   const funnel = getFunnel(input.serviceSlug);
@@ -86,24 +113,33 @@ export async function submitEnquiry(input: SubmitInput): Promise<SubmitResult> {
   // Each specialist is charged before being chosen, so every lead sent is already paid for.
   const enquiryId = crypto.randomUUID();
   const later = isLaterLead(answers);
-  const leadType = funnel.leadTypes?.of(answers) ?? null;
-  const priceCredits = leadPrice(service.slug, leadType, requested, later, regionSlug);
+  const kinds = leadKinds(funnel, answers);
+  const priceCredits = leadPrice(service.slug, priceKind(funnel, answers), requested, later, regionSlug);
   const area = postcodeArea(postcode);
+  const exclude = await previouslyIntroduced(service.slug, input.contact);
   const { chosen: specialists, underfunded } = await allocateLead({
     serviceSlug: service.slug,
     postcode,
-    leadType,
+    leadKinds: kinds,
+    exclude,
     requested,
     later,
     enquiryId,
     priceCredits,
-    note: `${service.name}${leadTypeLabel(funnel, leadType)} lead, ${outwardCode(postcode)}, ${describeLead(requested, later)}`,
+    note: `${service.name}${leadTypeLabel(funnel, kinds)} lead, ${outwardCode(postcode)}, ${describeLead(requested, later)}`,
   });
   await recordMissedLeads(underfunded, { enquiryId, serviceSlug: service.slug, serviceName: service.name, area, priceCredits });
 
   if (specialists.length === 0) {
     if (underfunded.length > 0) await trySend(lostLeadAlertEmail(service.name, outwardCode(postcode), requested, 0, underfunded));
-    return { ok: false, status: 409, error: "We don't have a vetted specialist available for that postcode right now." };
+    // Worded the same whether or not they've asked before, so this page never
+    // reveals to anyone else that an email address has been used with us.
+    return {
+      ok: false,
+      status: 409,
+      error:
+        "We don't have another vetted specialist available for that postcode right now. If you've asked us about this before, we don't introduce the same specialists again.",
+    };
   }
   if (specialists.length < requested && underfunded.length > 0) {
     await trySend(lostLeadAlertEmail(service.name, outwardCode(postcode), requested, specialists.length, underfunded));
@@ -138,7 +174,7 @@ export async function submitEnquiry(input: SubmitInput): Promise<SubmitResult> {
   await recordStore.saveEnquiry(enquiry);
 
   // The homeowner must be told who will contact them before anyone else gets their details.
-  if (!(await trySend(customerMatchEmail(enquiry, specialists, service.name)))) {
+  if (!(await trySend(customerMatchEmail(enquiry, specialists, service.name, exclude.size > 0)))) {
     // Nobody receives the lead, so nobody pays for it.
     for (const s of specialists) {
       await refundLead(s, enquiry.id, priceCredits, "Refund: the homeowner's confirmation email couldn't be sent, so the lead wasn't passed on");
@@ -210,7 +246,7 @@ async function recordMissedLeads(
   }
 }
 
-function leadTypeLabel(funnel: FunnelConfig, leadType: string | null): string {
-  const label = funnel.leadTypes?.options.find((o) => o.value === leadType)?.label;
-  return label ? ` (${label.toLowerCase()})` : "";
+function leadTypeLabel(funnel: FunnelConfig, kinds: string[]): string {
+  const labels = kinds.map((k) => funnel.leadTypes?.options.find((o) => o.value === k)?.label).filter(Boolean);
+  return labels.length ? ` (${labels.join(", ").toLowerCase()})` : "";
 }

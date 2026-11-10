@@ -102,15 +102,18 @@ function checksBlock(s: Specialist): string {
 }
 
 /** Sent to the homeowner first, so they know who will contact them and why. */
-export function customerMatchEmail(e: Enquiry, specialists: Specialist[], serviceName: string): Email {
+export function customerMatchEmail(e: Enquiry, specialists: Specialist[], serviceName: string, leftOutEarlier = false): Email {
   const n = specialists.length;
   const names = specialists.map((s) => s.name);
   const nameList = n === 1 ? names[0] : `${names.slice(0, -1).join(", ")} and ${names[n - 1]}`;
   const demo = specialists.some((s) => s.isDemo);
   const fewer =
     n < e.specialistsRequested
-      ? `You asked to hear from ${numberWord(e.specialistsRequested)}. Right now ${numberWord(n)} vetted ${n === 1 ? "specialist covers" : "specialists cover"} your area, so we've introduced ${n === 1 ? "them" : "all of them"}.\n\n`
+      ? `You asked to hear from ${numberWord(e.specialistsRequested)}. Right now ${numberWord(n)} vetted ${n === 1 ? "specialist is" : "specialists are"} available for your enquiry, so we've introduced ${n === 1 ? "them" : "all of them"}.\n\n`
       : "";
+  const earlier = leftOutEarlier
+    ? `You've asked us about ${serviceName.toLowerCase()} before, so we haven't included the specialists we introduced you to then.\n\n`
+    : "";
   const blocks = specialists
     .map((s) => `${s.name}\n${checksBlock(s)}`)
     .join("\n\n");
@@ -123,7 +126,7 @@ Thanks for telling us about your ${serviceName.toLowerCase()} project. We've mat
 
 ${blocks}
 
-${fewer}What happens next
+${earlier}${fewer}What happens next
 1. We're passing your answers and contact details to ${nameList} now.
 2. ${n === 1 ? "They'll" : "Each will"} contact you ${site.specialistResponseTime} by phone or email to talk through your project.
 3. Any quote is between you and them, and there's no obligation to go ahead.
@@ -422,6 +425,8 @@ Anything else:
 ${a.anythingElse ?? "Nothing"}
 
 Reference: ${a.id}
+
+Review and approve it on the admin page: ${site.url}/admin
 `,
   };
 }

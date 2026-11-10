@@ -9,6 +9,7 @@ import type {
   MissedLead,
   SavedProgress,
   ServiceOverride,
+  Specialist,
   SupplierApplication,
 } from "@/lib/types";
 
@@ -48,6 +49,13 @@ export interface RecordStore {
   saveServiceOverride(override: ServiceOverride): Promise<void>;
 
   saveSupplierApplication(record: SupplierApplication): Promise<void>;
+  getSupplierApplication(id: string): Promise<SupplierApplication | null>;
+  /** Applications, newest first. */
+  listSupplierApplications(): Promise<SupplierApplication[]>;
+
+  /** Specialists approved on /admin (demo specialists live in data/specialists.ts). */
+  saveSpecialist(record: Specialist): Promise<void>;
+  listSpecialists(): Promise<Specialist[]>;
 
   /** Adds a line to a specialist's account. */
   addLedgerEntry(entry: LedgerEntry): Promise<void>;
@@ -83,6 +91,7 @@ interface Memory {
   progress: Map<string, SavedProgress>;
   overrides: Map<string, ServiceOverride>;
   suppliers: Map<string, SupplierApplication>;
+  specialists: Map<string, Specialist>;
   ledger: LedgerEntry[];
   missed: MissedLead[];
   feedback: Map<string, FeedbackRequest>;
@@ -96,6 +105,7 @@ const memory: Memory = (g.__vnMemory ??= {
   progress: new Map(),
   overrides: new Map(),
   suppliers: new Map(),
+  specialists: new Map(),
   ledger: [],
   missed: [],
   feedback: new Map(),
@@ -175,6 +185,19 @@ const prototypeStore: RecordStore = {
     memory.suppliers.set(record.id, record);
     log("supplier application", record);
   },
+  async getSupplierApplication(id) {
+    return memory.suppliers.get(id) ?? null;
+  },
+  async listSupplierApplications() {
+    return [...memory.suppliers.values()].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  },
+  async saveSpecialist(record) {
+    (memory.specialists ??= new Map()).set(record.slug, record);
+    log("specialist", record);
+  },
+  async listSpecialists() {
+    return [...(memory.specialists ?? new Map()).values()];
+  },
 
   async addLedgerEntry(entry) {
     memory.ledger.push(entry);
@@ -241,6 +264,8 @@ const SCHEMA = [
   // Manual on/off switches for listings. Lines are only ever added; the latest one counts.
   "CREATE TABLE IF NOT EXISTS listing_switches (id TEXT PRIMARY KEY, supplier_slug TEXT NOT NULL, created_at TEXT NOT NULL, is_on INTEGER NOT NULL, note TEXT NOT NULL)",
   "CREATE INDEX IF NOT EXISTS listing_switches_by_supplier ON listing_switches (supplier_slug, created_at)",
+  // Specialists approved on /admin, stored whole. Kept while they work with us and six years after (privacy notice).
+  "CREATE TABLE IF NOT EXISTS specialists (slug TEXT PRIMARY KEY, created_at TEXT NOT NULL, updated_at TEXT NOT NULL, data TEXT NOT NULL)",
 ];
 
 /**
@@ -418,6 +443,24 @@ function d1Queries(db: D1): RecordStore {
         .bind(a.id, a.createdAt, JSON.stringify(a))
         .run();
     },
+    getSupplierApplication: (id) => one<SupplierApplication>("SELECT data FROM supplier_applications WHERE id = ?", id),
+    async listSupplierApplications() {
+      const { results } = await db.prepare("SELECT data FROM supplier_applications ORDER BY created_at DESC").all<{ data: string }>();
+      return results.map((row) => JSON.parse(row.data) as SupplierApplication);
+    },
+    async saveSpecialist(s) {
+      const now = new Date().toISOString();
+      await db
+        .prepare(
+          "INSERT INTO specialists (slug, created_at, updated_at, data) VALUES (?, ?, ?, ?) ON CONFLICT(slug) DO UPDATE SET updated_at = excluded.updated_at, data = excluded.data",
+        )
+        .bind(s.slug, s.onboarding?.approvedAt ?? now, now, JSON.stringify(s))
+        .run();
+    },
+    async listSpecialists() {
+      const { results } = await db.prepare("SELECT data FROM specialists ORDER BY created_at").all<{ data: string }>();
+      return results.map((row) => JSON.parse(row.data) as Specialist);
+    },
 
     async addLedgerEntry(e) {
       await db
@@ -518,6 +561,10 @@ export const recordStore: RecordStore = {
   getServiceOverrides: () => currentStore().getServiceOverrides(),
   saveServiceOverride: (o) => currentStore().saveServiceOverride(o),
   saveSupplierApplication: (a) => currentStore().saveSupplierApplication(a),
+  getSupplierApplication: (id) => currentStore().getSupplierApplication(id),
+  listSupplierApplications: () => currentStore().listSupplierApplications(),
+  saveSpecialist: (s) => currentStore().saveSpecialist(s),
+  listSpecialists: () => currentStore().listSpecialists(),
   addLedgerEntry: (e) => currentStore().addLedgerEntry(e),
   chargeIfFunded: (e) => currentStore().chargeIfFunded(e),
   getBalances: () => currentStore().getBalances(),

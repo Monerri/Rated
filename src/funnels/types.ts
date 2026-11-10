@@ -66,7 +66,12 @@ export interface FunnelConfig {
    */
   leadTypes?: {
     options: { value: string; label: string }[];
-    /** The kind this enquiry needs, from the answers. */
-    of: (answers: Answers) => string;
+    /**
+     * The kind this enquiry needs, from the answers. Return a list when the
+     * homeowner can ask for several kinds at once (for example floor types):
+     * a specialist then receives it if they take at least one of them, and an
+     * empty list (not sure) goes to anyone. A list never has its own price.
+     */
+    of: (answers: Answers) => string | string[];
   };
 }

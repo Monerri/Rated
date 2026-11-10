@@ -94,3 +94,16 @@ export function postcodeCovered(answers: Answers): boolean | null {
   if (!pc) return null;
   return regionForPostcode(pc) !== null;
 }
+
+/** Every kind of job this enquiry asks for, for matching. Empty means any specialist. */
+export function leadKinds(config: FunnelConfig, answers: Answers): string[] {
+  const kind = config.leadTypes?.of(answers);
+  if (kind === undefined) return [];
+  return Array.isArray(kind) ? kind : [kind];
+}
+
+/** The kind of job that sets the price ("service/kind" in config/pricing.ts), or null for the service's price. */
+export function priceKind(config: FunnelConfig, answers: Answers): string | null {
+  const kind = config.leadTypes?.of(answers);
+  return typeof kind === "string" ? kind : null;
+}

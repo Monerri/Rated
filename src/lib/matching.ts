@@ -1,4 +1,4 @@
-import { specialists } from "@/data/specialists";
+import { activeSpecialists } from "@/lib/specialistDirectory";
 import { outwardCode, postcodeArea } from "@/lib/postcode";
 import { isCurrentlyVetted } from "@/lib/vetting";
 import type { Specialist } from "@/lib/types";
@@ -42,21 +42,26 @@ export function covers(s: Specialist, place: Place): boolean {
   return s.areasCovered.includes(place.area) || (place.outward !== null && s.areasCovered.includes(place.outward));
 }
 
-/** Whether a specialist takes this kind of job. No preference set means they take every kind. */
-function takesLeadType(s: Specialist, serviceSlug: string, leadType: string | null): boolean {
+/**
+ * Whether a specialist takes this kind of job. No preference set means they
+ * take every kind. When the homeowner asked for several kinds (for example
+ * engineered wood and carpet), taking at least one is enough.
+ */
+function takesLeadType(s: Specialist, serviceSlug: string, kinds: string[]): boolean {
   const accepted = s.leadTypes?.[serviceSlug];
-  return !leadType || !accepted || accepted.includes(leadType);
+  return kinds.length === 0 || !accepted || kinds.some((k) => accepted.includes(k));
 }
 
 /** Specialists who could take this lead, leaving out anyone switched off by hand. */
-async function candidates(serviceSlug: string, areaOrPostcode: string, leadType: string | null): Promise<Specialist[]> {
+async function candidates(serviceSlug: string, areaOrPostcode: string, kinds: string[], exclude: Set<string> = new Set()): Promise<Specialist[]> {
   const [place, off] = await Promise.all([placeFor(areaOrPostcode), switchedOffByHand()]);
-  return specialists.filter(
+  return (await activeSpecialists()).filter(
     (s) =>
       !off.has(s.slug) &&
+      !exclude.has(s.slug) &&
       s.services.includes(serviceSlug) &&
       covers(s, place) &&
-      takesLeadType(s, serviceSlug, leadType) &&
+      takesLeadType(s, serviceSlug, kinds) &&
       isCurrentlyVetted(s),
   );
 }
@@ -90,8 +95,10 @@ export interface Allocation {
 export async function allocateLead(opts: {
   serviceSlug: string;
   postcode: string;
-  /** The kind of job, for services that have kinds (for example new builds). */
-  leadType: string | null;
+  /** The kinds of job asked for, for services that have kinds (for example new builds). Empty for any. */
+  leadKinds: string[];
+  /** Specialists this homeowner has already been introduced to for this service, who are left out. */
+  exclude: Set<string>;
   requested: number;
   later: boolean;
   enquiryId: string;
@@ -99,7 +106,7 @@ export async function allocateLead(opts: {
   note: string;
 }): Promise<Allocation> {
   const pool = shuffle(
-    (await candidates(opts.serviceSlug, opts.postcode, opts.leadType)).filter(
+    (await candidates(opts.serviceSlug, opts.postcode, opts.leadKinds, opts.exclude)).filter(
       (s) => !(opts.later && s.skipLaterLeadsFor?.includes(opts.serviceSlug)),
     ),
   );
@@ -122,8 +129,8 @@ export async function allocateLead(opts: {
  * How many vetted specialists cover an area or postcode and could currently
  * take a lead, without revealing who.
  */
-export async function coverageCount(serviceSlug: string, areaOrPostcode: string, leadType: string | null): Promise<number> {
+export async function coverageCount(serviceSlug: string, areaOrPostcode: string, kinds: string[]): Promise<number> {
   const balances = await recordStore.getBalances();
-  const price = cheapestLeadPrice(serviceSlug, leadType);
-  return (await candidates(serviceSlug, areaOrPostcode, leadType)).filter((s) => canAfford(s, balances, price)).length;
+  const price = cheapestLeadPrice(serviceSlug, kinds.length === 1 ? kinds[0] : null);
+  return (await candidates(serviceSlug, areaOrPostcode, kinds)).filter((s) => canAfford(s, balances, price)).length;
 }

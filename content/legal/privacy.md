@@ -2,7 +2,7 @@
 title: Privacy notice
 description: How {{name}} collects, uses, shares and protects your personal information.
 date: 2026-10-08
-updated: 2026-11-09
+updated: 2026-11-10
 ---
 
 **This is a draft and is being reviewed before launch.**
@@ -26,6 +26,8 @@ You can contact us about privacy at **{{privacyEmail}}**.
 **Why:** to identify suitable vetted specialists covering your area, up to the number you choose (one, two or three), to tell you who they are, and to pass your details to them so they can contact you about your project.
 
 **Lawful basis:** your consent, which you give by ticking the box before you submit. The exact wording you agreed to is stored with your enquiry.
+
+**If you ask again:** if you ask us about the same kind of work within 12 months, we check your earlier enquiries, matching on your email address or phone number, so we can introduce you to different specialists rather than the same ones again. This is in our legitimate interests and yours.
 
 **How long we keep it:** 24 months from your enquiry, so we can deal with any questions or complaints, then we delete it.
 

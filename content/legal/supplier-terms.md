@@ -10,7 +10,7 @@ These terms apply to businesses ("you") that receive introductions to homeowners
 
 ## 1. Joining
 
-We only work with registered companies that pass our [current checks](/how-we-check). We reconfirm your checks at least every 12 months. You must tell us promptly if anything changes that affects them, for example your insurance-backed guarantee provider or your scheme registration.
+We only work with registered companies that pass our [current checks](/how-we-check). Once you pass, we email you a link to accept these terms online, and we keep a record of who accepted them, when, and which version. We don't send introductions until they've been accepted. We reconfirm your checks at least every 12 months. You must tell us promptly if anything changes that affects them, for example your insurance-backed guarantee provider or your scheme registration.
 
 ## 2. How introductions work
 

@@ -46,3 +46,21 @@ export function supplierDeclarationWording() {
     wording: `I confirm the information above is accurate, that I'm authorised to submit it for this business, and that ${site.name} may check it against public records and use it to review our application.`,
   };
 }
+
+/**
+ * The version of the Specialist terms that specialists agree to: the date in
+ * content/legal/supplier-terms.md. Change both together when the terms change,
+ * so every acceptance records which version it was.
+ */
+export const specialistTermsVersion = "2026-11-10";
+
+/** How long a "please accept our terms" link stays valid. */
+export const termsInviteDays = 30;
+
+/** What a specialist ticks to accept the terms, stored word for word with their acceptance. */
+export function specialistTermsWording(companyName: string) {
+  return {
+    wordingId: `specialist_terms.${specialistTermsVersion}`,
+    wording: `I'm authorised to act for ${companyName}, and on its behalf I agree to the ${site.name} Specialist terms dated ${new Date(`${specialistTermsVersion}T00:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" })}, including how prepaid credits, bonus credits and refunds work.`,
+  };
+}

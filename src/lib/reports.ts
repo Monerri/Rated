@@ -1,5 +1,5 @@
 import { site } from "@/config/site";
-import { specialists } from "@/data/specialists";
+import { allSpecialists } from "@/lib/specialistDirectory";
 import { getService } from "@/config/services";
 import { formatCredits, formatPounds } from "@/lib/billing";
 import { bindings } from "@/lib/cloudflare";
@@ -94,6 +94,7 @@ export async function sendWeeklyReports(now = new Date()): Promise<{ suppliers: 
     recordStore.listFeedback(new Date(now.getTime() - 37 * DAY).toISOString()),
     listingStatuses(),
   ]);
+  const specialists = await allSpecialists();
 
   let sent = 0;
   const rows: string[] = [];
@@ -103,16 +104,22 @@ export async function sendWeeklyReports(now = new Date()): Promise<{ suppliers: 
     const balance = balances[s.slug] ?? 0;
     const leads = mine.filter((e) => e.kind === "lead").length;
     const st = statuses[s.slug];
-    const state = st?.on ? "on" : st?.reason === "switched-off" ? "OFF (switched off)" : "OFF (low balance)";
+    const state = st?.on
+      ? "on"
+      : st?.reason === "awaiting-terms"
+        ? "OFF (hasn't accepted the terms yet)"
+        : st?.reason === "switched-off"
+          ? "OFF (switched off)"
+          : "OFF (low balance)";
     rows.push(
       `  ${s.name}${s.isDemo ? " (demo, never charged, so not counted)" : ""}: ${state}, ${leads} lead${leads === 1 ? "" : "s"}, ${formatCredits(-sum(mine, "lead"))} spent, ${myMissed.length} missed, balance ${formatCredits(balance)}`,
     );
-    if (s.isDemo) continue;
+    if (s.isDemo || st?.reason === "awaiting-terms") continue;
     if (await trySend(supplierReport(s, mine, myMissed, balance, statuses[s.slug], from, to))) sent++;
   }
 
   const topups = entries.filter((e) => e.kind === "topup").reduce((t, e) => t + (e.paidPence ?? 0), 0);
-  const demoOn = demoStillOn(statuses);
+  const demoOn = demoStillOn(specialists, statuses);
   const reminder = demoOn.length
     ? `REMINDER: ${demoOn.length} demo compan${demoOn.length === 1 ? "y is" : "ies are"} still switched on. Switch them off on the admin page before you go live, so real homeowners are only introduced to real specialists.
 
@@ -136,7 +143,7 @@ Where enquiries came from (for judging adverts)
 ${bySource(enquiries, entries)}
 
 Homeowner feedback this week
-${feedbackLines(feedback.filter((f) => f.respondedAt && f.respondedAt >= since))}
+${feedbackLines(feedback.filter((f) => f.respondedAt && f.respondedAt >= since), Object.fromEntries(specialists.map((s) => [s.slug, s.name])))}
 
 Reports sent to ${sent} specialist${sent === 1 ? "" : "s"}.
 `,
@@ -170,12 +177,12 @@ function bySource(enquiries: Enquiry[], entries: LedgerEntry[]): string {
     .join("\n");
 }
 
-function feedbackLines(records: Parameters<typeof summariseFeedback>[0]): string {
+function feedbackLines(records: Parameters<typeof summariseFeedback>[0], names: Record<string, string>): string {
   const summary = Object.entries(summariseFeedback(records));
   if (summary.length === 0) return "  None this week.";
   return summary
     .map(([slug, s]) => {
-      const name = specialists.find((x) => x.slug === slug)?.name ?? slug;
+      const name = names[slug] ?? slug;
       const avg = s.ratings.length ? (s.ratings.reduce((t, n) => t + n, 0) / s.ratings.length).toFixed(1) : "no ratings";
       return `  ${name}: ${s.responses} answer${s.responses === 1 ? "" : "s"}, average ${avg}${s.notContacted ? `, ${s.notContacted} never contacted` : ""}`;
     })

@@ -1,4 +1,4 @@
-import { authorised } from "@/lib/admin";
+import { adminRole } from "@/lib/admin";
 import { revalidatePath } from "next/cache";
 import { setServiceAvailability } from "@/lib/launch";
 import { jsonError, readJson, requestOrigin } from "@/lib/request";
@@ -15,7 +15,7 @@ type Context = { params: Promise<{ service: string }> };
  * Disabled unless ADMIN_API_TOKEN is set. Temporary until an admin screen exists.
  */
 export async function POST(request: Request, { params }: Context) {
-  if (!authorised(request)) return jsonError("Not found.", 404);
+  if (adminRole(request) !== "owner") return jsonError("Not found.", 404);
 
   const body = await readJson(request);
   const status = body?.status;

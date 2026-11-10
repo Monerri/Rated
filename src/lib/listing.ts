@@ -1,4 +1,4 @@
-import { specialists } from "@/data/specialists";
+import { allSpecialists } from "@/lib/specialistDirectory";
 import { leadPrice } from "@/lib/billing";
 import { getFunnel } from "@/funnels";
 import { recordStore } from "@/lib/records";
@@ -17,7 +17,7 @@ import type { ListingSwitch, Specialist } from "@/lib/types";
 export interface ListingStatus {
   on: boolean;
   /** Why they're off, or null when on. */
-  reason: "switched-off" | "low-balance" | null;
+  reason: "awaiting-terms" | "switched-off" | "low-balance" | null;
   balanceCredits: number;
   /** The cheapest lead they could receive. Null for demo specialists, who aren't charged. */
   minimumFeeCredits: number | null;
@@ -46,7 +46,9 @@ export function listingStatus(
   const lastSwitch = switches[s.slug] ?? null;
   const minimumFeeCredits = s.isDemo ? null : minimumLeadFee(s);
   const reason =
-    lastSwitch && !lastSwitch.on
+    s.onboarding && s.onboarding.status !== "active"
+      ? "awaiting-terms"
+      : lastSwitch && !lastSwitch.on
       ? "switched-off"
       : minimumFeeCredits !== null && balanceCredits < minimumFeeCredits
         ? "low-balance"
@@ -56,8 +58,8 @@ export function listingStatus(
 
 /** Every specialist's status, by slug. */
 export async function listingStatuses(): Promise<Record<string, ListingStatus>> {
-  const [balances, switches] = await Promise.all([recordStore.getBalances(), recordStore.getListingSwitches()]);
-  return Object.fromEntries(specialists.map((s) => [s.slug, listingStatus(s, balances, switches)]));
+  const [list, balances, switches] = await Promise.all([allSpecialists(), recordStore.getBalances(), recordStore.getListingSwitches()]);
+  return Object.fromEntries(list.map((s) => [s.slug, listingStatus(s, balances, switches)]));
 }
 
 /** Slugs of specialists switched off by hand. They're left out of matching entirely. */
@@ -80,6 +82,6 @@ export async function setListing(slugs: string[], on: boolean, note: string): Pr
 }
 
 /** Demo specialists that are still switched on. Used for the "before you go live" reminders. */
-export function demoStillOn(statuses: Record<string, ListingStatus>): Specialist[] {
-  return specialists.filter((s) => s.isDemo && statuses[s.slug]?.on);
+export function demoStillOn(list: Specialist[], statuses: Record<string, ListingStatus>): Specialist[] {
+  return list.filter((s) => s.isDemo && statuses[s.slug]?.on);
 }

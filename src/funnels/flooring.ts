@@ -7,10 +7,28 @@ import {
   timescaleQuestion,
 } from "@/funnels/shared";
 
+const NOT_SURE = "not-sure";
+
+/** The floors specialists can choose to fit. */
+const FLOOR_TYPES = [
+  { value: "engineered-wood", label: "Engineered wood" },
+  { value: "solid-wood", label: "Solid wood", hint: "Including parquet and herringbone" },
+  { value: "laminate", label: "Laminate" },
+  { value: "vinyl", label: "Vinyl or LVT", hint: "Luxury vinyl tiles or planks" },
+  { value: "carpet", label: "Carpet" },
+  { value: "tiles", label: "Stone or ceramic tiles" },
+];
+
 export const flooringFunnel: FunnelConfig = {
   serviceSlug: "flooring",
   heading: "Flooring",
   researching: { questionId: "timescale", value: RESEARCHING },
+  // Specialists choose the floors they fit. A homeowner asking for several
+  // goes to specialists who fit at least one of them; "not sure" goes to anyone.
+  leadTypes: {
+    options: FLOOR_TYPES.map(({ value, label }) => ({ value, label })),
+    of: (a) => (Array.isArray(a.floorType) ? a.floorType.filter((v) => v !== NOT_SURE) : []),
+  },
   questions: [
     {
       id: "floorType",
@@ -19,14 +37,7 @@ export const flooringFunnel: FunnelConfig = {
       hint: "Choose all that apply.",
       summaryLabel: "Flooring",
       layout: "list",
-      options: [
-        { value: "wood", label: "Solid or engineered wood" },
-        { value: "laminate", label: "Laminate" },
-        { value: "vinyl", label: "Vinyl or LVT", hint: "Luxury vinyl tiles or planks" },
-        { value: "carpet", label: "Carpet" },
-        { value: "tiles", label: "Stone or ceramic tiles" },
-        { value: "not-sure", label: "Not sure, I'd like advice" },
-      ],
+      options: [...FLOOR_TYPES, { value: NOT_SURE, label: "Not sure, I'd like advice" }],
     },
     postcodeQuestion,
     {

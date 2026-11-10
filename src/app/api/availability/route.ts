@@ -28,7 +28,8 @@ export async function GET(request: NextRequest) {
   const covered = region !== null && service.regions.includes(region);
   // Only count specialists who take this kind of job, for services that have kinds.
   const kinds = getFunnel(service.slug)?.leadTypes?.options.map((o) => o.value) ?? [];
-  const leadType = params.get("leadType");
-  const count = covered ? await coverageCount(service.slug, target, leadType && kinds.includes(leadType) ? leadType : null) : 0;
+  // One kind, or several separated by commas (for example floor types).
+  const asked = (params.get("leadType") ?? "").split(",").filter((k) => kinds.includes(k));
+  const count = covered ? await coverageCount(service.slug, target, asked) : 0;
   return Response.json({ available: count > 0, count });
 }

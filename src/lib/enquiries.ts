@@ -1,7 +1,7 @@
 import { getCatalogueService } from "@/lib/catalogue";
 import { getFunnel } from "@/funnels";
 import type { FunnelConfig } from "@/funnels/types";
-import { isResearching, summarise, validateAnswers } from "@/funnels/engine";
+import { isResearching, leadKinds, priceKind, summarise, validateAnswers } from "@/funnels/engine";
 import { MAX_SPECIALISTS, shareWithSpecialistWording } from "@/lib/consent";
 import { allocateLead } from "@/lib/matching";
 import { describeLead, isLaterLead, leadPrice, refundLead } from "@/lib/billing";
@@ -86,18 +86,18 @@ export async function submitEnquiry(input: SubmitInput): Promise<SubmitResult> {
   // Each specialist is charged before being chosen, so every lead sent is already paid for.
   const enquiryId = crypto.randomUUID();
   const later = isLaterLead(answers);
-  const leadType = funnel.leadTypes?.of(answers) ?? null;
-  const priceCredits = leadPrice(service.slug, leadType, requested, later, regionSlug);
+  const kinds = leadKinds(funnel, answers);
+  const priceCredits = leadPrice(service.slug, priceKind(funnel, answers), requested, later, regionSlug);
   const area = postcodeArea(postcode);
   const { chosen: specialists, underfunded } = await allocateLead({
     serviceSlug: service.slug,
     postcode,
-    leadType,
+    leadKinds: kinds,
     requested,
     later,
     enquiryId,
     priceCredits,
-    note: `${service.name}${leadTypeLabel(funnel, leadType)} lead, ${outwardCode(postcode)}, ${describeLead(requested, later)}`,
+    note: `${service.name}${leadTypeLabel(funnel, kinds)} lead, ${outwardCode(postcode)}, ${describeLead(requested, later)}`,
   });
   await recordMissedLeads(underfunded, { enquiryId, serviceSlug: service.slug, serviceName: service.name, area, priceCredits });
 
@@ -210,7 +210,7 @@ async function recordMissedLeads(
   }
 }
 
-function leadTypeLabel(funnel: FunnelConfig, leadType: string | null): string {
-  const label = funnel.leadTypes?.options.find((o) => o.value === leadType)?.label;
-  return label ? ` (${label.toLowerCase()})` : "";
+function leadTypeLabel(funnel: FunnelConfig, kinds: string[]): string {
+  const labels = kinds.map((k) => funnel.leadTypes?.options.find((o) => o.value === k)?.label).filter(Boolean);
+  return labels.length ? ` (${labels.join(", ").toLowerCase()})` : "";
 }

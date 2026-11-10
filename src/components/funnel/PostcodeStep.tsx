@@ -5,7 +5,43 @@ import { normalisePostcode } from "@/lib/postcode";
 import { buttonClass } from "@/components/ui/Button";
 import { TextField } from "@/components/ui/Form";
 
-type LocateState = { kind: "idle" } | { kind: "finding" } | { kind: "found"; postcode: string } | { kind: "failed"; message: string };
+type LocateState =
+  | { kind: "idle" }
+  | { kind: "finding" }
+  | { kind: "found"; postcode: string }
+  | { kind: "failed"; message: string; showHelp?: boolean };
+
+type Device = "ios" | "android" | "computer";
+
+function deviceType(): Device {
+  const ua = navigator.userAgent;
+  if (/iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)) return "ios";
+  if (/Android/.test(ua)) return "android";
+  return "computer";
+}
+
+/**
+ * A site can't switch location on itself, and once it's been blocked the
+ * browser won't ask again, so we explain where to switch it on.
+ */
+const LOCATION_HELP: Record<Device, string[]> = {
+  ios: [
+    "Open Settings, then Privacy & Security, then Location Services, and check it's on.",
+    "In the same list, tap Safari Websites (or Chrome, if you use it) and choose While Using the App.",
+    "Back here, tap the page settings button in the address bar (it may show aA), then Website Settings, and set Location to Ask or Allow.",
+    "Tap Try again.",
+  ],
+  android: [
+    "Swipe down from the top of the screen and check Location is switched on.",
+    "Tap the icon to the left of the web address, then Permissions or Site settings, and allow Location.",
+    "Tap Try again.",
+  ],
+  computer: [
+    "Click the icon to the left of the web address and allow Location for this site.",
+    "Check location is switched on in your computer's privacy settings.",
+    "Click Try again.",
+  ],
+};
 
 /**
  * The property's postcode, asked once near the start. Typed, or filled in
@@ -56,8 +92,9 @@ export function PostcodeStep({ initial, onSubmit }: { initial: string; onSubmit:
           kind: "failed",
           message:
             err.code === err.PERMISSION_DENIED
-              ? "Location isn't switched on for this site. Please type your postcode instead."
-              : "We couldn't get your location. Please type your postcode instead.",
+              ? "Location is switched off for this site. You can type your postcode above, or switch location on and try again."
+              : "We couldn't get your location. You can type your postcode above, or check location is switched on and try again.",
+          showHelp: err.code !== err.TIMEOUT,
         }),
       { enableHighAccuracy: false, timeout: 10_000, maximumAge: 600_000 },
     );
@@ -104,6 +141,19 @@ export function PostcodeStep({ initial, onSubmit }: { initial: string; onSubmit:
                 ? locate.message
                 : "We use your location once, to find your postcode. We don't keep it."}
           </p>
+          {locate.kind === "failed" && locate.showHelp && (
+            <details className="rounded-[var(--radius-card)] border border-line bg-surface p-4 text-[15px]">
+              <summary className="cursor-pointer font-semibold text-blue">How to switch on location</summary>
+              <ol className="mt-3 grid list-decimal gap-2 pl-5">
+                {LOCATION_HELP[deviceType()].map((step) => (
+                  <li key={step}>{step}</li>
+                ))}
+              </ol>
+              <button type="button" onClick={useLocation} className={buttonClass("secondary", "sm", "mt-4")}>
+                Try again
+              </button>
+            </details>
+          )}
         </div>
       )}
 

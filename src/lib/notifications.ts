@@ -157,7 +157,7 @@ export function specialistEnquiryEmail(
     subject: `New ${serviceName} enquiry: ${e.postcode}`,
     text: `${s.isDemo ? DEMO_NOTE : ""}Hello ${s.name},
 
-A homeowner has asked to be put in touch about ${serviceName.toLowerCase()}. We've told them to expect your call or email. ${shared}
+A homeowner has asked to be put in touch about ${serviceName.toLowerCase()}. We've told them to expect your call or email ${site.specialistResponseTime}. ${shared}
 
 Name: ${e.contact.firstName} ${e.contact.lastName}
 Phone: ${e.contact.phone}

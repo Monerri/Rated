@@ -65,7 +65,8 @@ We keep a permanent record of every top-up, bonus, introduction, refund and adju
 
 - When we introduce a homeowner, you become responsible for their details under UK data protection law, as a separate controller.
 - Use their details only to discuss and quote for the project they asked about. Don't sell or share them, or add them to marketing lists without their separate consent.
-- Contact them promptly and treat them fairly. Never pressure them to sign on the spot. If they tell you they no longer want to be contacted, stop.
+- **Contact them within 3 days** of receiving the introduction, by phone or email. We tell homeowners to expect to hear from you within that time. If you often don't, we may pause your listing.
+- Treat them fairly. Never pressure them to sign on the spot. If they tell you they no longer want to be contacted, stop.
 
 ## 10. Our responsibility
 

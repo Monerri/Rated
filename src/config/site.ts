@@ -21,21 +21,21 @@ export const site = {
   /** Where new supplier applications are sent for review. */
   supplierApplicationsEmail: `suppliers@${domain}`,
   /**
-   * When homeowners can expect to hear from their specialist. Deliberately
-   * vague during beta; change to, for example, "within five working days"
-   * once suppliers have agreed to a response time.
+   * When homeowners can expect to hear from their specialist. Specialists
+   * agree to this in section 9 of the Specialist terms, so change both together.
    */
-  specialistResponseTime: "shortly",
+  specialistResponseTime: "within three days",
   /**
    * The company behind the trading name. Shown in the footer, on the About
    * page and in the legal pages, as UK company law requires on websites.
    */
   legal: {
     companyName: "Roberto Monerri Ltd",
-    companyNumber: "[to be confirmed]",
+    companyNumber: "10312351",
     placeOfRegistration: "England and Wales",
-    registeredOffice: "[to be confirmed]",
-    icoNumber: "[to be confirmed]",
+    registeredOffice: "16 Fairburn Avenue, Houghton le Spring, Durham DH5 8LA",
+    /** "pending" until the ICO confirms the registration, then the number, for example "ZB123456". */
+    icoNumber: "pending",
   },
 } as const;
 

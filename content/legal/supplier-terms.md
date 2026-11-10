@@ -1,7 +1,7 @@
 ---
 title: Specialist terms
 description: The terms for home-improvement specialists who receive introductions through {{name}}, including prepaid credit.
-date: 2026-11-09
+date: 2026-11-10
 ---
 
 **This is a draft and is being reviewed before launch. It should be checked by a solicitor before any specialist signs up.**

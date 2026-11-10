@@ -1,4 +1,5 @@
 import { site } from "@/config/site";
+import { launch } from "@/config/launch";
 import { bindings } from "@/lib/cloudflare";
 import { vettingChecks } from "@/config/vetting";
 import { formatMonthYear } from "@/lib/format";
@@ -149,7 +150,7 @@ export function specialistEnquiryEmail(
   s: Specialist,
   introduced: number,
   serviceName: string,
-  billing: { priceCredits: number; balanceCredits: number; description: string } | null = null,
+  billing: { priceCredits: number; listPriceCredits: number; balanceCredits: number; description: string } | null = null,
 ): Email {
   const shared =
     introduced === 1
@@ -172,7 +173,14 @@ ${e.summary.map((r) => `  ${r.label}: ${r.value}`).join("\n")}
 
 Enquiry reference: ${e.id}
 ${
-  billing
+  billing && billing.priceCredits === 0
+    ? `
+This introduction is free. We're still welcoming specialists before we start advertising to homeowners in ${launch.advertisingFrom}, so introductions until then aren't charged and nothing has been taken from your balance. It's recorded on your account, and would normally cost ${formatCredits(billing.listPriceCredits)}.
+Your balance is still ${formatCredits(billing.balanceCredits)}.
+
+If this lead isn't genuine (for example, the details are wrong or it's a duplicate), please let us know by replying to this email.
+`
+    : billing
     ? `
 This lead cost ${formatCredits(billing.priceCredits)} from your balance: ${billing.description}.
 Your balance is now ${formatCredits(billing.balanceCredits)}.${

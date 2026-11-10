@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getService } from "@/config/services";
 import { site } from "@/config/site";
 import { specialistTermsVersion, specialistTermsWording } from "@/config/suppliers";
+import { launch } from "@/config/launch";
 import { specialistForTermsToken } from "@/lib/onboarding";
 import { AcceptTermsForm } from "@/components/suppliers/AcceptTermsForm";
 
@@ -49,7 +50,13 @@ export default async function AcceptTermsPage({ params }: Props) {
         <h2 className="text-xl font-bold">The main points</h2>
         <ul className="grid list-disc gap-2 pl-5">
           <li>You pay for introductions in advance with credits. One credit is worth £1, and larger top-ups come with bonus credits.</li>
-          <li>You&apos;re only charged when an introduction is sent to you. Bonus credits are never paid out as cash.</li>
+          <li>You&apos;re only charged when an introduction is sent to you. Bonus and free credits are never paid out as cash.</li>
+          {launch.onboardingPhase && (
+            <li>
+              Until we start advertising to homeowners in {launch.advertisingFrom}, any introductions you receive are free and
+              don&apos;t use your credits.
+            </li>
+          )}
           <li>Contact each homeowner {site.specialistResponseTime} of receiving their details.</li>
           <li>Use homeowners&apos; details only to discuss and quote for the work they asked about.</li>
         </ul>
@@ -61,7 +68,15 @@ export default async function AcceptTermsPage({ params }: Props) {
           {new Date(`${specialistTermsVersion}T00:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" })}.
         </p>
       </section>
-      <AcceptTermsForm token={token} consent={consent} />
+      <AcceptTermsForm
+        token={token}
+        consent={consent}
+        afterwards={
+          launch.onboardingPhase && launch.foundingCredits > 0
+            ? `We've added ${launch.foundingCredits} free founding credits to your account. We start advertising to homeowners in ${launch.advertisingFrom}; until then introductions will be few, and any you receive are free.`
+            : "To start receiving introductions, top up your credits: reply to our email and we'll send you the payment details."
+        }
+      />
     </div>
   );
 }

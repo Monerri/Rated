@@ -243,6 +243,7 @@ function ApplicationDetails({ a }: { a: SupplierApplication }) {
     ["Google profile", a.googleProfileUrl],
     ["About", a.description],
     ["Anything else", a.anythingElse ?? "Nothing"],
+    ["Came from", a.source?.utm?.source ? `${a.source.utm.source}${a.source.utm.medium ? ` (${a.source.utm.medium})` : ""}` : (a.source?.referrer ?? "Not known")],
     ["Reference", a.id],
   ];
   return (

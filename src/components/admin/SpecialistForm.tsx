@@ -269,8 +269,8 @@ export function SpecialistForm({
                       <Check key={k.value} label={k.label} checked={kindsFor(s.slug).includes(k.value)} onChange={(c) => toggleKind(s.slug, k.value, c)} />
                     ))}
                     <Check
-                      label="Don't send jobs planned in 3 to 6 months"
-                      hint="Those are discounted. Most specialists take them."
+                      label="Opt out of non-urgent jobs"
+                      hint="Tick this and they'll only be sent homeowners who want the work done within 3 months. They won't receive jobs planned in 3 to 6 months, which are charged at a discount."
                       checked={v.skipLaterLeadsFor.includes(s.slug)}
                       onChange={(c) =>
                         set("skipLaterLeadsFor", c ? [...v.skipLaterLeadsFor, s.slug] : v.skipLaterLeadsFor.filter((x) => x !== s.slug))

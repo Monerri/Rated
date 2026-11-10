@@ -9,6 +9,7 @@ import {
   vatRegistered,
 } from "@/config/pricing";
 import { getService } from "@/config/services";
+import { launch } from "@/config/launch";
 import { bonusCreditsFor, formatCredits, formatPounds } from "@/lib/credits";
 import { getFunnel } from "@/funnels";
 import { recordStore } from "@/lib/records";
@@ -52,6 +53,14 @@ export function laterPrice(credits: number): number {
   return Math.floor((credits * (100 - laterLeadDiscountPercent)) / 100);
 }
 
+/**
+ * What a specialist is actually charged for a lead at this price: nothing
+ * while we're still onboarding specialists (see config/launch.ts).
+ */
+export function chargedPrice(listPriceCredits: number): number {
+  return launch.onboardingPhase ? 0 : listPriceCredits;
+}
+
 /** The cheapest lead for a service, used to check coverage before the price is known. */
 export function cheapestLeadPrice(serviceSlug: string, leadType: string | null): number {
   return leadPrice(serviceSlug, leadType, 2, true);
@@ -86,7 +95,7 @@ export async function chargeForLead(s: Specialist, enquiryId: string, priceCredi
 
 /** Gives a lead's price back, for example when its email couldn't be sent. */
 export async function refundLead(s: Specialist, enquiryId: string, priceCredits: number, note: string): Promise<void> {
-  if (s.isDemo) return;
+  if (s.isDemo || priceCredits === 0) return;
   await recordStore.addLedgerEntry(entry(s.slug, "refund", priceCredits, enquiryId, note));
 }
 
@@ -103,10 +112,10 @@ export async function recordTopUp(supplierSlug: string, paidPence: number, note:
   return lines;
 }
 
-/** Adds a refund, adjustment or forfeit line. */
+/** Adds a refund, adjustment, free credits or forfeit line. */
 export async function addCredit(
   supplierSlug: string,
-  kind: "refund" | "adjustment" | "forfeit",
+  kind: "refund" | "adjustment" | "promo" | "forfeit",
   amountCredits: number,
   note: string,
 ): Promise<LedgerEntry> {
@@ -119,7 +128,9 @@ export async function addCredit(
  * What a specialist's unused credits are worth in cash, for when we stop
  * introducing them (Specialist terms): the balance at the average rate they
  * paid per credit, bonus credits included, so bonus credits are never paid
- * out. Never more than they paid in, less anything already paid back.
+ * out. Free credits (promo and adjustments) count as spent first, so they
+ * never take value from credits that were paid for, and are never paid out.
+ * Never more than they paid in, less anything already paid back.
  */
 export function cashValueOfBalance(lines: LedgerEntry[]): { credits: number; pence: number } {
   const credits = lines.reduce((t, l) => t + l.amountCredits, 0);

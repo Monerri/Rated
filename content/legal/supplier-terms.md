@@ -25,6 +25,7 @@ We only work with registered companies that pass our [current checks](/how-we-ch
 - You pay for introductions in advance by buying credits. **One credit is worth £1.** For now, you top up by bank transfer and we add the credits when the money arrives. We'll tell you before we add other ways to pay.
 - **Bonus credits.** Larger top-ups come with extra credits: 4% extra on a top-up of £250 or more, 10% on £500 or more, and 15% on £1,000 or more, rounded down to whole credits. For example, a £500 top-up gives you 550 credits. We'll give you at least 30 days' notice before we reduce these bonuses.
 - **Bonus credits can be used for introductions in the same way as other credits, but they are never paid out as cash.**
+- **Free credits.** We may add free credits to your account, for example founding credits for specialists who join before we start advertising to homeowners. Free credits are used for introductions before credits you've bought. They have no cash value, are never paid out, can't be transferred, and end if you leave or we stop introducing you.
 - Credits can only be used to pay for introductions. They aren't a deposit, don't earn interest and can't be transferred to another business.
 - Our current prices are set out in your price list, in credits with their pound value. Each introduction is charged at the price in force when it's sent. We'll give you at least 30 days' notice of any price increase.
 
@@ -32,11 +33,13 @@ We only work with registered companies that pass our [current checks](/how-we-ch
 
 - **Shared introductions**, where the homeowner asked to hear from two or three specialists, are charged at the standard price for the service.
 - **Exclusive introductions**, where the homeowner asked to hear from one specialist only, cost more.
-- **Introductions for work planned in 3 to 6 months** are discounted, rounded down to whole credits. You can choose, for each service, not to receive these.
+- **Non-urgent introductions**, where the homeowner plans the work in 3 to 6 months, are discounted, rounded down to whole credits. You can opt out of non-urgent introductions for any service; you'll then only receive homeowners who want the work done within 3 months.
 - Homeowners who are only researching are never introduced.
 - We're not currently VAT registered, so no VAT is charged. If we register, we'll add VAT to top-ups from then on and tell you at least 30 days beforehand. Credits you've already bought won't be affected.
 
 ## 5. When you're charged
+
+- **Free introductions while we onboard specialists.** Our website is live, but we haven't yet started advertising to homeowners. Until we do, you may still receive some introductions. These are free: each is recorded on your account and statement, but nothing is taken from your balance, including your free credits. We'll email you at least **14 days** before introductions start to be charged.
 
 - You're only charged when an introduction is sent to you, and the price is taken from your balance at that moment. You don't receive the homeowner's details unless your balance covers the price.
 - If your balance doesn't cover an introduction, it goes to another eligible specialist, and we'll let you know you missed it.

@@ -1,5 +1,6 @@
 import { allSpecialists } from "@/lib/specialistDirectory";
 import { leadPrice } from "@/lib/billing";
+import { launch } from "@/config/launch";
 import { getFunnel } from "@/funnels";
 import { recordStore } from "@/lib/records";
 import type { ListingSwitch, Specialist } from "@/lib/types";
@@ -50,7 +51,7 @@ export function listingStatus(
       ? "awaiting-terms"
       : lastSwitch && !lastSwitch.on
       ? "switched-off"
-      : minimumFeeCredits !== null && balanceCredits < minimumFeeCredits
+      : minimumFeeCredits !== null && !launch.onboardingPhase && balanceCredits < minimumFeeCredits
         ? "low-balance"
         : null;
   return { on: reason === null, reason, balanceCredits, minimumFeeCredits, lastSwitch };

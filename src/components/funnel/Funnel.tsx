@@ -1,5 +1,6 @@
 "use client";
 
+import { launch } from "@/config/launch";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Service } from "@/lib/types";
@@ -308,7 +309,7 @@ export function Funnel({
             service={service}
             postcode={String(state.answers[POSTCODE] ?? "")}
             title="We don't have a specialist for your area yet"
-            body={`We haven't yet vetted a ${service.name} specialist covering your area. Leave your details and we'll email you when we have.`}
+            body={`${launch.onboardingPhase ? "We've just opened and are still welcoming and checking specialists. " : ""}We haven't yet vetted a ${service.name} specialist covering your area. Leave your details and we'll email you when we have.`}
           />
         )}
 

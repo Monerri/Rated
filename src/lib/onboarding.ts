@@ -1,5 +1,7 @@
 import { maxRadiusMiles } from "@/config/coverage";
 import { getService } from "@/config/services";
+import { launch } from "@/config/launch";
+import { addCredit } from "@/lib/billing";
 import { site } from "@/config/site";
 import { specialistTermsVersion, specialistTermsWording, termsInviteDays } from "@/config/suppliers";
 import { vettingStandard } from "@/config/vetting";
@@ -297,9 +299,15 @@ ${link}
 The link works for ${termsInviteDays} days. If it runs out, reply to this email and we'll send a new one.
 
 What happens next
-1. Accept the terms using the link above.
+${
+      launch.onboardingPhase && launch.foundingCredits > 0
+        ? `1. Accept the terms using the link above.
+2. We'll add ${launch.foundingCredits} free founding credits to your account straight away. You don't need to top up yet.
+3. We start advertising to homeowners in ${launch.advertisingFrom}. Until then introductions will be few, and any you receive are free.`
+        : `1. Accept the terms using the link above.
 2. Top up your credits. Reply to this email and we'll send you the payment details.
-3. Once your credits arrive, you'll start receiving introductions from homeowners in your area who ask to hear from a specialist.
+3. Once your credits arrive, you'll start receiving introductions from homeowners in your area who ask to hear from a specialist.`
+    }
 
 You'll need to contact homeowners ${site.specialistResponseTime} of each introduction.
 
@@ -343,12 +351,15 @@ export async function acceptTerms(
     },
   };
   await recordStore.saveSpecialist(updated);
-  await trySend(termsAcceptedEmail(updated));
+  // The founding offer: free credits for specialists who join before we start advertising.
+  const founding = launch.onboardingPhase ? launch.foundingCredits : 0;
+  if (founding > 0) await addCredit(s.slug, "promo", founding, "Founding specialist credits");
+  await trySend(termsAcceptedEmail(updated, founding));
   await trySend(termsAcceptedAlertEmail(updated));
   return { ok: true, specialist: updated };
 }
 
-function termsAcceptedEmail(s: Specialist): Email {
+function termsAcceptedEmail(s: Specialist, foundingCredits: number): Email {
   const t = s.onboarding!.terms!;
   return {
     to: s.enquiryEmail,
@@ -362,7 +373,13 @@ Thanks. This confirms that ${t.acceptedByName} accepted our Specialist terms for
 
 You can read the terms at any time at ${site.url}/supplier-terms. We'll give you notice before they change.
 
-To start receiving introductions, top up your credits: reply to this email and we'll send you the payment details.
+${
+      foundingCredits > 0
+        ? `As a founding specialist, we've added ${foundingCredits} free credits to your account. You don't need to top up yet.
+
+We start advertising to homeowners in ${launch.advertisingFrom}, so please don't expect many introductions before then. Because the site is already live, you may still receive some. Those are free: they're recorded on your account but not charged, and they don't use your free credits. We'll email you at least 14 days before introductions start to be charged.`
+        : "To start receiving introductions, top up your credits: reply to this email and we'll send you the payment details."
+    }
 
 ${site.name}
 `,

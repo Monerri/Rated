@@ -169,3 +169,15 @@ dialog::backdrop {
 .prose :where(a) {
   text-underline-offset: 3px;
 }
+
+/* Printable pages (for example the supplier flyer): only the page itself is printed. */
+@media print {
+  [data-site-chrome],
+  [data-screen-only] {
+    display: none !important;
+  }
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+}

@@ -36,7 +36,7 @@ export function SiteHeader() {
     `text-[15px] font-medium no-underline hover:text-blue aria-[current=page]:text-blue aria-[current=page]:underline aria-[current=page]:decoration-2 aria-[current=page]:underline-offset-8 ${muted ? "text-muted" : "text-ink"}`;
 
   return (
-    <header className="sticky top-0 z-40 border-b border-line bg-surface/95 backdrop-blur supports-[backdrop-filter]:bg-surface/85">
+    <header data-site-chrome className="sticky top-0 z-40 border-b border-line bg-surface/95 backdrop-blur supports-[backdrop-filter]:bg-surface/85">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
         <Link href="/" aria-label={`${site.name} home`} className="no-underline" onClick={() => setOpen(false)}>
           <Logo />

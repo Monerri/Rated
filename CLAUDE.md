@@ -72,7 +72,7 @@ Checks are reconfirmed at least every 12 months; lapsed specialists stop being m
 
 - **Before going live: switch off the demo companies** on `/admin` ("Switch off all demo companies"). Until then, real homeowners can be introduced to fictional companies. The admin page and the Monday summary email remind the owner while any are on.
 
-- Connect vettednorth.com to the Worker (links in pages still point there), then change `LINK_ORIGIN` in `wrangler.jsonc` to it.
+- vettednorth.com and www.vettednorth.com are connected to the Worker (custom domains, Production), and `LINK_ORIGIN` points to vettednorth.com. The workers.dev address still works.
 - Fill in the company number, registered office address and ICO registration number (`legal` in `src/config/site.ts`).
 - Have a solicitor review the Privacy notice, Terms and Specialist terms.
 - Recruit real specialists (a free beta at £0 per lead is an option), then Stripe top-ups and a supplier dashboard.

@@ -21,9 +21,9 @@
 		// Optional overrides. Without them, emails are sent from, and admin copies
 		// go to, the contact address in src/config/site.ts:
 		// "EMAIL_FROM": "Name <hello@example.com>", "ADMIN_EMAIL": "you@example.com",
-		// Address used in links in scheduled emails (feedback requests). Change to
-		// https://vettednorth.com once that domain is connected to this Worker.
-		"LINK_ORIGIN": "https://vetted-north.rxsilmon.workers.dev"
+		// Address used in links in emails (feedback requests, the Specialist
+		// terms link). vettednorth.com is connected to this Worker (November 2026).
+		"LINK_ORIGIN": "https://vettednorth.com"
 	},
 	// Enquiries, saved answers, registrations and applications. The site
 	// creates its own tables (see src/lib/records.ts).

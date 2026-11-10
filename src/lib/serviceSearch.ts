@@ -7,7 +7,18 @@ import type { Service } from "@/lib/types";
  * finds "solar"), or with a small typo ("conservatry"). Runs in the browser.
  */
 
-const STOP_WORDS = new Set(["a", "an", "and", "the", "for", "of", "to", "my", "in", "on", "new", "i", "need", "want", "with", "or", "your"]);
+/**
+ * Words that say nothing about which service is wanted ("boiler repair",
+ * "cheap roofer near me"), so they're ignored rather than required to match.
+ */
+const STOP_WORDS = new Set([
+  "a", "an", "and", "the", "for", "of", "to", "my", "in", "on", "at", "new", "i", "need", "needed", "want", "looking", "with",
+  "or", "your", "our", "me", "near", "local", "best", "cheap", "good", "help", "quote", "quotes", "price", "prices", "cost",
+  "costs", "how", "much", "is", "it", "do", "get", "can", "you", "someone", "company", "companies", "specialist",
+  "specialists", "service", "services", "install", "installer", "installers", "installation", "installed", "fit",
+  "fitting", "fitted", "fitter", "fitters", "repair", "repairs", "replace", "replacing", "replacement", "fix", "fixing",
+  "job", "work", "works", "home", "house", "property", "please", "uk",
+]);
 
 function words(text: string): string[] {
   return text

@@ -79,6 +79,18 @@ export const specialists: Specialist[] = [
   // Insulation
   demo("example-insulation", "Example Insulation Ltd", ["insulation"], ALL_NE, 4.6, 203, "00000016", "Example insulation scheme", "Loft, cavity wall and underfloor insulation."),
   demo("sample-warm-homes", "Sample Warm Homes Ltd", ["insulation"], ["NE", "DH", "TS", "DL"], 4.5, 77, "00000017", "Example insulation scheme", "Internal and external wall insulation."),
+  // Loft conversions, architects, kitchens, bathrooms, gardens, flooring, plumbing, electrical and security
+  demo("example-lofts", "Example Lofts Ltd", ["loft-conversions"], ALL_NE, 4.7, 92, "00000018", null, "Dormer, hip-to-gable and roof-window loft conversions."),
+  demo("sample-architecture", "Sample Architecture Ltd", ["architecture-planning"], ALL_NE, 4.8, 37, "00000019", "Example professional body", "Drawings, planning applications and Building Regulations plans."),
+  demo("demo-kitchens-bathrooms", "Demo Kitchens & Bathrooms Ltd", ["kitchens", "bathrooms"], ALL_NE, 4.6, 118, "00000020", null, "Kitchens and bathrooms, designed, supplied and fitted."),
+  demo("illustrative-bathrooms", "Illustrative Bathrooms Ltd", ["bathrooms"], ["NE", "DH", "SR"], 4.5, 64, "00000021", null, "Bathrooms, en suites and wet rooms."),
+  demo("example-landscapes", "Example Landscapes Ltd", ["gardens-driveways"], ALL_NE, 4.6, 83, "00000022", null, "Driveways, patios, fencing and garden landscaping."),
+  demo("sample-driveways", "Sample Driveways Ltd", ["gardens-driveways"], ["NE", "DH", "TS"], 4.4, 51, "00000023", null, "Block paving and resin driveways.", { leadTypes: { "gardens-driveways": ["driveways"] } }),
+  demo("demo-flooring", "Demo Flooring Ltd", ["flooring"], ALL_NE, 4.7, 140, "00000024", null, "Wood, laminate, vinyl, tiles and carpets, supplied and fitted."),
+  demo("example-plumbing-heating", "Example Plumbing & Heating Ltd", ["plumbing"], ALL_NE, 4.7, 167, "00000025", "Example gas scheme", "Boilers, central heating and general plumbing."),
+  demo("sample-boilers", "Sample Boilers Ltd", ["plumbing"], ["NE", "SR", "DH"], 4.6, 88, "00000026", "Example gas scheme", "Boiler installation, servicing and repairs.", { leadTypes: { plumbing: ["heating"] } }),
+  demo("example-electrical", "Example Electrical Ltd", ["electrical", "ev-charging"], ALL_NE, 4.8, 129, "00000027", "Example electrical scheme", "Rewiring, fuse boxes, lighting and safety checks."),
+  demo("demo-security", "Demo Security Ltd", ["security-systems"], ALL_NE, 4.6, 73, "00000028", "Example security scheme", "Burglar alarms, CCTV and smart doorbells."),
 ];
 
 /** Shown on the homepage hero as an example of the evidence we display. */

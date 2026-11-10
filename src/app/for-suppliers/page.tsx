@@ -23,7 +23,7 @@ const process = [
   },
   {
     title: "We get in touch if it's a good fit",
-    body: "We'll talk you through how introductions and prepaid credit work, including our prices, before anything is agreed.",
+    body: "We'll talk you through how introductions and prepaid credits work, including our prices, before anything is agreed.",
   },
 ];
 
@@ -55,7 +55,7 @@ export default function ForSuppliersPage() {
                 <li>Homeowners are told who you are, and see your checks, before you contact them.</li>
                 <li>Every enquiry comes from a homeowner who owns the property and has agreed to be contacted by you.</li>
                 <li>
-                  Pay as you go with prepaid credit. You&apos;re only charged when you receive an introduction, and every
+                  Pay as you go with prepaid credits: one credit is worth £1, with bonus credits on larger top-ups. You&apos;re only charged when you receive an introduction, and every
                   charge is on your weekly statement.
                 </li>
               </ul>

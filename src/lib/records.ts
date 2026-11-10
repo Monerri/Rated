@@ -56,10 +56,12 @@ export interface RecordStore {
    * two leads at once can't spend the same money. False if it doesn't.
    */
   chargeIfFunded(entry: LedgerEntry): Promise<boolean>;
-  /** Current balance in pence for every specialist with an account. */
+  /** Current balance in credits for every specialist with an account. */
   getBalances(): Promise<Record<string, number>>;
   /** Ledger lines since a date (ISO), newest first. */
   listLedger(since: string, limit?: number): Promise<LedgerEntry[]>;
+  /** Every ledger line for one specialist, oldest first. */
+  listLedgerFor(supplierSlug: string): Promise<LedgerEntry[]>;
   saveMissedLead(record: MissedLead): Promise<void>;
   listMissedLeads(since: string): Promise<MissedLead[]>;
 
@@ -178,18 +180,21 @@ const prototypeStore: RecordStore = {
     memory.ledger.push(entry);
   },
   async chargeIfFunded(entry) {
-    const balance = memory.ledger.filter((e) => e.supplierSlug === entry.supplierSlug).reduce((t, e) => t + e.amountPence, 0);
-    if (balance < -entry.amountPence) return false;
+    const balance = memory.ledger.filter((e) => e.supplierSlug === entry.supplierSlug).reduce((t, e) => t + e.amountCredits, 0);
+    if (balance < -entry.amountCredits) return false;
     memory.ledger.push(entry);
     return true;
   },
   async getBalances() {
     const out: Record<string, number> = {};
-    for (const e of memory.ledger) out[e.supplierSlug] = (out[e.supplierSlug] ?? 0) + e.amountPence;
+    for (const e of memory.ledger) out[e.supplierSlug] = (out[e.supplierSlug] ?? 0) + e.amountCredits;
     return out;
   },
   async listLedger(since, limit = 500) {
     return memory.ledger.filter((e) => e.createdAt >= since).reverse().slice(0, limit);
+  },
+  async listLedgerFor(supplierSlug) {
+    return memory.ledger.filter((e) => e.supplierSlug === supplierSlug);
   },
   async saveMissedLead(record) {
     memory.missed.push(record);
@@ -226,6 +231,11 @@ const SCHEMA = [
   "CREATE INDEX IF NOT EXISTS ledger_by_supplier ON ledger (supplier_slug, created_at)",
   // A specialist can only ever be charged once for the same enquiry.
   "CREATE UNIQUE INDEX IF NOT EXISTS ledger_one_charge_per_lead ON ledger (enquiry_id, supplier_slug) WHERE kind = 'lead'",
+  // Credits (November 2026) replace the pence ledger above, which held only test top-ups and is no longer read.
+  // One credit is worth £1; paid_pence records money in (top-ups) and out (payouts).
+  "CREATE TABLE IF NOT EXISTS credit_ledger (id TEXT PRIMARY KEY, supplier_slug TEXT NOT NULL, created_at TEXT NOT NULL, kind TEXT NOT NULL, amount_credits INTEGER NOT NULL, paid_pence INTEGER, enquiry_id TEXT, note TEXT NOT NULL)",
+  "CREATE INDEX IF NOT EXISTS credit_ledger_by_supplier ON credit_ledger (supplier_slug, created_at)",
+  "CREATE UNIQUE INDEX IF NOT EXISTS credit_ledger_one_charge_per_lead ON credit_ledger (enquiry_id, supplier_slug) WHERE kind = 'lead'",
   "CREATE TABLE IF NOT EXISTS missed_leads (id TEXT PRIMARY KEY, supplier_slug TEXT NOT NULL, created_at TEXT NOT NULL, data TEXT NOT NULL)",
   "CREATE TABLE IF NOT EXISTS feedback (token TEXT PRIMARY KEY, enquiry_id TEXT NOT NULL UNIQUE, created_at TEXT NOT NULL, data TEXT NOT NULL)",
   // Manual on/off switches for listings. Lines are only ever added; the latest one counts.
@@ -272,6 +282,32 @@ async function prepare(db: D1): Promise<void> {
       console.error("Retention clean-up failed", err instanceof Error ? err.message : err);
     });
   }
+}
+
+const LEDGER_COLUMNS = "id, supplier_slug, created_at, kind, amount_credits, paid_pence, enquiry_id, note";
+
+interface LedgerRow {
+  id: string;
+  supplier_slug: string;
+  created_at: string;
+  kind: LedgerEntry["kind"];
+  amount_credits: number;
+  paid_pence: number | null;
+  enquiry_id: string | null;
+  note: string;
+}
+
+function ledgerFromRow(r: LedgerRow): LedgerEntry {
+  return {
+    id: r.id,
+    supplierSlug: r.supplier_slug,
+    createdAt: r.created_at,
+    kind: r.kind,
+    amountCredits: r.amount_credits,
+    paidPence: r.paid_pence,
+    enquiryId: r.enquiry_id,
+    note: r.note,
+  };
 }
 
 /** D1 store, with the tables prepared before first use. */
@@ -386,53 +422,42 @@ function d1Queries(db: D1): RecordStore {
     async addLedgerEntry(e) {
       await db
         .prepare(
-          "INSERT INTO ledger (id, supplier_slug, created_at, kind, amount_pence, enquiry_id, note) VALUES (?, ?, ?, ?, ?, ?, ?)",
+          "INSERT INTO credit_ledger (id, supplier_slug, created_at, kind, amount_credits, paid_pence, enquiry_id, note) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
         )
-        .bind(e.id, e.supplierSlug, e.createdAt, e.kind, e.amountPence, e.enquiryId, e.note)
+        .bind(e.id, e.supplierSlug, e.createdAt, e.kind, e.amountCredits, e.paidPence ?? null, e.enquiryId, e.note)
         .run();
     },
     async chargeIfFunded(e) {
       // One statement, so the balance check and the charge can't be separated.
       const { meta } = await db
         .prepare(
-          `INSERT INTO ledger (id, supplier_slug, created_at, kind, amount_pence, enquiry_id, note)
-           SELECT ?, ?, ?, ?, ?, ?, ?
-           WHERE (SELECT COALESCE(SUM(amount_pence), 0) FROM ledger WHERE supplier_slug = ?) >= ?`,
+          `INSERT INTO credit_ledger (id, supplier_slug, created_at, kind, amount_credits, paid_pence, enquiry_id, note)
+           SELECT ?, ?, ?, ?, ?, NULL, ?, ?
+           WHERE (SELECT COALESCE(SUM(amount_credits), 0) FROM credit_ledger WHERE supplier_slug = ?) >= ?`,
         )
-        .bind(e.id, e.supplierSlug, e.createdAt, e.kind, e.amountPence, e.enquiryId, e.note, e.supplierSlug, -e.amountPence)
+        .bind(e.id, e.supplierSlug, e.createdAt, e.kind, e.amountCredits, e.enquiryId, e.note, e.supplierSlug, -e.amountCredits)
         .run();
       return meta.changes === 1;
     },
     async getBalances() {
       const { results } = await db
-        .prepare("SELECT supplier_slug, SUM(amount_pence) AS balance FROM ledger GROUP BY supplier_slug")
+        .prepare("SELECT supplier_slug, SUM(amount_credits) AS balance FROM credit_ledger GROUP BY supplier_slug")
         .all<{ supplier_slug: string; balance: number }>();
       return Object.fromEntries(results.map((r) => [r.supplier_slug, r.balance]));
     },
     async listLedger(since, limit = 500) {
       const { results } = await db
-        .prepare(
-          "SELECT id, supplier_slug, created_at, kind, amount_pence, enquiry_id, note FROM ledger WHERE created_at >= ? ORDER BY created_at DESC LIMIT ?",
-        )
+        .prepare(`SELECT ${LEDGER_COLUMNS} FROM credit_ledger WHERE created_at >= ? ORDER BY created_at DESC LIMIT ?`)
         .bind(since, limit)
-        .all<{
-          id: string;
-          supplier_slug: string;
-          created_at: string;
-          kind: LedgerEntry["kind"];
-          amount_pence: number;
-          enquiry_id: string | null;
-          note: string;
-        }>();
-      return results.map((r) => ({
-        id: r.id,
-        supplierSlug: r.supplier_slug,
-        createdAt: r.created_at,
-        kind: r.kind,
-        amountPence: r.amount_pence,
-        enquiryId: r.enquiry_id,
-        note: r.note,
-      }));
+        .all<LedgerRow>();
+      return results.map(ledgerFromRow);
+    },
+    async listLedgerFor(supplierSlug) {
+      const { results } = await db
+        .prepare(`SELECT ${LEDGER_COLUMNS} FROM credit_ledger WHERE supplier_slug = ? ORDER BY created_at`)
+        .bind(supplierSlug)
+        .all<LedgerRow>();
+      return results.map(ledgerFromRow);
     },
     async saveMissedLead(m) {
       await db
@@ -497,6 +522,7 @@ export const recordStore: RecordStore = {
   chargeIfFunded: (e) => currentStore().chargeIfFunded(e),
   getBalances: () => currentStore().getBalances(),
   listLedger: (since, limit) => currentStore().listLedger(since, limit),
+  listLedgerFor: (slug) => currentStore().listLedgerFor(slug),
   saveMissedLead: (m) => currentStore().saveMissedLead(m),
   listMissedLeads: (since) => currentStore().listMissedLeads(since),
   addListingSwitch: (r) => currentStore().addListingSwitch(r),

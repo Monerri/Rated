@@ -1,5 +1,7 @@
 /**
- * What a lead costs a specialist, in pence, excluding VAT.
+ * What a lead costs a specialist, in credits. One credit is worth £1, and
+ * specialists always see the pound value alongside. We're not VAT registered,
+ * so no VAT is added; see pricesIncludeVat below.
  *
  * From the "Lead Generation Pricing Benchmark" sheet (October 2026). A change
  * here applies to leads sent after the next deploy; leads already sent keep
@@ -17,46 +19,46 @@ type Prices = Record<string, { shared: number; exclusive: number }>;
 
 /** North East England and the rest of the UK. */
 const basePrices: Prices = {
-  extensions: { exclusive: 10000, shared: 5000 },
-  "extensions/new-build": { exclusive: 20000, shared: 10000 },
-  "loft-conversions": { exclusive: 10000, shared: 5000 },
-  "architecture-planning": { exclusive: 10000, shared: 5000 },
-  "conservatory-roofs": { exclusive: 6000, shared: 3000 },
-  "solar-battery": { exclusive: 7000, shared: 3500 },
-  "heat-pumps": { exclusive: 6000, shared: 3000 },
-  bathrooms: { exclusive: 6000, shared: 3000 },
-  kitchens: { exclusive: 6000, shared: 3000 },
-  roofing: { exclusive: 6000, shared: 3000 },
-  "windows-doors": { exclusive: 4000, shared: 2000 },
-  insulation: { exclusive: 4000, shared: 2000 },
-  "gardens-driveways": { exclusive: 4000, shared: 2000 },
-  flooring: { exclusive: 3000, shared: 1500 },
-  "ev-charging": { exclusive: 3000, shared: 1500 },
-  plumbing: { exclusive: 3000, shared: 1500 },
-  electrical: { exclusive: 3000, shared: 1500 },
-  "security-systems": { exclusive: 3000, shared: 1500 },
+  extensions: { exclusive: 100, shared: 50 },
+  "extensions/new-build": { exclusive: 200, shared: 100 },
+  "loft-conversions": { exclusive: 100, shared: 50 },
+  "architecture-planning": { exclusive: 100, shared: 50 },
+  "conservatory-roofs": { exclusive: 60, shared: 30 },
+  "solar-battery": { exclusive: 70, shared: 35 },
+  "heat-pumps": { exclusive: 60, shared: 30 },
+  bathrooms: { exclusive: 60, shared: 30 },
+  kitchens: { exclusive: 60, shared: 30 },
+  roofing: { exclusive: 60, shared: 30 },
+  "windows-doors": { exclusive: 40, shared: 20 },
+  insulation: { exclusive: 40, shared: 20 },
+  "gardens-driveways": { exclusive: 40, shared: 20 },
+  flooring: { exclusive: 30, shared: 15 },
+  "ev-charging": { exclusive: 30, shared: 15 },
+  plumbing: { exclusive: 30, shared: 15 },
+  electrical: { exclusive: 30, shared: 15 },
+  "security-systems": { exclusive: 30, shared: 15 },
 };
 
 /** London and the South East, used once that region is added. */
 const londonSouthEastPrices: Prices = {
-  extensions: { exclusive: 12000, shared: 6000 },
-  "extensions/new-build": { exclusive: 24000, shared: 12000 },
-  "loft-conversions": { exclusive: 12000, shared: 6000 },
-  "architecture-planning": { exclusive: 12000, shared: 6000 },
-  "conservatory-roofs": { exclusive: 9000, shared: 4500 },
-  "solar-battery": { exclusive: 9000, shared: 4500 },
-  "heat-pumps": { exclusive: 8000, shared: 4000 },
-  bathrooms: { exclusive: 9000, shared: 4500 },
-  kitchens: { exclusive: 9000, shared: 4500 },
-  roofing: { exclusive: 9000, shared: 4500 },
-  "windows-doors": { exclusive: 6000, shared: 3000 },
-  insulation: { exclusive: 6000, shared: 3000 },
-  "gardens-driveways": { exclusive: 6000, shared: 3000 },
-  flooring: { exclusive: 4000, shared: 2000 },
-  "ev-charging": { exclusive: 4000, shared: 2000 },
-  plumbing: { exclusive: 4000, shared: 2000 },
-  electrical: { exclusive: 4000, shared: 2000 },
-  "security-systems": { exclusive: 4000, shared: 2000 },
+  extensions: { exclusive: 120, shared: 60 },
+  "extensions/new-build": { exclusive: 240, shared: 120 },
+  "loft-conversions": { exclusive: 120, shared: 60 },
+  "architecture-planning": { exclusive: 120, shared: 60 },
+  "conservatory-roofs": { exclusive: 90, shared: 45 },
+  "solar-battery": { exclusive: 90, shared: 45 },
+  "heat-pumps": { exclusive: 80, shared: 40 },
+  bathrooms: { exclusive: 90, shared: 45 },
+  kitchens: { exclusive: 90, shared: 45 },
+  roofing: { exclusive: 90, shared: 45 },
+  "windows-doors": { exclusive: 60, shared: 30 },
+  insulation: { exclusive: 60, shared: 30 },
+  "gardens-driveways": { exclusive: 60, shared: 30 },
+  flooring: { exclusive: 40, shared: 20 },
+  "ev-charging": { exclusive: 40, shared: 20 },
+  plumbing: { exclusive: 40, shared: 20 },
+  electrical: { exclusive: 40, shared: 20 },
+  "security-systems": { exclusive: 40, shared: 20 },
 };
 
 /** Prices by region slug (see config/regions.ts). Regions not listed use basePrices. */
@@ -73,7 +75,7 @@ export const leadPrices: Prices = basePrices;
 export const pricesConfirmed = true;
 
 /** Used for any service not listed above. */
-export const defaultLeadPrice = { shared: 3000, exclusive: 6000 };
+export const defaultLeadPrice = { shared: 30, exclusive: 60 };
 
 /**
  * Non-urgent leads, where the homeowner plans the work in 3 to 6 months, are
@@ -81,6 +83,26 @@ export const defaultLeadPrice = { shared: 3000, exclusive: 6000 };
  */
 export const laterLeadDiscountPercent = 25;
 export const LATER_TIMESCALE = "3-6-months";
+
+/**
+ * Bonus credits for larger top-ups. A top-up of at least `fromPounds` gets
+ * this percentage extra, rounded down to whole credits. Highest tier first.
+ * Bonus credits are never paid out as cash (see Specialist terms).
+ */
+export const creditBonusTiers: { fromPounds: number; percent: number }[] = [
+  { fromPounds: 1000, percent: 15 },
+  { fromPounds: 500, percent: 10 },
+  { fromPounds: 250, percent: 4 },
+];
+
+/** The value of one credit, in pence. */
+export const pencePerCredit = 100;
+
+/**
+ * Whether we're VAT registered. While false, no VAT is charged or shown. Once
+ * registered, prices are quoted plus VAT and the wording changes to say so.
+ */
+export const vatRegistered = false;
 
 /** Suppliers' credit is held for this long after they choose to leave, in case they return. */
 export const leaverCreditHoldMonths = 6;

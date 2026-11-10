@@ -87,7 +87,7 @@ export async function submitEnquiry(input: SubmitInput): Promise<SubmitResult> {
   const enquiryId = crypto.randomUUID();
   const later = isLaterLead(answers);
   const leadType = funnel.leadTypes?.of(answers) ?? null;
-  const pricePence = leadPrice(service.slug, leadType, requested, later, regionSlug);
+  const priceCredits = leadPrice(service.slug, leadType, requested, later, regionSlug);
   const area = postcodeArea(postcode);
   const { chosen: specialists, underfunded } = await allocateLead({
     serviceSlug: service.slug,
@@ -96,10 +96,10 @@ export async function submitEnquiry(input: SubmitInput): Promise<SubmitResult> {
     requested,
     later,
     enquiryId,
-    pricePence,
+    priceCredits,
     note: `${service.name}${leadTypeLabel(funnel, leadType)} lead, ${outwardCode(postcode)}, ${describeLead(requested, later)}`,
   });
-  await recordMissedLeads(underfunded, { enquiryId, serviceSlug: service.slug, serviceName: service.name, area, pricePence });
+  await recordMissedLeads(underfunded, { enquiryId, serviceSlug: service.slug, serviceName: service.name, area, priceCredits });
 
   if (specialists.length === 0) {
     if (underfunded.length > 0) await trySend(lostLeadAlertEmail(service.name, outwardCode(postcode), requested, 0, underfunded));
@@ -133,7 +133,7 @@ export async function submitEnquiry(input: SubmitInput): Promise<SubmitResult> {
     matchedSpecialistSlugs: specialists.map((s) => s.slug),
     customerNotifiedAt: null,
     specialistNotifications: [],
-    pricePence,
+    priceCredits,
   };
   await recordStore.saveEnquiry(enquiry);
 
@@ -141,7 +141,7 @@ export async function submitEnquiry(input: SubmitInput): Promise<SubmitResult> {
   if (!(await trySend(customerMatchEmail(enquiry, specialists, service.name)))) {
     // Nobody receives the lead, so nobody pays for it.
     for (const s of specialists) {
-      await refundLead(s, enquiry.id, pricePence, "Refund: the homeowner's confirmation email couldn't be sent, so the lead wasn't passed on");
+      await refundLead(s, enquiry.id, priceCredits, "Refund: the homeowner's confirmation email couldn't be sent, so the lead wasn't passed on");
     }
     return {
       ok: false,
@@ -157,16 +157,16 @@ export async function submitEnquiry(input: SubmitInput): Promise<SubmitResult> {
   for (const specialist of specialists) {
     const billing = specialist.isDemo
       ? null
-      : { pricePence, balancePence: balances[specialist.slug] ?? 0, description: describeLead(requested, later) };
+      : { priceCredits, balanceCredits: balances[specialist.slug] ?? 0, description: describeLead(requested, later) };
     if (!(await trySend(specialistEnquiryEmail(enquiry, specialist, specialists.length, service.name, billing)))) {
       // They never received the details, so they get their money back. Logged so it can be followed up.
-      await refundLead(specialist, enquiry.id, pricePence, "Refund: the lead email couldn't be delivered");
+      await refundLead(specialist, enquiry.id, priceCredits, "Refund: the lead email couldn't be delivered");
       continue;
     }
     enquiry.specialistNotifications.push({ slug: specialist.slug, notifiedAt: new Date().toISOString() });
   }
   await recordStore.updateEnquiry(enquiry.id, { specialistNotifications: enquiry.specialistNotifications });
-  await notifyLowBalances(enquiry, specialists, pricePence);
+  await notifyLowBalances(enquiry, specialists, priceCredits);
 
   return { ok: true, enquiry, specialists };
 }
@@ -176,14 +176,14 @@ export async function submitEnquiry(input: SubmitInput): Promise<SubmitResult> {
  * cheapest lead, which switches them off until they top up. Sent once, at the
  * moment they cross the line, not with every lead they then miss.
  */
-async function notifyLowBalances(enquiry: Enquiry, specialists: Specialist[], pricePence: number) {
+async function notifyLowBalances(enquiry: Enquiry, specialists: Specialist[], priceCredits: number) {
   const paid = specialists.filter((s) => !s.isDemo && enquiry.specialistNotifications.some((n) => n.slug === s.slug));
   if (paid.length === 0) return;
   const balances = await recordStore.getBalances();
   for (const s of paid) {
     const minimum = minimumLeadFee(s);
     const after = balances[s.slug] ?? 0;
-    if (after >= minimum || after + pricePence < minimum) continue;
+    if (after >= minimum || after + priceCredits < minimum) continue;
     await trySend(listingPausedEmail(s, after, minimum));
     await trySend(listingPausedAlertEmail(s, after, minimum));
   }
@@ -192,7 +192,7 @@ async function notifyLowBalances(enquiry: Enquiry, specialists: Specialist[], pr
 /** Records and tells each specialist who missed a lead because of a low balance. No homeowner details are shared. */
 async function recordMissedLeads(
   specialists: Specialist[],
-  lead: { enquiryId: string; serviceSlug: string; serviceName: string; area: string; pricePence: number },
+  lead: { enquiryId: string; serviceSlug: string; serviceName: string; area: string; priceCredits: number },
 ) {
   if (specialists.length === 0) return;
   const balances = await recordStore.getBalances();
@@ -203,10 +203,10 @@ async function recordMissedLeads(
       enquiryId: lead.enquiryId,
       serviceSlug: lead.serviceSlug,
       area: lead.area,
-      pricePence: lead.pricePence,
+      priceCredits: lead.priceCredits,
       createdAt: new Date().toISOString(),
     });
-    await trySend(missedLeadEmail(s, lead.serviceName, lead.area, lead.pricePence, balances[s.slug] ?? 0));
+    await trySend(missedLeadEmail(s, lead.serviceName, lead.area, lead.priceCredits, balances[s.slug] ?? 0));
   }
 }
 

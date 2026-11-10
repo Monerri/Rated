@@ -1,7 +1,7 @@
 ---
 title: Specialist terms
 description: The terms for home-improvement specialists who receive introductions through {{name}}, including prepaid credit.
-date: 2026-11-09
+date: 2026-11-10
 ---
 
 **This is a draft and is being reviewed before launch. It should be checked by a solicitor before any specialist signs up.**
@@ -20,19 +20,21 @@ We only work with registered companies that pass our [current checks](/how-we-ch
 - When more specialists cover an area than the homeowner asked for, we choose between eligible specialists at random, so introductions are shared fairly.
 - **We don't guarantee a number of introductions.** How many you receive depends on how many homeowners in your area ask for your service.
 
-## 3. Prepaid credit
+## 3. Prepaid credits
 
-- You pay for introductions in advance by adding credit to your account. For now, you top up by bank transfer and we add the credit when it arrives. We'll tell you before we add other ways to pay.
-- Credit can only be used to pay for introductions. It isn't a deposit, doesn't earn interest and can't be transferred to another business.
-- Our current prices are set out in your price list. Each introduction is charged at the price in force when it's sent. We'll give you at least 30 days' notice of any price increase.
+- You pay for introductions in advance by buying credits. **One credit is worth £1.** For now, you top up by bank transfer and we add the credits when the money arrives. We'll tell you before we add other ways to pay.
+- **Bonus credits.** Larger top-ups come with extra credits: 4% extra on a top-up of £250 or more, 10% on £500 or more, and 15% on £1,000 or more, rounded down to whole credits. For example, a £500 top-up gives you 550 credits. We'll give you at least 30 days' notice before we reduce these bonuses.
+- **Bonus credits can be used for introductions in the same way as other credits, but they are never paid out as cash.**
+- Credits can only be used to pay for introductions. They aren't a deposit, don't earn interest and can't be transferred to another business.
+- Our current prices are set out in your price list, in credits with their pound value. Each introduction is charged at the price in force when it's sent. We'll give you at least 30 days' notice of any price increase.
 
 ## 4. Prices
 
 - **Shared introductions**, where the homeowner asked to hear from two or three specialists, are charged at the standard price for the service.
 - **Exclusive introductions**, where the homeowner asked to hear from one specialist only, cost more.
-- **Introductions for work planned in 3 to 6 months** are discounted. You can choose, for each service, not to receive these.
+- **Introductions for work planned in 3 to 6 months** are discounted, rounded down to whole credits. You can choose, for each service, not to receive these.
 - Homeowners who are only researching are never introduced.
-- Prices exclude VAT where VAT applies.
+- We're not currently VAT registered, so no VAT is charged. If we register, we'll add VAT to top-ups from then on and tell you at least 30 days beforehand. Credits you've already bought won't be affected.
 
 ## 5. When you're charged
 
@@ -44,25 +46,27 @@ We only work with registered companies that pass our [current checks](/how-we-ch
 
 ## 6. Disputes
 
-If an introduction isn't genuine, tell us within **7 days** of receiving it, with your reasons. Examples include contact details that are clearly wrong, a duplicate of an introduction you already received in the last 30 days, a property outside your area, or someone who doesn't own the property. If we agree, we refund the price to your balance. Refunds are made as credit, not cash.
+If an introduction isn't genuine, tell us within **7 days** of receiving it, with your reasons. Examples include contact details that are clearly wrong, a duplicate of an introduction you already received in the last 30 days, a property outside your area, or someone who doesn't own the property. If we agree, we refund the credits to your balance. Refunds are made as credits, not cash.
 
 An introduction isn't a guarantee of work. A homeowner deciding not to go ahead, or choosing another specialist, isn't grounds for a refund.
 
 ## 7. Reports and records
 
-We keep a permanent record of every top-up, introduction, refund and adjustment on your account. We email you a summary every week, and you can ask for a full statement at any time.
+We keep a permanent record of every top-up, bonus, introduction, refund and adjustment on your account, in credits, with the money you paid for each top-up. We email you a summary every week, and you can ask for a full statement at any time.
 
-## 8. Leaving, and unused credit
+## 8. Leaving, and unused credits
 
-- **If you choose to leave**, we'll hold your unused balance for **6 months**. If you rejoin within that time, it's restored to your account. After 6 months, any unused balance is forfeited and won't be refunded.
-- **If we stop introducing you** because you no longer meet our checks, or because we stop providing the service in your area, we'll refund your unused balance within 30 days.
-- **If we stop introducing you** because of a serious breach of these terms, for example misusing homeowners' details, we'll refund your unused balance less any amount you owe us.
+- **If you choose to leave**, we'll hold your unused credits for **6 months**. If you rejoin within that time, they're restored to your account. After 6 months, any unused credits are forfeited and won't be refunded.
+- **If we stop introducing you** because you no longer meet our checks, or because we stop providing the service in your area, we'll refund your unused credits in cash within 30 days.
+- **If we stop introducing you** because of a serious breach of these terms, for example misusing homeowners' details, we'll refund your unused credits in cash less any amount you owe us.
+- **How a cash refund is worked out.** Unused credits are refunded at the average price you paid per credit, counting bonus credits. For example, if you paid £500 for 550 credits and have 275 left, we refund £250. This is how bonus credits are never paid out as cash. A refund is never more than you paid us, less anything already refunded, and credits we added free of charge (for example as a goodwill adjustment) have no cash value.
 
 ## 9. Homeowners' details
 
 - When we introduce a homeowner, you become responsible for their details under UK data protection law, as a separate controller.
 - Use their details only to discuss and quote for the project they asked about. Don't sell or share them, or add them to marketing lists without their separate consent.
-- Contact them promptly and treat them fairly. Never pressure them to sign on the spot. If they tell you they no longer want to be contacted, stop.
+- **Contact them within 3 days** of receiving the introduction, by phone or email. We tell homeowners to expect to hear from you within that time. If you often don't, we may pause your listing.
+- Treat them fairly. Never pressure them to sign on the spot. If they tell you they no longer want to be contacted, stop.
 
 ## 10. Our responsibility
 

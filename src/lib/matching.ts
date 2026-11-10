@@ -95,7 +95,7 @@ export async function allocateLead(opts: {
   requested: number;
   later: boolean;
   enquiryId: string;
-  pricePence: number;
+  priceCredits: number;
   note: string;
 }): Promise<Allocation> {
   const pool = shuffle(
@@ -107,13 +107,13 @@ export async function allocateLead(opts: {
   const underfunded: Specialist[] = [];
   for (const s of pool) {
     if (chosen.length >= opts.requested) break;
-    if (await chargeForLead(s, opts.enquiryId, opts.pricePence, opts.note)) chosen.push(s);
+    if (await chargeForLead(s, opts.enquiryId, opts.priceCredits, opts.note)) chosen.push(s);
     else underfunded.push(s);
   }
   // Also tell anyone not reached whose balance couldn't have covered it, so they can top up.
   const balances = await recordStore.getBalances();
   for (const s of pool) {
-    if (!chosen.includes(s) && !underfunded.includes(s) && !canAfford(s, balances, opts.pricePence)) underfunded.push(s);
+    if (!chosen.includes(s) && !underfunded.includes(s) && !canAfford(s, balances, opts.priceCredits)) underfunded.push(s);
   }
   return { chosen, underfunded };
 }

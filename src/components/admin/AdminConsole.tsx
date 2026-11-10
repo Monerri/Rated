@@ -6,6 +6,8 @@ import { FormError, TextField } from "@/components/ui/Form";
 import type { LedgerEntry } from "@/lib/types";
 import { bonusCreditsFor, formatCredits, formatPounds } from "@/lib/credits";
 import { AdminOnboarding } from "@/components/admin/AdminOnboarding";
+import { launch } from "@/config/launch";
+import { AdminCoverage } from "@/components/admin/AdminCoverage";
 
 /** "£500 = 500 credits + 50 bonus credits", for the top-up form. */
 function topUpHint(pounds: number): string {
@@ -53,6 +55,7 @@ const TOKEN_KEY = "vn_admin_token";
 const KIND_LABELS: Record<LedgerEntry["kind"], string> = {
   topup: "Top-up",
   bonus: "Bonus",
+  promo: "Free credits",
   lead: "Lead",
   refund: "Refund",
   adjustment: "Adjustment",
@@ -78,7 +81,7 @@ export function AdminConsole() {
   const [token, setToken] = useState("");
   const [draftToken, setDraftToken] = useState("");
   const [data, setData] = useState<{ role: "owner" | "assistant"; suppliers: Supplier[]; entries: LedgerEntry[] } | null>(null);
-  const [tab, setTab] = useState<"onboarding" | "accounts" | "feedback">("onboarding");
+  const [tab, setTab] = useState<"onboarding" | "accounts" | "coverage" | "feedback">("onboarding");
   const [feedback, setFeedback] = useState<FeedbackRow[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -86,7 +89,7 @@ export function AdminConsole() {
   const [busy, setBusy] = useState(false);
 
   const [supplier, setSupplier] = useState("");
-  const [kind, setKind] = useState<"topup" | "refund" | "adjustment" | "forfeit" | "payout">("topup");
+  const [kind, setKind] = useState<"topup" | "promo" | "refund" | "adjustment" | "forfeit" | "payout">("topup");
   const [payoutPreview, setPayoutPreview] = useState<{ credits: number; pence: number } | null>(null);
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
@@ -129,7 +132,7 @@ export function AdminConsole() {
     setError(null);
     setMessage(null);
     const value = Number(amount);
-    if ((kind === "topup" || kind === "refund" || kind === "adjustment") && (!Number.isFinite(value) || value === 0)) {
+    if ((kind === "topup" || kind === "promo" || kind === "refund" || kind === "adjustment") && (!Number.isFinite(value) || value === 0)) {
       return setError(kind === "topup" ? "Enter the amount received in pounds." : "Enter a number of credits.");
     }
     setBusy(true);
@@ -205,6 +208,7 @@ export function AdminConsole() {
   const tabs = [
     { id: "onboarding", label: "Applications and specialists" },
     { id: "accounts", label: "Accounts and top-ups" },
+    { id: "coverage", label: "Coverage" },
     { id: "feedback", label: "Feedback" },
   ] as const;
 
@@ -244,6 +248,8 @@ export function AdminConsole() {
       </nav>
 
       {tab === "onboarding" && <AdminOnboarding token={token} onChanged={() => void load(token)} />}
+
+      {tab === "coverage" && <AdminCoverage token={token} />}
 
       {tab === "accounts" && (
       <div className="grid min-w-0 gap-10">
@@ -361,6 +367,7 @@ export function AdminConsole() {
               className="min-h-[52px] w-full min-w-0 rounded-lg border-[1.5px] border-line bg-surface px-3 text-[17px] font-normal"
             >
               <option value="topup">Top-up (they paid you)</option>
+              {owner && <option value="promo">Free credits (no money received, never paid out)</option>}
               <option value="refund">Refund credits to balance (for example, a disputed lead)</option>
               <option value="adjustment">Adjustment (correct a mistake; can be negative)</option>
               {owner && <option value="forfeit">Forfeit all credits (left over 6 months ago)</option>}
@@ -374,6 +381,15 @@ export function AdminConsole() {
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               hint={topUpHint(Number(amount))}
+            />
+          )}
+          {kind === "promo" && (
+            <TextField
+              label="Free credits"
+              inputMode="numeric"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              hint={`Recorded as free credits, not money received. They're used before bought credits and are never paid out. Founding specialists get ${launch.foundingCredits} automatically when they accept the terms.`}
             />
           )}
           {(kind === "refund" || kind === "adjustment") && (

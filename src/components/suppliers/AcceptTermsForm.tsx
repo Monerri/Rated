@@ -4,7 +4,16 @@ import { useState } from "react";
 import { buttonClass } from "@/components/ui/Button";
 import { ConsentCheckbox, FormError, TextField } from "@/components/ui/Form";
 
-export function AcceptTermsForm({ token, consent }: { token: string; consent: { wordingId: string; wording: string } }) {
+export function AcceptTermsForm({
+  token,
+  consent,
+  afterwards,
+}: {
+  token: string;
+  consent: { wordingId: string; wording: string };
+  /** What happens next, shown once they've accepted. */
+  afterwards: string;
+}) {
   const [name, setName] = useState("");
   const [agreed, setAgreed] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,10 +42,7 @@ export function AcceptTermsForm({ token, consent }: { token: string; consent: { 
     return (
       <div role="status" className="grid gap-2 rounded-[var(--radius-card)] border border-line bg-surface p-5">
         <p className="text-xl font-bold">✓ Thank you, you&apos;ve accepted the terms</p>
-        <p>
-          We&apos;ve emailed you a copy. To start receiving introductions, top up your credits: reply to our email and
-          we&apos;ll send you the payment details.
-        </p>
+        <p>We&apos;ve emailed you a copy. {afterwards}</p>
       </div>
     );
   }

@@ -5,7 +5,7 @@ import { Logo } from "@/components/ui/Logo";
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-line bg-surface">
+    <footer data-site-chrome className="border-t border-line bg-surface">
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-[1.4fr_repeat(3,1fr)]">
         <div className="grid content-start gap-3">
           <Logo />

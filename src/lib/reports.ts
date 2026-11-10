@@ -56,7 +56,7 @@ Here's your summary for ${from} to ${to}.
 
 Leads received: ${leads.length}
 Spent on leads: ${formatCredits(-sum(entries, "lead"))}
-${other.length ? `Credits added (top-ups, bonuses and refunds): ${formatCredits(other.filter((e) => e.amountCredits > 0).reduce((t, e) => t + e.amountCredits, 0))}\n` : ""}Leads missed because your balance was too low: ${missed.length}
+${other.length ? `Credits added (top-ups, bonuses, free credits and refunds): ${formatCredits(other.filter((e) => e.amountCredits > 0).reduce((t, e) => t + e.amountCredits, 0))}\n` : ""}Leads missed because your balance was too low: ${missed.length}
 Balance now: ${formatCredits(balance)}
 ${listingLine(status)}
 
@@ -131,7 +131,8 @@ export async function sendWeeklyReports(now = new Date()): Promise<{ suppliers: 
     text: `${reminder}Leads sent: ${entries.filter((e) => e.kind === "lead").length}
 Charged for leads: ${formatCredits(-sum(entries, "lead"))}
 Money received for top-ups: ${formatPounds(topups)}
-Bonus credits given: ${formatCredits(sum(entries, "bonus"))}
+Bonus credits given with top-ups: ${formatCredits(sum(entries, "bonus"))}
+Free credits given (no money received): ${formatCredits(sum(entries, "promo"))}
 Refunds to balances: ${formatCredits(sum(entries, "refund"))}
 Leads missed because of low balances: ${missed.length}
 Credits held by specialists: ${formatCredits(Object.values(balances).reduce((t, b) => t + b, 0))} at face value

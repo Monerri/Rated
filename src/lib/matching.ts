@@ -2,14 +2,14 @@ import { activeSpecialists } from "@/lib/specialistDirectory";
 import { outwardCode, postcodeArea } from "@/lib/postcode";
 import { isCurrentlyVetted } from "@/lib/vetting";
 import type { Specialist } from "@/lib/types";
-import { canAfford, chargeForLead, cheapestLeadPrice } from "@/lib/billing";
+import { canAfford, chargeForLead, chargedPrice, cheapestLeadPrice } from "@/lib/billing";
 import { recordStore } from "@/lib/records";
 import { switchedOffByHand } from "@/lib/listing";
 import { lookupPostcode, milesBetween } from "@/lib/geo";
 import { maxRadiusMiles } from "@/config/coverage";
 
 /** Where a homeowner is: their postcode area and district, and the postcode's location when it could be looked up. */
-interface Place {
+export interface Place {
   area: string;
   outward: string | null;
   point: { lat: number; lng: number } | null;
@@ -131,6 +131,6 @@ export async function allocateLead(opts: {
  */
 export async function coverageCount(serviceSlug: string, areaOrPostcode: string, kinds: string[]): Promise<number> {
   const balances = await recordStore.getBalances();
-  const price = cheapestLeadPrice(serviceSlug, kinds.length === 1 ? kinds[0] : null);
+  const price = chargedPrice(cheapestLeadPrice(serviceSlug, kinds.length === 1 ? kinds[0] : null));
   return (await candidates(serviceSlug, areaOrPostcode, kinds)).filter((s) => canAfford(s, balances, price)).length;
 }

@@ -201,6 +201,8 @@ export interface SpecialistOnboarding {
  * positive, a lead is negative.
  * - topup: credits bought; `paidPence` is the money received
  * - bonus: extra credits for a larger top-up; never paid out as cash
+ * - promo: free credits we give (for example founding credits); no money
+ *   received, never paid out, and used before bought credits
  * - lead, refund: a lead charged, or its credits given back
  * - adjustment: a correction, either way; free credits have no cash value
  * - forfeit: unused credits removed after a leaver's hold period
@@ -211,7 +213,7 @@ export interface LedgerEntry {
   id: string;
   supplierSlug: string;
   createdAt: string;
-  kind: "topup" | "bonus" | "lead" | "refund" | "adjustment" | "forfeit" | "payout";
+  kind: "topup" | "bonus" | "promo" | "lead" | "refund" | "adjustment" | "forfeit" | "payout";
   amountCredits: number;
   /** Money in (topup) or out (payout), in pence. Null for every other kind. */
   paidPence?: number | null;

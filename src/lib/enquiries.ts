@@ -4,7 +4,7 @@ import type { FunnelConfig } from "@/funnels/types";
 import { isResearching, leadKinds, priceKind, summarise, validateAnswers } from "@/funnels/engine";
 import { MAX_SPECIALISTS, shareWithSpecialistWording } from "@/lib/consent";
 import { allocateLead } from "@/lib/matching";
-import { describeLead, isLaterLead, leadPrice, refundLead } from "@/lib/billing";
+import { chargedPrice, describeLead, isLaterLead, leadPrice, refundLead } from "@/lib/billing";
 import { minimumLeadFee } from "@/lib/listing";
 import {
   customerMatchEmail,
@@ -114,7 +114,10 @@ export async function submitEnquiry(input: SubmitInput): Promise<SubmitResult> {
   const enquiryId = crypto.randomUUID();
   const later = isLaterLead(answers);
   const kinds = leadKinds(funnel, answers);
-  const priceCredits = leadPrice(service.slug, priceKind(funnel, answers), requested, later, regionSlug);
+  const listPriceCredits = leadPrice(service.slug, priceKind(funnel, answers), requested, later, regionSlug);
+  // Free while we're onboarding specialists; recorded at 0 with the normal price in the note.
+  const priceCredits = chargedPrice(listPriceCredits);
+  const freeNote = priceCredits === 0 ? `Free introduction while we onboard specialists (normally ${listPriceCredits} credits): ` : "";
   const area = postcodeArea(postcode);
   const exclude = await previouslyIntroduced(service.slug, input.contact);
   const { chosen: specialists, underfunded } = await allocateLead({
@@ -126,7 +129,7 @@ export async function submitEnquiry(input: SubmitInput): Promise<SubmitResult> {
     later,
     enquiryId,
     priceCredits,
-    note: `${service.name}${leadTypeLabel(funnel, kinds)} lead, ${outwardCode(postcode)}, ${describeLead(requested, later)}`,
+    note: `${freeNote}${service.name}${leadTypeLabel(funnel, kinds)} lead, ${outwardCode(postcode)}, ${describeLead(requested, later)}`,
   });
   await recordMissedLeads(underfunded, { enquiryId, serviceSlug: service.slug, serviceName: service.name, area, priceCredits });
 
@@ -193,7 +196,7 @@ export async function submitEnquiry(input: SubmitInput): Promise<SubmitResult> {
   for (const specialist of specialists) {
     const billing = specialist.isDemo
       ? null
-      : { priceCredits, balanceCredits: balances[specialist.slug] ?? 0, description: describeLead(requested, later) };
+      : { priceCredits, listPriceCredits, balanceCredits: balances[specialist.slug] ?? 0, description: describeLead(requested, later) };
     if (!(await trySend(specialistEnquiryEmail(enquiry, specialist, specialists.length, service.name, billing)))) {
       // They never received the details, so they get their money back. Logged so it can be followed up.
       await refundLead(specialist, enquiry.id, priceCredits, "Refund: the lead email couldn't be delivered");

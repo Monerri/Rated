@@ -32,11 +32,12 @@ export async function GET(request: Request) {
   });
 }
 
-const KINDS = ["topup", "refund", "adjustment", "forfeit", "payout"] as const;
+const KINDS = ["topup", "promo", "refund", "adjustment", "forfeit", "payout"] as const;
 
 /**
  * Adds to a specialist's account.
  * - topup: `amountPounds` received; credits and any bonus are worked out here
+ * - promo: free credits (owner only), for example founding credits; no money received
  * - refund: positive `amountCredits` given back, for example for a disputed lead
  * - adjustment: `amountCredits` either way, to correct a mistake
  * - forfeit: removes the whole remaining balance (a leaver after the hold period)
@@ -53,8 +54,8 @@ export async function POST(request: Request) {
   const kind = body?.kind as (typeof KINDS)[number];
   if (!KINDS.includes(kind)) return jsonError("Choose a type.");
   // Money leaving the business, or credits removed for good, is for the owner only.
-  if ((kind === "payout" || kind === "forfeit") && role !== "owner" && body?.preview !== true) {
-    return jsonError("Only the owner can pay out or forfeit credits.", 403);
+  if ((kind === "payout" || kind === "forfeit" || kind === "promo") && role !== "owner" && body?.preview !== true) {
+    return jsonError("Only the owner can give free credits, pay out or forfeit credits.", 403);
   }
 
   if (kind === "payout" && body?.preview === true) {
@@ -79,6 +80,10 @@ export async function POST(request: Request) {
     const balance = (await recordStore.getBalances())[slug] ?? 0;
     if (balance <= 0) return jsonError("There are no credits to forfeit.");
     entries = [await addCredit(slug, "forfeit", -balance, note)];
+  } else if (kind === "promo") {
+    const credits = Math.round(Number(body?.amountCredits));
+    if (!Number.isFinite(credits) || credits < 1 || credits > 1000) return jsonError("Enter between 1 and 1,000 free credits.");
+    entries = [await addCredit(slug, "promo", credits, note)];
   } else {
     const credits = Math.round(Number(body?.amountCredits));
     if (!Number.isFinite(credits) || credits === 0 || Math.abs(credits) > 10_000) return jsonError("Enter a number of credits between 1 and 10,000.");

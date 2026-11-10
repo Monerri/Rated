@@ -157,14 +157,24 @@ export interface Specialist {
 /**
  * One line in a specialist's prepaid account. Never edited or deleted: a
  * correction is a new line. The balance is the sum of all lines.
- * Amounts are in pence; money in is positive, a lead is negative.
+ * Amounts are in whole credits (one credit is worth £1); credits in are
+ * positive, a lead is negative.
+ * - topup: credits bought; `paidPence` is the money received
+ * - bonus: extra credits for a larger top-up; never paid out as cash
+ * - lead, refund: a lead charged, or its credits given back
+ * - adjustment: a correction, either way; free credits have no cash value
+ * - forfeit: unused credits removed after a leaver's hold period
+ * - payout: unused credits refunded as cash when we stop introducing
+ *   someone; `paidPence` is the money paid back
  */
 export interface LedgerEntry {
   id: string;
   supplierSlug: string;
   createdAt: string;
-  kind: "topup" | "lead" | "refund" | "adjustment" | "forfeit";
-  amountPence: number;
+  kind: "topup" | "bonus" | "lead" | "refund" | "adjustment" | "forfeit" | "payout";
+  amountCredits: number;
+  /** Money in (topup) or out (payout), in pence. Null for every other kind. */
+  paidPence?: number | null;
   enquiryId: string | null;
   note: string;
 }
@@ -188,7 +198,7 @@ export interface MissedLead {
   enquiryId: string;
   serviceSlug: string;
   area: string;
-  pricePence: number;
+  priceCredits: number;
   createdAt: string;
 }
 
@@ -215,8 +225,8 @@ export interface Enquiry {
   customerNotifiedAt: string | null;
   /** When each specialist was sent the enquiry. Always after customerNotifiedAt. */
   specialistNotifications: { slug: string; notifiedAt: string }[];
-  /** Price per specialist for this lead, in pence. Demo specialists aren't charged. */
-  pricePence?: number;
+  /** Price per specialist for this lead, in credits. Demo specialists aren't charged. */
+  priceCredits?: number;
   /** When we emailed the homeowner to ask how it went (once, about two weeks later). */
   feedbackRequestedAt?: string | null;
 }

@@ -3,7 +3,7 @@ import { bindings } from "@/lib/cloudflare";
 import { vettingChecks } from "@/config/vetting";
 import { formatMonthYear } from "@/lib/format";
 import { numberWord, SAVED_PROGRESS_MONTHS } from "@/lib/consent";
-import { formatPence, priceListFor } from "@/lib/billing";
+import { formatCredits, priceListFor } from "@/lib/billing";
 import type { Enquiry, InterestRegistration, SavedProgress, Specialist, SupplierApplication } from "@/lib/types";
 
 export interface Email {
@@ -146,7 +146,7 @@ export function specialistEnquiryEmail(
   s: Specialist,
   introduced: number,
   serviceName: string,
-  billing: { pricePence: number; balancePence: number; description: string } | null = null,
+  billing: { priceCredits: number; balanceCredits: number; description: string } | null = null,
 ): Email {
   const shared =
     introduced === 1
@@ -171,9 +171,9 @@ Enquiry reference: ${e.id}
 ${
   billing
     ? `
-This lead cost ${formatPence(billing.pricePence)} from your prepaid balance: ${billing.description}.
-Your balance is now ${formatPence(billing.balancePence)}.${
-        billing.balancePence < billing.pricePence
+This lead cost ${formatCredits(billing.priceCredits)} from your balance: ${billing.description}.
+Your balance is now ${formatCredits(billing.balanceCredits)}.${
+        billing.balanceCredits < billing.priceCredits
           ? `
 Your balance won't cover another lead like this one. Top up to keep receiving leads: reply to this email or contact ${site.supplierApplicationsEmail}.`
           : ""
@@ -192,15 +192,15 @@ function adminEmail(): string {
 }
 
 /** A specialist wasn't considered for a lead because their balance was too low. No homeowner details. */
-export function missedLeadEmail(s: Specialist, serviceName: string, area: string, pricePence: number, balancePence: number): Email {
+export function missedLeadEmail(s: Specialist, serviceName: string, area: string, priceCredits: number, balanceCredits: number): Email {
   return {
     to: s.enquiryEmail,
     subject: `You missed a ${serviceName} lead in ${area}`,
     text: `${s.isDemo ? DEMO_NOTE : ""}Hello ${s.name},
 
-A homeowner in the ${area} area has just asked to be put in touch about ${serviceName.toLowerCase()}. You cover that area, but your prepaid balance (${formatPence(balancePence)}) didn't cover the lead price of ${formatPence(pricePence)}, so you weren't considered for it.
+A homeowner in the ${area} area has just asked to be put in touch about ${serviceName.toLowerCase()}. You cover that area, but your balance of ${formatCredits(balanceCredits)} didn't cover the lead price of ${formatCredits(priceCredits)}, so you weren't considered for it.
 
-Top up your balance to make sure you're considered for the next one: reply to this email or contact ${site.supplierApplicationsEmail}.
+Top up your credits to make sure you're considered for the next one. Larger top-ups come with bonus credits: reply to this email or contact ${site.supplierApplicationsEmail}.
 
 ${site.name}
 `,
@@ -208,13 +208,13 @@ ${site.name}
 }
 
 /** Sent when a lead takes a specialist's balance below their cheapest lead, which switches them off until they top up. */
-export function listingPausedEmail(s: Specialist, balancePence: number, minimumFeePence: number): Email {
+export function listingPausedEmail(s: Specialist, balanceCredits: number, minimumFeeCredits: number): Email {
   return {
     to: s.enquiryEmail,
     subject: `Your ${site.name} listing is paused until you top up`,
     text: `${s.isDemo ? DEMO_NOTE : ""}Hello ${s.name},
 
-Your prepaid balance is now ${formatPence(balancePence)}, which is less than your cheapest lead (${formatPence(minimumFeePence)}). Until you top up, you won't be considered for new leads.
+Your balance is now ${formatCredits(balanceCredits)}, which is less than your cheapest lead, at ${formatCredits(minimumFeeCredits)}. Until you top up, you won't be considered for new leads.
 
 Your listing switches back on by itself as soon as your balance covers a lead. To top up, reply to this email or contact ${site.supplierApplicationsEmail}.
 
@@ -224,11 +224,11 @@ ${site.name}
 }
 
 /** Tells us a specialist has been switched off automatically by a low balance. */
-export function listingPausedAlertEmail(s: Specialist, balancePence: number, minimumFeePence: number): Email {
+export function listingPausedAlertEmail(s: Specialist, balanceCredits: number, minimumFeeCredits: number): Email {
   return {
     to: adminEmail(),
     subject: `Paused for low balance: ${s.name}`,
-    text: `${s.name}'s balance is now ${formatPence(balancePence)}, below their cheapest lead (${formatPence(minimumFeePence)}). They've been switched off automatically and told how to top up. They'll switch back on by themselves once a top-up is added on the admin page.
+    text: `${s.name}'s balance is now ${formatCredits(balanceCredits)}, below their cheapest lead at ${formatCredits(minimumFeeCredits)}. They've been switched off automatically and told how to top up. They'll switch back on by themselves once a top-up is added on the admin page.
 `,
   };
 }
@@ -377,14 +377,14 @@ ${(() => {
   const prices = priceListFor(a.servicesOffered ?? [], a.leadTypes);
   return prices
     ? `How introductions are charged
-You pay for introductions from prepaid credit, and only when one is sent to you. Our current prices for the work you do:
+You pay for introductions with prepaid credits, and only when one is sent to you. One credit is worth £1, and larger top-ups come with bonus credits. Our current prices for the work you do:
 
 ${prices}
 
 The full terms are at ${site.url}/supplier-terms
 
 `
-    : `We'll send you our prices for the work you do when we review your application. You can read how introductions and prepaid credit work at ${site.url}/supplier-terms
+    : `We'll send you our prices for the work you do when we review your application. You can read how introductions and prepaid credits work at ${site.url}/supplier-terms
 
 `;
 })()}If your business looks like a good fit, we'll be in touch to talk about next steps. We review every application, but we can't accept every business.

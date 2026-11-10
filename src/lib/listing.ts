@@ -18,9 +18,9 @@ export interface ListingStatus {
   on: boolean;
   /** Why they're off, or null when on. */
   reason: "switched-off" | "low-balance" | null;
-  balancePence: number;
+  balanceCredits: number;
   /** The cheapest lead they could receive. Null for demo specialists, who aren't charged. */
-  minimumFeePence: number | null;
+  minimumFeeCredits: number | null;
   /** The latest manual switch, if there's ever been one. */
   lastSwitch: ListingSwitch | null;
 }
@@ -42,16 +42,16 @@ export function listingStatus(
   balances: Record<string, number>,
   switches: Record<string, ListingSwitch>,
 ): ListingStatus {
-  const balancePence = balances[s.slug] ?? 0;
+  const balanceCredits = balances[s.slug] ?? 0;
   const lastSwitch = switches[s.slug] ?? null;
-  const minimumFeePence = s.isDemo ? null : minimumLeadFee(s);
+  const minimumFeeCredits = s.isDemo ? null : minimumLeadFee(s);
   const reason =
     lastSwitch && !lastSwitch.on
       ? "switched-off"
-      : minimumFeePence !== null && balancePence < minimumFeePence
+      : minimumFeeCredits !== null && balanceCredits < minimumFeeCredits
         ? "low-balance"
         : null;
-  return { on: reason === null, reason, balancePence, minimumFeePence, lastSwitch };
+  return { on: reason === null, reason, balanceCredits, minimumFeeCredits, lastSwitch };
 }
 
 /** Every specialist's status, by slug. */

@@ -3,19 +3,25 @@ import {
   LATER_TIMESCALE,
   laterLeadDiscountPercent,
   leadPrices,
+  pencePerCredit,
   pricesConfirmed,
   regionalLeadPrices,
+  vatRegistered,
 } from "@/config/pricing";
 import { getService } from "@/config/services";
+import { bonusCreditsFor, formatCredits, formatPounds } from "@/lib/credits";
 import { getFunnel } from "@/funnels";
 import { recordStore } from "@/lib/records";
 import type { Answers } from "@/funnels/types";
 import type { LedgerEntry, Specialist } from "@/lib/types";
 
+export { bonusCreditsFor, formatCredits, formatPounds };
+
 /**
- * Prepaid credit. A specialist only receives a lead's details once its price
- * has been taken from their balance, so every lead sent is already paid for.
- * Demo specialists are never charged.
+ * Prepaid credits. A specialist buys credits (one credit is worth £1, with
+ * bonus credits for larger top-ups) and only receives a lead's details once
+ * its price in credits has been taken from their balance, so every lead sent
+ * is already paid for. Demo specialists are never charged.
  */
 
 export function isLaterLead(answers: Answers): boolean {
@@ -28,7 +34,7 @@ export function pricesFor(serviceSlug: string, leadType: string | null, regionSl
   return (leadType ? table[`${serviceSlug}/${leadType}`] : undefined) ?? table[serviceSlug] ?? defaultLeadPrice;
 }
 
-/** Price per specialist, in pence. Exclusive when the homeowner asked for one specialist only. */
+/** Price per specialist, in whole credits. Exclusive when the homeowner asked for one specialist only. */
 export function leadPrice(
   serviceSlug: string,
   leadType: string | null,
@@ -38,7 +44,12 @@ export function leadPrice(
 ): number {
   const prices = pricesFor(serviceSlug, leadType, regionSlug);
   const base = requested === 1 ? prices.exclusive : prices.shared;
-  return later ? Math.round((base * (100 - laterLeadDiscountPercent)) / 100) : base;
+  return later ? laterPrice(base) : base;
+}
+
+/** The discounted price for work 3 to 6 months away, rounded down to whole credits (in the specialist's favour). */
+export function laterPrice(credits: number): number {
+  return Math.floor((credits * (100 - laterLeadDiscountPercent)) / 100);
 }
 
 /** The cheapest lead for a service, used to check coverage before the price is known. */
@@ -46,9 +57,9 @@ export function cheapestLeadPrice(serviceSlug: string, leadType: string | null):
   return leadPrice(serviceSlug, leadType, 2, true);
 }
 
-export function formatPence(pence: number): string {
-  const sign = pence < 0 ? "-" : "";
-  return `${sign}£${(Math.abs(pence) / 100).toFixed(2)}`;
+/** The line about VAT shown with prices. */
+export function vatNote(): string {
+  return vatRegistered ? "Prices exclude VAT, which is added to each top-up." : "We're not VAT registered, so no VAT is charged.";
 }
 
 export function describeLead(requested: number, later: boolean): string {
@@ -56,36 +67,82 @@ export function describeLead(requested: number, later: boolean): string {
   return later ? `${kind}, with the ${laterLeadDiscountPercent}% discount for work planned in 3 to 6 months` : kind;
 }
 
-function entry(supplierSlug: string, kind: LedgerEntry["kind"], amountPence: number, enquiryId: string | null, note: string): LedgerEntry {
-  return { id: crypto.randomUUID(), supplierSlug, createdAt: new Date().toISOString(), kind, amountPence, enquiryId, note };
+function entry(
+  supplierSlug: string,
+  kind: LedgerEntry["kind"],
+  amountCredits: number,
+  enquiryId: string | null,
+  note: string,
+  paidPence: number | null = null,
+): LedgerEntry {
+  return { id: crypto.randomUUID(), supplierSlug, createdAt: new Date().toISOString(), kind, amountCredits, paidPence, enquiryId, note };
 }
 
 /** Takes the lead price if the balance covers it. Demo specialists always succeed, at no charge. */
-export async function chargeForLead(s: Specialist, enquiryId: string, pricePence: number, note: string): Promise<boolean> {
+export async function chargeForLead(s: Specialist, enquiryId: string, priceCredits: number, note: string): Promise<boolean> {
   if (s.isDemo) return true;
-  return recordStore.chargeIfFunded(entry(s.slug, "lead", -pricePence, enquiryId, note));
+  return recordStore.chargeIfFunded(entry(s.slug, "lead", -priceCredits, enquiryId, note));
 }
 
 /** Gives a lead's price back, for example when its email couldn't be sent. */
-export async function refundLead(s: Specialist, enquiryId: string, pricePence: number, note: string): Promise<void> {
+export async function refundLead(s: Specialist, enquiryId: string, priceCredits: number, note: string): Promise<void> {
   if (s.isDemo) return;
-  await recordStore.addLedgerEntry(entry(s.slug, "refund", pricePence, enquiryId, note));
+  await recordStore.addLedgerEntry(entry(s.slug, "refund", priceCredits, enquiryId, note));
 }
 
+/**
+ * Records money received: one credit per whole pound, plus any bonus as a
+ * separate line so it can never be mistaken for credits that were paid for.
+ */
+export async function recordTopUp(supplierSlug: string, paidPence: number, note: string): Promise<LedgerEntry[]> {
+  const credits = Math.floor(paidPence / pencePerCredit);
+  const lines = [entry(supplierSlug, "topup", credits, null, note, paidPence)];
+  const bonus = bonusCreditsFor(paidPence / 100);
+  if (bonus > 0) lines.push(entry(supplierSlug, "bonus", bonus, null, `Bonus for a ${formatPounds(paidPence)} top-up`));
+  for (const l of lines) await recordStore.addLedgerEntry(l);
+  return lines;
+}
+
+/** Adds a refund, adjustment or forfeit line. */
 export async function addCredit(
   supplierSlug: string,
-  kind: Exclude<LedgerEntry["kind"], "lead">,
-  amountPence: number,
+  kind: "refund" | "adjustment" | "forfeit",
+  amountCredits: number,
   note: string,
 ): Promise<LedgerEntry> {
-  const e = entry(supplierSlug, kind, amountPence, null, note);
+  const e = entry(supplierSlug, kind, amountCredits, null, note);
+  await recordStore.addLedgerEntry(e);
+  return e;
+}
+
+/**
+ * What a specialist's unused credits are worth in cash, for when we stop
+ * introducing them (Specialist terms): the balance at the average rate they
+ * paid per credit, bonus credits included, so bonus credits are never paid
+ * out. Never more than they paid in, less anything already paid back.
+ */
+export function cashValueOfBalance(lines: LedgerEntry[]): { credits: number; pence: number } {
+  const credits = lines.reduce((t, l) => t + l.amountCredits, 0);
+  const bought = lines.filter((l) => l.kind === "topup" || l.kind === "bonus").reduce((t, l) => t + l.amountCredits, 0);
+  const paidIn = lines.filter((l) => l.kind === "topup").reduce((t, l) => t + (l.paidPence ?? 0), 0);
+  const paidOut = lines.filter((l) => l.kind === "payout").reduce((t, l) => t + (l.paidPence ?? 0), 0);
+  if (credits <= 0 || bought === 0) return { credits: Math.max(credits, 0), pence: 0 };
+  const value = Math.floor((Math.min(credits, bought) * paidIn) / bought);
+  return { credits, pence: Math.max(0, Math.min(value, paidIn - paidOut)) };
+}
+
+/** Clears the balance and records the cash paid back. The money itself is sent by bank transfer. */
+export async function recordPayout(supplierSlug: string, lines: LedgerEntry[], note: string): Promise<LedgerEntry | null> {
+  const { credits, pence } = cashValueOfBalance(lines);
+  if (credits <= 0) return null;
+  const e = entry(supplierSlug, "payout", -credits, null, note, pence);
   await recordStore.addLedgerEntry(e);
   return e;
 }
 
 /** Whether a specialist can currently afford a lead at this price. */
-export function canAfford(s: Specialist, balances: Record<string, number>, pricePence: number): boolean {
-  return s.isDemo || (balances[s.slug] ?? 0) >= pricePence;
+export function canAfford(s: Specialist, balances: Record<string, number>, priceCredits: number): boolean {
+  return s.isDemo || (balances[s.slug] ?? 0) >= priceCredits;
 }
 
 /**
@@ -95,11 +152,11 @@ export function canAfford(s: Specialist, balances: Record<string, number>, price
  */
 export function priceListFor(servicesOffered: string[], leadTypes: Record<string, string[]> = {}): string | null {
   if (!pricesConfirmed || servicesOffered.length === 0) return null;
-  const later = (pence: number) => formatPence(Math.round((pence * (100 - laterLeadDiscountPercent)) / 100));
+  const later = (credits: number) => formatCredits(laterPrice(credits));
   const line = (label: string, p: { shared: number; exclusive: number }) =>
     `  ${label}
-    Exclusive (the homeowner chose only you): ${formatPence(p.exclusive)}, or ${later(p.exclusive)} if the work is 3 to 6 months away
-    Shared with up to two other specialists: ${formatPence(p.shared)}, or ${later(p.shared)} if the work is 3 to 6 months away`;
+    Exclusive (the homeowner chose only you): ${formatCredits(p.exclusive)}, or ${later(p.exclusive)} if the work is 3 to 6 months away
+    Shared with up to two other specialists: ${formatCredits(p.shared)}, or ${later(p.shared)} if the work is 3 to 6 months away`;
   const lines: string[] = [];
   for (const slug of servicesOffered) {
     const name = getService(slug)?.name ?? slug;
@@ -118,5 +175,5 @@ export function priceListFor(servicesOffered: string[], leadTypes: Record<string
   }
   return `${lines.join("\n\n")}
 
-Prices are for North East England and exclude VAT where VAT applies. You can choose not to receive introductions for work that's 3 to 6 months away.`;
+Prices are for North East England. One credit is worth £1, and larger top-ups come with bonus credits. ${vatNote()} You can choose not to receive introductions for work that's 3 to 6 months away.`;
 }

@@ -4,7 +4,7 @@ import { LegalPage } from "@/components/pages/LegalPage";
 
 export const metadata: Metadata = {
   title: "Specialist terms",
-  description: `The terms for specialists who receive introductions through ${site.name}, including prepaid credit.`,
+  description: `The terms for specialists who receive introductions through ${site.name}, including prepaid credits.`,
 };
 
 export default function SupplierTermsPage() {

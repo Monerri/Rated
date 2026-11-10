@@ -4,6 +4,15 @@ import { useCallback, useEffect, useState } from "react";
 import { buttonClass } from "@/components/ui/Button";
 import { FormError, TextField } from "@/components/ui/Form";
 import type { LedgerEntry } from "@/lib/types";
+import { bonusCreditsFor, formatCredits, formatPounds } from "@/lib/credits";
+
+/** "£500 = 500 credits + 50 bonus credits", for the top-up form. */
+function topUpHint(pounds: number): string {
+  if (!Number.isFinite(pounds) || pounds < 1) return "One credit per whole pound, plus bonus credits on larger top-ups.";
+  const credits = Math.floor(pounds);
+  const bonus = bonusCreditsFor(pounds);
+  return `${formatPounds(Math.round(pounds * 100))} = ${credits.toLocaleString("en-GB")} credits${bonus ? ` + ${bonus.toLocaleString("en-GB")} bonus credits` : ""}.`;
+}
 
 interface FeedbackRow {
   respondedAt: string;
@@ -23,10 +32,10 @@ interface Supplier {
   slug: string;
   name: string;
   isDemo: boolean;
-  balancePence: number;
+  balanceCredits: number;
   on: boolean;
   reason: "switched-off" | "low-balance" | null;
-  minimumFeePence: number | null;
+  minimumFeeCredits: number | null;
   switchedAt: string | null;
   switchNote: string | null;
 }
@@ -35,21 +44,21 @@ interface Supplier {
 function statusText(s: Supplier): string {
   if (s.on) return "✓ On";
   if (s.reason === "switched-off") return `✕ Off (switched off${s.switchedAt ? ` ${s.switchedAt.slice(0, 10)}` : ""})`;
-  return `✕ Off (balance below ${money(s.minimumFeePence ?? 0)}; back on after a top-up)`;
+  return `✕ Off (balance below ${money(s.minimumFeeCredits ?? 0)}; back on after a top-up)`;
 }
 
 const TOKEN_KEY = "vn_admin_token";
 const KIND_LABELS: Record<LedgerEntry["kind"], string> = {
   topup: "Top-up",
+  bonus: "Bonus",
   lead: "Lead",
   refund: "Refund",
   adjustment: "Adjustment",
   forfeit: "Forfeit",
+  payout: "Paid out",
 };
 
-function money(pence: number) {
-  return `${pence < 0 ? "-" : ""}£${(Math.abs(pence) / 100).toFixed(2)}`;
-}
+const money = formatCredits;
 
 function readToken(): string {
   try {
@@ -74,7 +83,8 @@ export function AdminConsole() {
   const [busy, setBusy] = useState(false);
 
   const [supplier, setSupplier] = useState("");
-  const [kind, setKind] = useState<"topup" | "refund" | "adjustment" | "forfeit">("topup");
+  const [kind, setKind] = useState<"topup" | "refund" | "adjustment" | "forfeit" | "payout">("topup");
+  const [payoutPreview, setPayoutPreview] = useState<{ credits: number; pence: number } | null>(null);
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
 
@@ -115,22 +125,37 @@ export function AdminConsole() {
     e.preventDefault();
     setError(null);
     setMessage(null);
-    const pounds = Number(amount);
-    if (kind !== "forfeit" && (!Number.isFinite(pounds) || pounds === 0)) return setError("Enter an amount in pounds.");
+    const value = Number(amount);
+    if ((kind === "topup" || kind === "refund" || kind === "adjustment") && (!Number.isFinite(value) || value === 0)) {
+      return setError(kind === "topup" ? "Enter the amount received in pounds." : "Enter a number of credits.");
+    }
     setBusy(true);
     const res = await fetch("/api/admin/ledger", {
       method: "POST",
       headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
-      body: JSON.stringify({ supplierSlug: supplier, kind, amountPence: Math.round(pounds * 100), note }),
+      body: JSON.stringify({ supplierSlug: supplier, kind, amountPounds: value, amountCredits: value, note }),
     });
     setBusy(false);
     const body = await res.json().catch(() => ({}));
     if (!res.ok) return setError(body.error ?? "That didn't work.");
     const name = data?.suppliers.find((s) => s.slug === supplier)?.name ?? supplier;
-    setMessage(`Done. ${name}'s balance is now ${money(body.balancePence)}.`);
+    setMessage(`Done. ${name}'s balance is now ${money(body.balanceCredits)}.`);
     setAmount("");
     setNote("");
+    setPayoutPreview(null);
     await load(token);
+  }
+
+  /** Shows what a payout would be worth before it's saved. */
+  async function previewPayout(slug: string) {
+    setPayoutPreview(null);
+    if (!slug) return;
+    const res = await fetch("/api/admin/ledger", {
+      method: "POST",
+      headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
+      body: JSON.stringify({ supplierSlug: slug, kind: "payout", preview: true }),
+    });
+    if (res.ok) setPayoutPreview(await res.json());
   }
 
   async function switchListing(target: { supplierSlug: string } | { allDemo: true }, on: boolean, label: string) {
@@ -232,11 +257,11 @@ export function AdminConsole() {
                   {s.name}
                   {s.isDemo && <span className="ml-2 font-mono text-xs text-muted">DEMO, NOT CHARGED</span>}
                 </p>
-                <p className="font-mono">{s.isDemo ? "No charge" : money(s.balancePence)}</p>
+                <p className="font-mono">{s.isDemo ? "No charge" : money(s.balanceCredits)}</p>
               </div>
               <p className="font-semibold">{statusText(s)}</p>
-              {!s.isDemo && s.minimumFeePence !== null && (
-                <p className="text-muted">Cheapest lead: {money(s.minimumFeePence)}</p>
+              {!s.isDemo && s.minimumFeeCredits !== null && (
+                <p className="text-muted">Cheapest lead: {money(s.minimumFeeCredits)}</p>
               )}
               <button
                 type="button"
@@ -261,7 +286,10 @@ export function AdminConsole() {
             <select
               required
               value={supplier}
-              onChange={(e) => setSupplier(e.target.value)}
+              onChange={(e) => {
+                setSupplier(e.target.value);
+                if (kind === "payout") void previewPayout(e.target.value);
+              }}
               className="min-h-[52px] w-full min-w-0 rounded-lg border-[1.5px] border-line bg-surface px-3 text-[17px] font-normal"
             >
               <option value="">Choose…</option>
@@ -277,23 +305,49 @@ export function AdminConsole() {
             Type
             <select
               value={kind}
-              onChange={(e) => setKind(e.target.value as typeof kind)}
+              onChange={(e) => {
+                const k = e.target.value as typeof kind;
+                setKind(k);
+                setAmount("");
+                if (k === "payout") void previewPayout(supplier);
+              }}
               className="min-h-[52px] w-full min-w-0 rounded-lg border-[1.5px] border-line bg-surface px-3 text-[17px] font-normal"
             >
               <option value="topup">Top-up (they paid you)</option>
-              <option value="refund">Refund to balance (for example, a disputed lead)</option>
+              <option value="refund">Refund credits to balance (for example, a disputed lead)</option>
               <option value="adjustment">Adjustment (correct a mistake; can be negative)</option>
-              <option value="forfeit">Forfeit whole balance (left over 6 months ago)</option>
+              <option value="forfeit">Forfeit all credits (left over 6 months ago)</option>
+              <option value="payout">Pay out unused credits as cash (we stopped introducing them)</option>
             </select>
           </label>
-          {kind !== "forfeit" && (
+          {kind === "topup" && (
             <TextField
-              label="Amount (£)"
+              label="Amount received (£)"
               inputMode="decimal"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              hint={kind === "adjustment" ? "Use a minus sign to take money off, for example -15" : undefined}
+              hint={topUpHint(Number(amount))}
             />
+          )}
+          {(kind === "refund" || kind === "adjustment") && (
+            <TextField
+              label="Credits"
+              inputMode="numeric"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              hint={kind === "adjustment" ? "Use a minus sign to take credits off, for example -15. Credits added here have no cash value." : undefined}
+            />
+          )}
+          {kind === "payout" && (
+            <p className="rounded-[var(--radius-card)] border border-line bg-surface p-4 text-[15px]" role="status">
+              {!supplier
+                ? "Choose a specialist to see what their unused credits are worth."
+                : payoutPreview === null
+                  ? "Working it out…"
+                  : payoutPreview.credits <= 0
+                    ? "They have no unused credits."
+                    : `${payoutPreview.credits.toLocaleString("en-GB")} unused credits, worth ${formatPounds(payoutPreview.pence)} at the average rate they paid (bonus credits aren't paid out). Send this by bank transfer, then save to clear the balance.`}
+            </p>
           )}
           <TextField
             label="Note"
@@ -358,17 +412,21 @@ export function AdminConsole() {
                   <th className="py-2 font-semibold">When</th>
                   <th className="py-2 font-semibold">Specialist</th>
                   <th className="py-2 font-semibold">Type</th>
-                  <th className="py-2 text-right font-semibold">Amount</th>
+                  <th className="py-2 text-right font-semibold">Credits</th>
+                  <th className="py-2 pl-4 text-right font-semibold">Money</th>
                   <th className="py-2 pl-4 font-semibold">Note</th>
                 </tr>
               </thead>
               <tbody>
                 {data.entries.map((e) => (
                   <tr key={e.id} className="border-b border-line align-top">
-                    <td className="py-2 font-mono whitespace-nowrap">{e.createdAt.slice(0, 16).replace("T", " ")}</td>
+                    <td className="py-2 pr-4 font-mono whitespace-nowrap">{e.createdAt.slice(0, 16).replace("T", " ")}</td>
                     <td className="py-2">{names[e.supplierSlug] ?? e.supplierSlug}</td>
                     <td className="py-2">{KIND_LABELS[e.kind]}</td>
-                    <td className="py-2 text-right font-mono">{money(e.amountPence)}</td>
+                    <td className="py-2 text-right font-mono">{e.amountCredits > 0 ? "+" : ""}{e.amountCredits.toLocaleString("en-GB")}</td>
+                    <td className="py-2 pl-4 text-right font-mono">
+                      {e.paidPence ? `${e.kind === "payout" ? "Paid out " : "Received "}${formatPounds(e.paidPence)}` : ""}
+                    </td>
                     <td className="py-2 pl-4 text-muted">{e.note}</td>
                   </tr>
                 ))}

@@ -34,8 +34,8 @@ export const site = {
     companyNumber: "10312351",
     placeOfRegistration: "England and Wales",
     registeredOffice: "16 Fairburn Avenue, Houghton le Spring, Durham DH5 8LA",
-    /** "pending" until the ICO confirms the registration, then the number, for example "ZB123456". */
-    icoNumber: "pending",
+    /** The ICO data protection registration number. */
+    icoNumber: "ZC298126",
   },
 } as const;
 

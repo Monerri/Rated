@@ -61,6 +61,20 @@ function redirectDemo(email: Email): Email {
 }
 
 /**
+ * The company details UK law requires on business letters, which include
+ * emails (Trading Disclosures Regulations 2015, regulations 24 and 25).
+ * Added to the end of every email the site sends.
+ */
+export function companyFooter(): string {
+  const l = site.legal;
+  return `\n\n--\n${site.name} is a trading name of ${l.companyName}, registered in ${l.placeOfRegistration}, company no. ${l.companyNumber}. Registered office: ${l.registeredOffice}.`;
+}
+
+function withFooter(email: Email): Email {
+  return { ...email, text: `${email.text.trimEnd()}${companyFooter()}\n` };
+}
+
+/**
  * Uses Resend when RESEND_API_KEY is set (a Worker secret). Without it, emails
  * are logged only, but only where there's no database either (local
  * `next dev`): on Cloudflare a missing key is a failure, so no record ever
@@ -70,12 +84,12 @@ function redirectDemo(email: Email): Email {
 export const emailSender: EmailSender = {
   async send(email) {
     const { RESEND_API_KEY, EMAIL_FROM, DB, EMAIL_LOG_ONLY } = bindings();
-    if (EMAIL_LOG_ONLY === "1") return prototypeSender.send(redirectDemo(email));
+    if (EMAIL_LOG_ONLY === "1") return prototypeSender.send(withFooter(redirectDemo(email)));
     if (!RESEND_API_KEY && DB) throw new Error("RESEND_API_KEY is not set, so emails can't be sent.");
     const sender = RESEND_API_KEY
       ? resendSender(RESEND_API_KEY, EMAIL_FROM ?? `${site.name} <${site.contactEmail}>`)
       : prototypeSender;
-    await sender.send(redirectDemo(email));
+    await sender.send(withFooter(redirectDemo(email)));
   },
 };
 

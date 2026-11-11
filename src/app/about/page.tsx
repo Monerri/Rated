@@ -104,8 +104,11 @@ export default function AboutPage() {
       </section>
 
       <p className="text-sm text-muted">
-        {site.name} is a trading name of {site.legal.companyName}, registered in {site.legal.placeOfRegistration},
-        company no. {site.legal.companyNumber}. Registered office: {site.legal.registeredOffice}.
+        Company no. {site.legal.companyNumber}. Our full company details are on our{" "}
+        <Link href="/company-information" className="text-blue underline">
+          company information
+        </Link>{" "}
+        page.
       </p>
     </div>
   );

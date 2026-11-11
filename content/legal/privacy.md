@@ -5,8 +5,6 @@ date: 2026-10-08
 updated: 2026-11-10
 ---
 
-**This is a draft and is being reviewed before launch.**
-
 This notice explains what personal information we collect, why, who we share it with and your rights. We've tried to keep it clear and specific.
 
 ## Who we are

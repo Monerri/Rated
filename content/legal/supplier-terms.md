@@ -4,8 +4,6 @@ description: The terms for home-improvement specialists who receive introduction
 date: 2026-11-10
 ---
 
-**This is a draft and is being reviewed before launch. It should be checked by a solicitor before any specialist signs up.**
-
 These terms apply to businesses ("you") that receive introductions to homeowners through {{name}} ("we", "us"). Our [terms of use](/terms) for homeowners and our [privacy notice](/privacy) explain how the service works from the homeowner's side.
 
 ## 1. Joining

@@ -99,8 +99,7 @@ export default async function SupplierFlyerPage({ searchParams }: Props) {
         </div>
 
         <p className="text-[11px] text-muted">
-          {site.name} is a trading name of {site.legal.companyName}, registered in {site.legal.placeOfRegistration}, company
-          no. {site.legal.companyNumber}. Registered office: {site.legal.registeredOffice}. Terms apply: {site.domain}/supplier-terms.
+          {site.name}. Company no. {site.legal.companyNumber}. Terms apply: {site.domain}/supplier-terms.
         </p>
       </article>
     </div>

@@ -12,6 +12,11 @@ export async function allSpecialists(): Promise<Specialist[]> {
   return [...demoSpecialists.filter((s) => !slugs.has(s.slug)), ...stored];
 }
 
+/** Every specialist except those removed on /admin. Used for admin lists, statements and reports. */
+export async function currentSpecialists(): Promise<Specialist[]> {
+  return (await allSpecialists()).filter((s) => s.onboarding?.status !== "removed");
+}
+
 /**
  * Specialists who can be considered for leads: demo companies, and real ones
  * who have accepted the Specialist terms. Whether they're switched on, vetted

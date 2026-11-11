@@ -248,7 +248,7 @@ export function AdminConsole() {
         ))}
       </nav>
 
-      {tab === "onboarding" && <AdminOnboarding token={token} onChanged={() => void load(token)} />}
+      {tab === "onboarding" && <AdminOnboarding token={token} owner={owner} onChanged={() => void load(token)} />}
 
       {tab === "coverage" && <AdminCoverage token={token} />}
 

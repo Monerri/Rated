@@ -42,7 +42,7 @@ function onboardingText(s: Specialist): string {
  * checks, send the terms, edit details. Accounts and top-ups are handled in
  * the Accounts tab.
  */
-export function AdminOnboarding({ token, onChanged }: { token: string; onChanged: () => void }) {
+export function AdminOnboarding({ token, owner, onChanged }: { token: string; owner: boolean; onChanged: () => void }) {
   const [applications, setApplications] = useState<SupplierApplication[]>([]);
   const [stored, setStored] = useState<Specialist[]>([]);
   const [editing, setEditing] = useState<Editing>(null);
@@ -51,6 +51,8 @@ export function AdminOnboarding({ token, onChanged }: { token: string; onChanged
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showDone, setShowDone] = useState(false);
+  const [removing, setRemoving] = useState<string | null>(null);
+  const [showRemoved, setShowRemoved] = useState(false);
 
   const headers = { authorization: `Bearer ${token}`, "content-type": "application/json" };
 
@@ -116,6 +118,8 @@ export function AdminOnboarding({ token, onChanged }: { token: string; onChanged
     );
   }
 
+  const current = stored.filter((s) => s.onboarding?.status !== "removed");
+  const removed = stored.filter((s) => s.onboarding?.status === "removed");
   const toReview = applications.filter((a) => a.status === "received" || a.status === "under_review");
   const done = applications.filter((a) => a.status === "accepted" || a.status === "declined");
 
@@ -198,9 +202,9 @@ export function AdminOnboarding({ token, onChanged }: { token: string; onChanged
         <button type="button" className={`${buttonClass("secondary")} justify-self-start`} onClick={() => setEditing({ kind: "new" })}>
           Add a specialist without an application
         </button>
-        {stored.length === 0 && <p className="text-muted">None yet. Approve an application, or add one yourself.</p>}
+        {current.length === 0 && <p className="text-muted">None yet. Approve an application, or add one yourself.</p>}
         <ul className="grid gap-3">
-          {stored.map((s) => (
+          {current.map((s) => (
             <li key={s.slug} className="grid min-w-0 gap-2 rounded-[var(--radius-card)] border border-line bg-surface p-4 text-[15px]">
               <p className="font-semibold">{s.name}</p>
               <p>{onboardingText(s)}</p>
@@ -225,10 +229,62 @@ export function AdminOnboarding({ token, onChanged }: { token: string; onChanged
                     Send the terms link again
                   </button>
                 )}
+                {owner && (
+                  <button type="button" className={buttonClass("secondary", "sm")} onClick={() => setRemoving(removing === s.slug ? null : s.slug)}>
+                    Remove
+                  </button>
+                )}
               </div>
+              {removing === s.slug && (
+                <RemoveForm
+                  token={token}
+                  specialist={s}
+                  onCancel={() => setRemoving(null)}
+                  onDone={(text) => {
+                    setRemoving(null);
+                    setMessage(text);
+                    void load();
+                    onChanged();
+                  }}
+                />
+              )}
             </li>
           ))}
         </ul>
+        {removed.length > 0 && (
+          <div className="grid gap-2">
+            <button type="button" className={`${buttonClass("secondary", "sm")} justify-self-start`} onClick={() => setShowRemoved(!showRemoved)}>
+              {showRemoved ? "Hide" : "Show"} removed specialists ({removed.length})
+            </button>
+            {showRemoved && (
+              <ul className="grid gap-2 text-[15px]">
+                {removed.map((s) => (
+                  <li key={s.slug} className="grid gap-2 rounded-[var(--radius-card)] border border-dashed border-line bg-surface p-3">
+                    <p>
+                      <span className="font-semibold">{s.name}</span> · ✕ Removed {s.onboarding?.removal ? `${date(s.onboarding.removal.at)}: ${s.onboarding.removal.reason}` : ""}
+                    </p>
+                    {owner && (
+                      <button
+                        type="button"
+                        className={`${buttonClass("secondary", "sm")} justify-self-start`}
+                        onClick={async () => {
+                          const res = await fetch(`/api/admin/specialists/${s.slug}/restore`, { method: "POST", headers });
+                          const body = (await res.json().catch(() => ({}))) as { error?: string };
+                          if (!res.ok) return setError(body.error ?? "That didn't work.");
+                          setMessage(`${s.name} has been restored.`);
+                          void load();
+                          onChanged();
+                        }}
+                      >
+                        Restore
+                      </button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
       </section>
     </div>
   );
@@ -312,6 +368,66 @@ function DeclineForm({
       <div className="flex flex-wrap gap-2">
         <button type="submit" className={buttonClass("primary", "sm")}>
           Decline
+        </button>
+        <button type="button" onClick={onCancel} className={buttonClass("secondary", "sm")}>
+          Cancel
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function RemoveForm({
+  token,
+  specialist,
+  onCancel,
+  onDone,
+}: {
+  token: string;
+  specialist: Specialist;
+  onCancel: () => void;
+  onDone: (message: string) => void;
+}) {
+  const [reason, setReason] = useState("");
+  const [notify, setNotify] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    const res = await fetch(`/api/admin/specialists/${specialist.slug}/remove`, {
+      method: "POST",
+      headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
+      body: JSON.stringify({ reason, notify }),
+    });
+    const body = (await res.json().catch(() => ({}))) as { error?: string; emailed?: boolean };
+    if (!res.ok) return setError(body.error ?? "That didn't work.");
+    onDone(`${specialist.name} has been removed${notify ? (body.emailed ? " and emailed" : ", but the email couldn't be sent") : ""}. Their records are kept, and you can restore them under "Show removed specialists".`);
+  }
+
+  return (
+    <form onSubmit={submit} className="grid gap-3 rounded-[var(--radius-card)] border border-dashed border-ink p-4">
+      <p className="text-[15px]">
+        Removing {specialist.name} stops all introductions and hides them from these lists. Their account history is kept.
+        Their balance must be zero first: pay out or forfeit any credits in Accounts and top-ups.
+      </p>
+      <label className="grid gap-1.5 text-[15px] font-semibold">
+        Reason, for our records
+        <textarea
+          className="min-h-[80px] w-full rounded-lg border-[1.5px] border-line bg-surface px-3.5 py-3 text-[16px] font-normal"
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          maxLength={500}
+        />
+      </label>
+      <label className="grid cursor-pointer grid-cols-[24px_1fr] items-start gap-3 text-[15px]">
+        <input type="checkbox" checked={notify} onChange={(e) => setNotify(e.target.checked)} className="mt-0.5 size-[20px] accent-blue" />
+        <span>Email them to say we&apos;ve stopped sending introductions</span>
+      </label>
+      {error && <FormError>{error}</FormError>}
+      <div className="flex flex-wrap gap-2">
+        <button type="submit" className={buttonClass("primary", "sm")}>
+          Remove {specialist.name}
         </button>
         <button type="button" onClick={onCancel} className={buttonClass("secondary", "sm")}>
           Cancel

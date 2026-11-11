@@ -176,7 +176,9 @@ export interface TermsAcceptance {
  * accepted are they "active" and considered for leads.
  */
 export interface SpecialistOnboarding {
-  status: "awaiting_terms" | "active";
+  status: "awaiting_terms" | "active" | "removed";
+  /** Set when removed on /admin. They're kept for our records but never shown or matched. */
+  removal?: { at: string; by: AdminRole; reason: string; previousStatus: "awaiting_terms" | "active" } | null;
   /** The application they came from, if any. */
   applicationId: string | null;
   contactName: string;

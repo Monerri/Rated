@@ -1,4 +1,4 @@
-import { allSpecialists } from "@/lib/specialistDirectory";
+import { currentSpecialists } from "@/lib/specialistDirectory";
 import { leadPrice } from "@/lib/billing";
 import { launch } from "@/config/launch";
 import { getFunnel } from "@/funnels";
@@ -59,7 +59,7 @@ export function listingStatus(
 
 /** Every specialist's status, by slug. */
 export async function listingStatuses(): Promise<Record<string, ListingStatus>> {
-  const [list, balances, switches] = await Promise.all([allSpecialists(), recordStore.getBalances(), recordStore.getListingSwitches()]);
+  const [list, balances, switches] = await Promise.all([currentSpecialists(), recordStore.getBalances(), recordStore.getListingSwitches()]);
   return Object.fromEntries(list.map((s) => [s.slug, listingStatus(s, balances, switches)]));
 }
 

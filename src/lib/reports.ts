@@ -1,6 +1,6 @@
 import { site } from "@/config/site";
 import { topUpInstructions } from "@/lib/payments";
-import { allSpecialists } from "@/lib/specialistDirectory";
+import { allSpecialists, currentSpecialists } from "@/lib/specialistDirectory";
 import { getService } from "@/config/services";
 import { formatCredits, formatPounds } from "@/lib/billing";
 import { bindings } from "@/lib/cloudflare";
@@ -95,7 +95,8 @@ export async function sendWeeklyReports(now = new Date()): Promise<{ suppliers: 
     recordStore.listFeedback(new Date(now.getTime() - 37 * DAY).toISOString()),
     listingStatuses(),
   ]);
-  const specialists = await allSpecialists();
+  const specialists = await currentSpecialists();
+  const everyone = await allSpecialists();
 
   let sent = 0;
   const rows: string[] = [];
@@ -145,7 +146,7 @@ Where enquiries came from (for judging adverts)
 ${bySource(enquiries, entries)}
 
 Homeowner feedback this week
-${feedbackLines(feedback.filter((f) => f.respondedAt && f.respondedAt >= since), Object.fromEntries(specialists.map((s) => [s.slug, s.name])))}
+${feedbackLines(feedback.filter((f) => f.respondedAt && f.respondedAt >= since), Object.fromEntries(everyone.map((s) => [s.slug, s.name])))}
 
 Reports sent to ${sent} specialist${sent === 1 ? "" : "s"}.
 `,

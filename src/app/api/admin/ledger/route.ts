@@ -1,5 +1,5 @@
 import { adminRole } from "@/lib/admin";
-import { allSpecialists } from "@/lib/specialistDirectory";
+import { currentSpecialists } from "@/lib/specialistDirectory";
 import { paymentReference } from "@/lib/payments";
 import { addCredit, cashValueOfBalance, recordPayout, recordTopUp } from "@/lib/billing";
 import { listingStatuses } from "@/lib/listing";
@@ -11,7 +11,7 @@ import type { LedgerEntry } from "@/lib/types";
 export async function GET(request: Request) {
   const role = adminRole(request);
   if (!role) return jsonError("Not found.", 404);
-  const [statuses, specialists] = await Promise.all([listingStatuses(), allSpecialists()]);
+  const [statuses, specialists] = await Promise.all([listingStatuses(), currentSpecialists()]);
   const since = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
   return Response.json({
     role,
@@ -51,7 +51,7 @@ export async function POST(request: Request) {
   if (!role) return jsonError("Not found.", 404);
   const body = await readJson(request);
   const slug = String(body?.supplierSlug ?? "");
-  const supplier = (await allSpecialists()).find((s) => s.slug === slug);
+  const supplier = (await currentSpecialists()).find((s) => s.slug === slug);
   if (!supplier) return jsonError("Unknown specialist.");
   const kind = body?.kind as (typeof KINDS)[number];
   if (!KINDS.includes(kind)) return jsonError("Choose a type.");

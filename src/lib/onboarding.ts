@@ -444,3 +444,70 @@ ${site.name}
 `,
   };
 }
+
+/**
+ * Removes a specialist: they're no longer listed, matched or sent statements,
+ * but their record and account history are kept, as the privacy notice says.
+ * Only possible once their balance is zero, so unused credits are paid out or
+ * forfeited first under the Specialist terms.
+ */
+export async function removeSpecialist(
+  slug: string,
+  role: AdminRole,
+  reason: string,
+  notify: boolean,
+): Promise<{ ok: true; emailed: boolean } | { ok: false; status: number; error: string }> {
+  const s = (await recordStore.listSpecialists()).find((x) => x.slug === slug);
+  if (!s?.onboarding) return { ok: false, status: 404, error: "Specialist not found." };
+  if (s.onboarding.status === "removed") return { ok: false, status: 400, error: "They've already been removed." };
+  const balance = (await recordStore.getBalances())[slug] ?? 0;
+  if (balance !== 0) {
+    return {
+      ok: false,
+      status: 400,
+      error: `They still have ${balance} credits. In Accounts and top-ups, pay out their unused credits (or forfeit them if they left over 6 months ago) before removing them.`,
+    };
+  }
+  const now = new Date().toISOString();
+  await recordStore.saveSpecialist({
+    ...s,
+    onboarding: {
+      ...s.onboarding,
+      status: "removed",
+      termsInvite: null,
+      removal: { at: now, by: role, reason, previousStatus: s.onboarding.status },
+      updatedAt: now,
+      updatedBy: role,
+    },
+  });
+  const emailed = notify ? await trySend(removedEmail(s)) : false;
+  return { ok: true, emailed };
+}
+
+/** Puts a removed specialist back as they were. They're matched again only if they'd accepted the terms. */
+export async function restoreSpecialist(slug: string, role: AdminRole): Promise<{ ok: true } | { ok: false; status: number; error: string }> {
+  const s = (await recordStore.listSpecialists()).find((x) => x.slug === slug);
+  if (!s?.onboarding || s.onboarding.status !== "removed") return { ok: false, status: 404, error: "Removed specialist not found." };
+  const now = new Date().toISOString();
+  await recordStore.saveSpecialist({
+    ...s,
+    onboarding: { ...s.onboarding, status: s.onboarding.removal?.previousStatus ?? "awaiting_terms", removal: null, updatedAt: now, updatedBy: role },
+  });
+  return { ok: true };
+}
+
+function removedEmail(s: Specialist): Email {
+  return {
+    to: s.enquiryEmail,
+    replyTo: site.supplierApplicationsEmail,
+    subject: `${site.name}: we've stopped sending you introductions`,
+    text: `Hello ${s.onboarding?.contactName ?? s.name},
+
+We're writing to let you know that we've stopped sending introductions to ${s.name}, and your account with us is now closed.
+
+If you have any questions, please reply to this email.
+
+${site.name}
+`,
+  };
+}

@@ -1,4 +1,5 @@
 import { site } from "@/config/site";
+import { topUpInstructions } from "@/lib/payments";
 import { allSpecialists } from "@/lib/specialistDirectory";
 import { getService } from "@/config/services";
 import { formatCredits, formatPounds } from "@/lib/billing";
@@ -70,7 +71,7 @@ ${missed.map((m) => `  ${dateOnly(m.createdAt)}  ${getService(m.serviceSlug)?.na
 `
     : ""
 }
-To top up, reply to this email or contact ${site.supplierApplicationsEmail}.
+${topUpInstructions(s)}
 
 ${site.name}
 `,

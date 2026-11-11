@@ -22,6 +22,9 @@ interface Bindings {
   /** The site address used in links in scheduled emails (see wrangler.jsonc). */
   LINK_ORIGIN?: string;
   SITE_URL?: string;
+  /** Bank details for top-ups, set in Cloudflare (not in this public repository). See lib/payments.ts. */
+  BANK_ACCOUNT_NUMBER?: string;
+  BANK_SORT_CODE?: string;
 }
 
 /**

@@ -185,6 +185,8 @@ export interface SpecialistOnboarding {
   /** What was checked for each of our checks, for our records (never shown to homeowners). */
   checkNotes: { company: string; guarantee: string; scheme: string; google: string };
   checkedBy: AdminRole;
+  /** The reference they use on bank transfers, for example VN-REALFLOORS. Unique. */
+  paymentReference?: string;
   approvedAt: string;
   approvedBy: AdminRole;
   updatedAt: string;

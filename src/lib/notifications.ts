@@ -5,6 +5,7 @@ import { vettingChecks } from "@/config/vetting";
 import { formatMonthYear } from "@/lib/format";
 import { numberWord, SAVED_PROGRESS_MONTHS } from "@/lib/consent";
 import { formatCredits, priceListFor } from "@/lib/billing";
+import { topUpInstructions } from "@/lib/payments";
 import type { Enquiry, InterestRegistration, SavedProgress, Specialist, SupplierApplication } from "@/lib/types";
 
 export interface Email {
@@ -200,7 +201,9 @@ This lead cost ${formatCredits(billing.priceCredits)} from your balance: ${billi
 Your balance is now ${formatCredits(billing.balanceCredits)}.${
         billing.balanceCredits < billing.priceCredits
           ? `
-Your balance won't cover another lead like this one. Top up to keep receiving leads: reply to this email or contact ${site.supplierApplicationsEmail}.`
+Your balance won't cover another lead like this one. Top up to keep receiving leads.
+
+${topUpInstructions(s)}`
           : ""
       }
 If this lead isn't genuine (for example, the details are wrong or it's a duplicate), reply within 7 days and we'll look into a refund to your balance.
@@ -225,7 +228,9 @@ export function missedLeadEmail(s: Specialist, serviceName: string, area: string
 
 A homeowner in the ${area} area has just asked to be put in touch about ${serviceName.toLowerCase()}. You cover that area, but your balance of ${formatCredits(balanceCredits)} didn't cover the lead price of ${formatCredits(priceCredits)}, so you weren't considered for it.
 
-Top up your credits to make sure you're considered for the next one. Larger top-ups come with bonus credits: reply to this email or contact ${site.supplierApplicationsEmail}.
+Top up your credits to make sure you're considered for the next one. Larger top-ups come with bonus credits.
+
+${topUpInstructions(s)}
 
 ${site.name}
 `,
@@ -241,7 +246,9 @@ export function listingPausedEmail(s: Specialist, balanceCredits: number, minimu
 
 Your balance is now ${formatCredits(balanceCredits)}, which is less than your cheapest lead, at ${formatCredits(minimumFeeCredits)}. Until you top up, you won't be considered for new leads.
 
-Your listing switches back on by itself as soon as your balance covers a lead. To top up, reply to this email or contact ${site.supplierApplicationsEmail}.
+Your listing switches back on by itself as soon as your balance covers a lead.
+
+${topUpInstructions(s)}
 
 ${site.name}
 `,

@@ -2,6 +2,7 @@ import { maxRadiusMiles } from "@/config/coverage";
 import { getService } from "@/config/services";
 import { launch } from "@/config/launch";
 import { addCredit } from "@/lib/billing";
+import { newPaymentReference, paymentReference, topUpInstructions } from "@/lib/payments";
 import { site } from "@/config/site";
 import { specialistTermsVersion, specialistTermsWording, termsInviteDays } from "@/config/suppliers";
 import { vettingStandard } from "@/config/vetting";
@@ -197,8 +198,10 @@ export async function buildSpecialist(
   if (place === undefined) return { ok: false, errors: { basePostcode: "We couldn't look that postcode up just now. Please try again in a minute." } };
 
   const now = new Date().toISOString();
-  const taken = new Set((await allSpecialists()).map((s) => s.slug));
+  const everyone = await allSpecialists();
+  const taken = new Set(everyone.map((s) => s.slug));
   const slug = existing?.slug ?? slugFor(d.companyName, taken);
+  const reference = existing ? paymentReference(existing) : newPaymentReference(slug, everyone.map(paymentReference));
   const checkNotes = {
     company: d.companyCheck,
     guarantee: d.guaranteeCheck,
@@ -234,6 +237,7 @@ export async function buildSpecialist(
           googleProfileUrl: d.googleProfileUrl,
           checkNotes,
           checkedBy: role,
+          paymentReference: reference,
           updatedAt: now,
           updatedBy: role,
         }
@@ -245,6 +249,7 @@ export async function buildSpecialist(
           googleProfileUrl: d.googleProfileUrl,
           checkNotes,
           checkedBy: role,
+          paymentReference: reference,
           approvedAt: now,
           approvedBy: role,
           updatedAt: now,
@@ -305,7 +310,7 @@ ${
 2. We'll add ${launch.foundingCredits} free founding credits to your account straight away. You don't need to top up yet.
 3. We start advertising to homeowners in ${launch.advertisingFrom}. Until then introductions will be few, and any you receive are free.`
         : `1. Accept the terms using the link above.
-2. Top up your credits. Reply to this email and we'll send you the payment details.
+2. Top up your credits by bank transfer. We'll send you our bank details and your own payment reference once you've accepted.
 3. Once your credits arrive, you'll start receiving introductions from homeowners in your area who ask to hear from a specialist.`
     }
 
@@ -377,8 +382,14 @@ ${
       foundingCredits > 0
         ? `As a founding specialist, we've added ${foundingCredits} free credits to your account. You don't need to top up yet.
 
-We start advertising to homeowners in ${launch.advertisingFrom}, so please don't expect many introductions before then. Because the site is already live, you may still receive some. Those are free: they're recorded on your account but not charged, and they don't use your free credits. We'll email you at least 14 days before introductions start to be charged.`
-        : "To start receiving introductions, top up your credits: reply to this email and we'll send you the payment details."
+We start advertising to homeowners in ${launch.advertisingFrom}, so please don't expect many introductions before then. Because the site is already live, you may still receive some. Those are free: they're recorded on your account but not charged, and they don't use your free credits. We'll email you at least 14 days before introductions start to be charged.
+
+When you'd like to add more credits, here's how:
+
+${topUpInstructions(s)}`
+        : `To start receiving introductions, top up your credits.
+
+${topUpInstructions(s)}`
     }
 
 ${site.name}

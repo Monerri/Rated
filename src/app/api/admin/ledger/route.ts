@@ -1,5 +1,6 @@
 import { adminRole } from "@/lib/admin";
 import { allSpecialists } from "@/lib/specialistDirectory";
+import { paymentReference } from "@/lib/payments";
 import { addCredit, cashValueOfBalance, recordPayout, recordTopUp } from "@/lib/billing";
 import { listingStatuses } from "@/lib/listing";
 import { recordStore } from "@/lib/records";
@@ -20,6 +21,7 @@ export async function GET(request: Request) {
         slug: s.slug,
         name: s.name,
         isDemo: s.isDemo,
+        paymentReference: s.isDemo ? null : paymentReference(s),
         balanceCredits: st.balanceCredits,
         on: st.on,
         reason: st.reason,

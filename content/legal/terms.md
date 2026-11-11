@@ -5,8 +5,6 @@ date: 2026-10-08
 updated: 2026-10-16
 ---
 
-**This is a draft and is being reviewed before launch.**
-
 These terms apply when you use the {{name}} website and our service. Please read them alongside our [privacy notice](/privacy).
 
 ## 1. About us

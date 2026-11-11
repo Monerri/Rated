@@ -45,6 +45,7 @@ export const footerNav: { heading: string; links: NavLink[] }[] = [
       { href: "/privacy", label: "Privacy" },
       { href: "/terms", label: "Terms" },
       { href: "/supplier-terms", label: "Specialist terms" },
+      { href: "/company-information", label: "Company information" },
     ],
   },
 ];

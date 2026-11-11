@@ -20,6 +20,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/privacy",
     "/terms",
     "/supplier-terms",
+    "/company-information",
   ].map((p) => ({ url: u(p) }));
 
   const catalogue = await getCatalogue();

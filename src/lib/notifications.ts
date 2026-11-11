@@ -5,6 +5,7 @@ import { vettingChecks } from "@/config/vetting";
 import { formatMonthYear } from "@/lib/format";
 import { numberWord, SAVED_PROGRESS_MONTHS } from "@/lib/consent";
 import { formatCredits, priceListFor } from "@/lib/billing";
+import { topUpInstructions } from "@/lib/payments";
 import type { Enquiry, InterestRegistration, SavedProgress, Specialist, SupplierApplication } from "@/lib/types";
 
 export interface Email {
@@ -61,6 +62,20 @@ function redirectDemo(email: Email): Email {
 }
 
 /**
+ * The company details UK law requires on business letters, which include
+ * emails (Trading Disclosures Regulations 2015, regulations 24 and 25).
+ * Added to the end of every email the site sends.
+ */
+export function companyFooter(): string {
+  const l = site.legal;
+  return `\n\n--\n${site.name} is a trading name of ${l.companyName}, registered in ${l.placeOfRegistration}, company no. ${l.companyNumber}. Registered office: ${l.registeredOffice}.`;
+}
+
+function withFooter(email: Email): Email {
+  return { ...email, text: `${email.text.trimEnd()}${companyFooter()}\n` };
+}
+
+/**
  * Uses Resend when RESEND_API_KEY is set (a Worker secret). Without it, emails
  * are logged only, but only where there's no database either (local
  * `next dev`): on Cloudflare a missing key is a failure, so no record ever
@@ -70,12 +85,12 @@ function redirectDemo(email: Email): Email {
 export const emailSender: EmailSender = {
   async send(email) {
     const { RESEND_API_KEY, EMAIL_FROM, DB, EMAIL_LOG_ONLY } = bindings();
-    if (EMAIL_LOG_ONLY === "1") return prototypeSender.send(redirectDemo(email));
+    if (EMAIL_LOG_ONLY === "1") return prototypeSender.send(withFooter(redirectDemo(email)));
     if (!RESEND_API_KEY && DB) throw new Error("RESEND_API_KEY is not set, so emails can't be sent.");
     const sender = RESEND_API_KEY
       ? resendSender(RESEND_API_KEY, EMAIL_FROM ?? `${site.name} <${site.contactEmail}>`)
       : prototypeSender;
-    await sender.send(redirectDemo(email));
+    await sender.send(withFooter(redirectDemo(email)));
   },
 };
 
@@ -186,7 +201,9 @@ This lead cost ${formatCredits(billing.priceCredits)} from your balance: ${billi
 Your balance is now ${formatCredits(billing.balanceCredits)}.${
         billing.balanceCredits < billing.priceCredits
           ? `
-Your balance won't cover another lead like this one. Top up to keep receiving leads: reply to this email or contact ${site.supplierApplicationsEmail}.`
+Your balance won't cover another lead like this one. Top up to keep receiving leads.
+
+${topUpInstructions(s)}`
           : ""
       }
 If this lead isn't genuine (for example, the details are wrong or it's a duplicate), reply within 7 days and we'll look into a refund to your balance.
@@ -211,7 +228,9 @@ export function missedLeadEmail(s: Specialist, serviceName: string, area: string
 
 A homeowner in the ${area} area has just asked to be put in touch about ${serviceName.toLowerCase()}. You cover that area, but your balance of ${formatCredits(balanceCredits)} didn't cover the lead price of ${formatCredits(priceCredits)}, so you weren't considered for it.
 
-Top up your credits to make sure you're considered for the next one. Larger top-ups come with bonus credits: reply to this email or contact ${site.supplierApplicationsEmail}.
+Top up your credits to make sure you're considered for the next one. Larger top-ups come with bonus credits.
+
+${topUpInstructions(s)}
 
 ${site.name}
 `,
@@ -227,7 +246,9 @@ export function listingPausedEmail(s: Specialist, balanceCredits: number, minimu
 
 Your balance is now ${formatCredits(balanceCredits)}, which is less than your cheapest lead, at ${formatCredits(minimumFeeCredits)}. Until you top up, you won't be considered for new leads.
 
-Your listing switches back on by itself as soon as your balance covers a lead. To top up, reply to this email or contact ${site.supplierApplicationsEmail}.
+Your listing switches back on by itself as soon as your balance covers a lead.
+
+${topUpInstructions(s)}
 
 ${site.name}
 `,

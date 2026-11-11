@@ -211,6 +211,11 @@ export function AdminOnboarding({ token, onChanged }: { token: string; onChanged
               <p className="text-muted">
                 {s.onboarding?.contactName}, {s.onboarding?.phone}, {s.enquiryEmail}
               </p>
+              {s.onboarding?.paymentReference && (
+                <p className="text-muted">
+                  Payment reference: <span className="font-mono text-ink">{s.onboarding.paymentReference}</span>
+                </p>
+              )}
               <div className="flex flex-wrap gap-2">
                 <button type="button" className={buttonClass("secondary", "sm")} onClick={() => setEditing({ kind: "edit", specialist: s })}>
                   Edit details and checks

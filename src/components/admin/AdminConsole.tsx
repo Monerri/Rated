@@ -35,6 +35,7 @@ interface Supplier {
   slug: string;
   name: string;
   isDemo: boolean;
+  paymentReference: string | null;
   balanceCredits: number;
   on: boolean;
   reason: "awaiting-terms" | "switched-off" | "low-balance" | null;
@@ -313,6 +314,7 @@ export function AdminConsole() {
                 <p className="font-mono">{s.isDemo ? "No charge" : money(s.balanceCredits)}</p>
               </div>
               <p className="font-semibold">{statusText(s)}</p>
+              {s.paymentReference && <p className="text-muted">Payment reference: <span className="font-mono text-ink">{s.paymentReference}</span></p>}
               {!s.isDemo && s.minimumFeeCredits !== null && (
                 <p className="text-muted">Cheapest lead: {money(s.minimumFeeCredits)}</p>
               )}
@@ -374,6 +376,13 @@ export function AdminConsole() {
               {owner && <option value="payout">Pay out unused credits as cash (we stopped introducing them)</option>}
             </select>
           </label>
+          {supplier && data.suppliers.find((s) => s.slug === supplier)?.paymentReference && (
+            <p className="rounded-[var(--radius-card)] border border-line bg-surface p-3 text-[15px]">
+              Their payment reference:{" "}
+              <span className="font-mono font-semibold">{data.suppliers.find((s) => s.slug === supplier)?.paymentReference}</span>
+              <span className="block text-sm text-muted">Match this with the reference on the bank transfer.</span>
+            </p>
+          )}
           {kind === "topup" && (
             <TextField
               label="Amount received (£)"

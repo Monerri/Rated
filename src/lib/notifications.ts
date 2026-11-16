@@ -419,7 +419,7 @@ The full terms are at ${site.url}/supplier-terms
     : `We'll send you our prices for the work you do when we review your application. You can read how introductions and prepaid credits work at ${site.url}/supplier-terms
 
 `;
-})()}If your business looks like a good fit, we'll be in touch to talk about next steps. We review every application, but we can't accept every business.
+})()}If your business passes our checks, we'll email you to say you're approved, and you can start receiving introductions straight away. The Specialist terms you accepted only apply if we accept your business. We review every application, but we can't accept every business.
 
 Reference: ${a.id}
 

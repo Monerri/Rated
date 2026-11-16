@@ -5,6 +5,7 @@ import { maxRadiusMiles } from "@/config/coverage";
 import { services as allServices } from "@/config/services";
 import { competentPersonSchemes } from "@/config/suppliers";
 import { getFunnel } from "@/funnels";
+import { launch } from "@/config/launch";
 import { buttonClass } from "@/components/ui/Button";
 import { FormError, TextField } from "@/components/ui/Form";
 import type { Specialist, SupplierApplication } from "@/lib/types";
@@ -164,6 +165,7 @@ export function SpecialistForm({
   mode,
   initial,
   applicationId,
+  termsAccepted = false,
   slug,
   onDone,
   onCancel,
@@ -172,6 +174,8 @@ export function SpecialistForm({
   mode: "approve" | "edit";
   initial: Values;
   applicationId?: string;
+  /** The application already accepts the current Specialist terms, so approving makes them live. */
+  termsAccepted?: boolean;
   slug?: string;
   onDone: (message: string) => void;
   onCancel: () => void;
@@ -213,7 +217,13 @@ export function SpecialistForm({
       body: JSON.stringify(payload),
     }).catch(() => null);
     setBusy(false);
-    const body = (await res?.json().catch(() => null)) as { errors?: Record<string, string>; error?: string; termsEmailSent?: boolean } | null;
+    const body = (await res?.json().catch(() => null)) as {
+      errors?: Record<string, string>;
+      error?: string;
+      activated?: boolean;
+      welcomeEmailSent?: boolean;
+      termsEmailSent?: boolean;
+    } | null;
     if (!res?.ok) {
       if (body?.errors) {
         setErrors(body.errors);
@@ -224,7 +234,9 @@ export function SpecialistForm({
     onDone(
       mode === "edit"
         ? `${v.companyName}'s details are saved.`
-        : body?.termsEmailSent
+        : body?.activated
+          ? `${v.companyName} is approved and live. They accepted the Specialist terms when they applied${launch.onboardingPhase && launch.foundingCredits > 0 ? `, and their ${launch.foundingCredits} founding credits have been added` : ""}. ${body.welcomeEmailSent ? "We've emailed them a welcome with how to top up." : "The welcome email couldn't be sent, so please let them know."}`
+          : body?.termsEmailSent
           ? `${v.companyName} is approved. We've emailed them a link to accept the Specialist terms. They'll be considered for leads once they accept and you've recorded their first top-up.`
           : `${v.companyName} is approved, but the terms email couldn't be sent. Use "Send the terms link again" on their entry.`,
     );
@@ -418,7 +430,7 @@ export function SpecialistForm({
       {formError && <FormError>{formError}</FormError>}
       <div className="flex flex-wrap gap-3">
         <button type="submit" disabled={busy} className={buttonClass("primary")}>
-          {busy ? "Saving…" : mode === "edit" ? "Save changes" : "Approve and send the terms"}
+          {busy ? "Saving…" : mode === "edit" ? "Save changes" : termsAccepted ? "Approve: they go live now" : "Approve and send the terms"}
         </button>
         <button type="button" onClick={onCancel} className={buttonClass("secondary")}>
           Cancel

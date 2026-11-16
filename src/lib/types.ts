@@ -366,6 +366,11 @@ export interface SupplierApplication {
   googleProfileUrl: string;
   description: string;
   anythingElse: string | null;
+  /**
+   * The Specialist terms, accepted on the application form, to take effect if
+   * we approve them. Missing on older applications.
+   */
+  termsAcceptance?: TermsAcceptance;
   /** The confirmation the applicant ticked, stored word for word. */
   declaration: { wordingId: string; wording: string; givenAt: string };
   source: SourceInfo;

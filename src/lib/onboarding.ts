@@ -14,7 +14,7 @@ import { normalisePostcode, postcodeArea } from "@/lib/postcode";
 import { recordStore } from "@/lib/records";
 import { EMAIL, normaliseCompanyNumber, normalisePhone, normaliseUrl, requestOrigin, str } from "@/lib/request";
 import { allSpecialists } from "@/lib/specialistDirectory";
-import type { AdminRole, Specialist, SupplierApplication, VettingCheckResult } from "@/lib/types";
+import type { AdminRole, Specialist, SupplierApplication, TermsAcceptance, VettingCheckResult } from "@/lib/types";
 
 /**
  * Approving specialists on /admin, and their acceptance of the Specialist
@@ -346,33 +346,48 @@ export async function acceptTerms(
   if (!acceptedByName) return { ok: false, status: 400, error: "Please enter your full name." };
 
   const acceptedAt = new Date().toISOString();
-  const updated: Specialist = {
-    ...s,
-    onboarding: {
-      ...s.onboarding!,
-      status: "active",
-      termsInvite: null,
-      terms: { version: specialistTermsVersion, wordingId: expected.wordingId, wording: expected.wording, acceptedByName, acceptedAt },
-    },
-  };
-  await recordStore.saveSpecialist(updated);
-  // The founding offer: free credits for specialists who join before we start advertising.
-  const founding = launch.onboardingPhase ? launch.foundingCredits : 0;
-  if (founding > 0) await addCredit(s.slug, "promo", founding, "Founding specialist credits");
-  await trySend(termsAcceptedEmail(updated, founding));
+  const terms = { version: specialistTermsVersion, wordingId: expected.wordingId, wording: expected.wording, acceptedByName, acceptedAt };
+  const { specialist: updated } = await activateSpecialist(s, terms, false);
   await trySend(termsAcceptedAlertEmail(updated));
   return { ok: true, specialist: updated };
 }
 
-function termsAcceptedEmail(s: Specialist, foundingCredits: number): Email {
+/**
+ * Makes a specialist active with their terms acceptance: either from the
+ * emailed link, or (`onApproval`) the acceptance they gave on their
+ * application, in which case this is their welcome email. Adds founding
+ * credits during the onboarding phase.
+ */
+export async function activateSpecialist(
+  s: Specialist,
+  terms: TermsAcceptance,
+  onApproval: boolean,
+): Promise<{ specialist: Specialist; emailed: boolean }> {
+  const updated: Specialist = { ...s, onboarding: { ...s.onboarding!, status: "active", termsInvite: null, terms } };
+  await recordStore.saveSpecialist(updated);
+  // The founding offer: free credits for specialists who join before we start advertising.
+  const founding = launch.onboardingPhase ? launch.foundingCredits : 0;
+  if (founding > 0) await addCredit(s.slug, "promo", founding, "Founding specialist credits");
+  const emailed = await trySend(termsAcceptedEmail(updated, founding, onApproval));
+  return { specialist: updated, emailed };
+}
+
+/** Whether an application's terms acceptance is for the current version, so approving it can make them active straight away. */
+export function currentTermsFromApplication(a: SupplierApplication | null): TermsAcceptance | null {
+  return a?.termsAcceptance?.version === specialistTermsVersion ? a.termsAcceptance : null;
+}
+
+function termsAcceptedEmail(s: Specialist, foundingCredits: number, onApproval: boolean): Email {
   const t = s.onboarding!.terms!;
   return {
     to: s.enquiryEmail,
     replyTo: site.supplierApplicationsEmail,
-    subject: `You've accepted the ${site.name} Specialist terms`,
+    subject: onApproval ? `You're approved: welcome to ${site.name}` : `You've accepted the ${site.name} Specialist terms`,
     text: `Hello ${s.onboarding!.contactName},
 
-Thanks. This confirms that ${t.acceptedByName} accepted our Specialist terms for ${s.name} on ${new Date(t.acceptedAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/London" })}. You agreed:
+${onApproval ? `Good news: ${s.name} has passed our checks for ${serviceList(s)}, and you're now set up to receive introductions.
+
+When you applied, ${t.acceptedByName} accepted our Specialist terms for ${s.name}, and they now apply. That was on ` : `Thanks. This confirms that ${t.acceptedByName} accepted our Specialist terms for ${s.name} on `}${new Date(t.acceptedAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/London" })}. You agreed:
 
 "${t.wording}"
 

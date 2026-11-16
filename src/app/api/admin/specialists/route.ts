@@ -1,5 +1,5 @@
 import { adminRole } from "@/lib/admin";
-import { buildSpecialist, linkOrigin, parseDraft, recordReview, sendTermsInvite } from "@/lib/onboarding";
+import { activateSpecialist, buildSpecialist, currentTermsFromApplication, linkOrigin, parseDraft, recordReview, sendTermsInvite } from "@/lib/onboarding";
 import { recordStore } from "@/lib/records";
 import { jsonError, readJson } from "@/lib/request";
 
@@ -30,6 +30,12 @@ export async function POST(request: Request) {
   if (!built.ok) return Response.json({ errors: built.errors }, { status: 400 });
   await recordStore.saveSpecialist(built.specialist);
   if (application) await recordReview(application, role, { approvedAs: built.specialist.slug });
+  // Terms accepted on the application: they're live straight away. Otherwise, email them a link.
+  const terms = currentTermsFromApplication(application);
+  if (terms) {
+    const { specialist, emailed } = await activateSpecialist(built.specialist, terms, true);
+    return Response.json({ specialist, activated: true, welcomeEmailSent: emailed }, { status: 201 });
+  }
   const { sent, specialist } = await sendTermsInvite(built.specialist, role, linkOrigin(request));
-  return Response.json({ specialist, termsEmailSent: sent }, { status: 201 });
+  return Response.json({ specialist, activated: false, termsEmailSent: sent }, { status: 201 });
 }

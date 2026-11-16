@@ -3,7 +3,7 @@ import { maxRadiusMiles, radiusOptions } from "@/config/coverage";
 import { lookupPostcode } from "@/lib/geo";
 import { normalisePostcode } from "@/lib/postcode";
 import { getService, services } from "@/config/services";
-import { competentPersonSchemes, supplierDeclarationWording } from "@/config/suppliers";
+import { applicationTermsWording, competentPersonSchemes, specialistTermsVersion, supplierDeclarationWording } from "@/config/suppliers";
 import { supplierAcknowledgementEmail, supplierApplicationInternalEmail, trySend } from "@/lib/notifications";
 import { recordStore } from "@/lib/records";
 import { getFunnel } from "@/funnels";
@@ -99,6 +99,11 @@ export async function POST(request: Request) {
   if (declaration.given !== true || declaration.wordingId !== expected.wordingId || declaration.wording !== expected.wording) {
     errors.declaration = "Please confirm the declaration.";
   }
+  const expectedTerms = applicationTermsWording();
+  const terms = (body.terms ?? {}) as Record<string, unknown>;
+  if (terms.given !== true || terms.wordingId !== expectedTerms.wordingId || terms.wording !== expectedTerms.wording) {
+    errors.terms = "Please tick the box to accept the Specialist terms.";
+  }
 
   if (Object.keys(errors).length > 0) {
     return Response.json({ error: "Please check the highlighted fields.", fields: errors }, { status: 400 });
@@ -130,6 +135,7 @@ export async function POST(request: Request) {
     description: description!,
     anythingElse,
     declaration: { ...expected, givenAt: now },
+    termsAcceptance: { version: specialistTermsVersion, ...expectedTerms, acceptedByName: contactName!, acceptedAt: now },
     source: parseSource(body.source),
     createdAt: now,
   };

@@ -1,14 +1,14 @@
 ---
 title: Specialist terms
 description: The terms for home-improvement specialists who receive introductions through {{name}}, including prepaid credit.
-date: 2026-11-10
+date: 2026-11-16
 ---
 
 These terms apply to businesses ("you") that receive introductions to homeowners through {{name}} ("we", "us"). Our [terms of use](/terms) for homeowners and our [privacy notice](/privacy) explain how the service works from the homeowner's side.
 
 ## 1. Joining
 
-We only work with registered companies that pass our [current checks](/how-we-check). Once you pass, we email you a link to accept these terms online, and we keep a record of who accepted them, when, and which version. We don't send introductions until they've been accepted. We reconfirm your checks at least every 12 months. You must tell us promptly if anything changes that affects them, for example your insurance-backed guarantee provider or your scheme registration.
+We only work with registered companies that pass our [current checks](/how-we-check). You accept these terms when you apply, by ticking a box on our application form, and they apply from the day we tell you we've accepted your business. If you didn't accept them when you applied, we email you a link to accept them online instead. Either way, we keep a record of who accepted them, when, and which version, and we don't send introductions until they've been accepted. We reconfirm your checks at least every 12 months. You must tell us promptly if anything changes that affects them, for example your insurance-backed guarantee provider or your scheme registration.
 
 ## 2. How introductions work
 

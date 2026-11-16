@@ -17,14 +17,17 @@ export const metadata: Metadata = {
 };
 
 const process = [
-  { title: "Tell us about your business", body: "Complete the form below. It takes about five minutes." },
+  {
+    title: "Tell us about your business",
+    body: "Complete the form below and accept our specialist terms. It takes about five minutes.",
+  },
   {
     title: "We review it against our requirements",
     body: `We check the details you give us against our ${vettingChecks.length} current checks, using public records where we can.`,
   },
   {
-    title: "If you pass, you accept our terms online",
-    body: "We email you a link to read and accept our specialist terms, which explain how introductions and prepaid credits work, including our prices. Nothing is agreed until you accept.",
+    title: "If you pass, you're live",
+    body: "We email you to say you're approved, and you can receive introductions straight away. The terms only apply if we accept your business.",
   },
 ];
 
@@ -78,7 +81,7 @@ export default function ForSuppliersPage() {
               </h2>
               <p className="text-lg text-muted">
                 Specialists we approve before we start advertising to homeowners get {launch.foundingCredits} free credits,
-                worth £{launch.foundingCredits} of introductions, as soon as they accept our terms.
+                worth £{launch.foundingCredits} of introductions, as soon as they&apos;re approved.
               </p>
             </div>
             <div className="grid content-start gap-3 rounded-[var(--radius-panel)] border border-line bg-surface p-5 text-[15px] sm:p-6">

@@ -1,5 +1,6 @@
 "use client";
 
+import { specialistTermsVersion } from "@/config/suppliers";
 import { useCallback, useEffect, useState } from "react";
 import { getService } from "@/config/services";
 import { buttonClass } from "@/components/ui/Button";
@@ -110,6 +111,7 @@ export function AdminOnboarding({ token, owner, onChanged }: { token: string; ow
                 : blankValues()
           }
           applicationId={editing.kind === "application" ? editing.application.id : undefined}
+          termsAccepted={editing.kind === "application" && editing.application.termsAcceptance?.version === specialistTermsVersion}
           slug={editing.kind === "edit" ? editing.specialist.slug : undefined}
           onDone={finished}
           onCancel={() => setEditing(null)}
@@ -137,8 +139,9 @@ export function AdminOnboarding({ token, owner, onChanged }: { token: string; ow
           Applications to review ({toReview.length})
         </h2>
         <p className="text-[15px] text-muted">
-          Check each application, then approve it. Approving emails them a link to accept the Specialist terms. They&apos;re only
-          considered for leads once they&apos;ve accepted and you&apos;ve recorded their first top-up.
+          Check each application, then approve it. Applicants accept the Specialist terms when they apply, so approving makes
+          them live straight away and emails them a welcome. Older applications without that get a link to accept the terms
+          first.
         </p>
         {toReview.length === 0 && <p className="text-muted">Nothing to review.</p>}
         <ul className="grid gap-3">
@@ -305,6 +308,12 @@ function ApplicationDetails({ a }: { a: SupplierApplication }) {
     ["About", a.description],
     ["Anything else", a.anythingElse ?? "Nothing"],
     ["Came from", a.source?.utm?.source ? `${a.source.utm.source}${a.source.utm.medium ? ` (${a.source.utm.medium})` : ""}` : (a.source?.referrer ?? "Not known")],
+    [
+      "Specialist terms",
+      a.termsAcceptance
+        ? `Accepted when applying, by ${a.termsAcceptance.acceptedByName} (version ${a.termsAcceptance.version})${a.termsAcceptance.version === specialistTermsVersion ? "" : ". The terms have changed since, so approving sends a link to accept the current ones"}`
+        : "Not accepted when applying (older form). Approving sends a link to accept them",
+    ],
     ["Reference", a.id],
   ];
   return (

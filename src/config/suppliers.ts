@@ -52,12 +52,28 @@ export function supplierDeclarationWording() {
  * content/legal/supplier-terms.md. Change both together when the terms change,
  * so every acceptance records which version it was.
  */
-export const specialistTermsVersion = "2026-11-10";
+export const specialistTermsVersion = "2026-11-16";
 
 /** How long a "please accept our terms" link stays valid. */
 export const termsInviteDays = 30;
 
-/** What a specialist ticks to accept the terms, stored word for word with their acceptance. */
+function termsDate(): string {
+  return new Date(`${specialistTermsVersion}T00:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
+}
+
+/**
+ * What an applicant ticks on the For suppliers form to accept the terms in
+ * advance. They only take effect if we approve the business, which then goes
+ * live straight away. Stored word for word with the application.
+ */
+export function applicationTermsWording() {
+  return {
+    wordingId: `specialist_terms_on_application.${specialistTermsVersion}`,
+    wording: `I'm authorised to act for this business. If you accept it, I agree on its behalf to the ${site.name} Specialist terms dated ${termsDate()}, including how prepaid credits, bonus credits and refunds work.`,
+  };
+}
+
+/** What a specialist ticks to accept the terms from an emailed link, stored word for word with their acceptance. */
 export function specialistTermsWording(companyName: string) {
   return {
     wordingId: `specialist_terms.${specialistTermsVersion}`,

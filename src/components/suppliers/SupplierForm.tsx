@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import type { Service } from "@/lib/types";
 import { maxRadiusMiles, radiusOptions } from "@/config/coverage";
-import { competentPersonSchemes, supplierDeclarationWording } from "@/config/suppliers";
+import { applicationTermsWording, competentPersonSchemes, supplierDeclarationWording } from "@/config/suppliers";
 import { getSourceInfo } from "@/lib/source";
 import { buttonClass } from "@/components/ui/Button";
 import { getFunnel } from "@/funnels";
@@ -13,6 +13,8 @@ type FieldErrors = Record<string, string>;
 
 export function SupplierForm({ services }: { services: Pick<Service, "slug" | "name">[] }) {
   const declaration = supplierDeclarationWording();
+  const termsWording = applicationTermsWording();
+  const [termsAgreed, setTermsAgreed] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [agreed, setAgreed] = useState(false);
@@ -54,6 +56,7 @@ export function SupplierForm({ services }: { services: Pick<Service, "slug" | "n
         description: get("description"),
         anythingElse: get("anythingElse"),
         declaration: { ...declaration, given: agreed },
+        terms: { ...termsWording, given: termsAgreed },
         source: getSourceInfo(),
       }),
     }).catch(() => null);
@@ -85,7 +88,7 @@ export function SupplierForm({ services }: { services: Pick<Service, "slug" | "n
         </h3>
         <p className="text-muted">
           We&apos;ll review your business against our current requirements. We&apos;ve emailed you a copy for your
-          records. If your business looks like a good fit, we&apos;ll be in touch about next steps.
+          records. If your business passes our checks, we&apos;ll email you to say you&apos;re approved, and you can start receiving introductions straight away.
         </p>
       </div>
     );
@@ -242,6 +245,11 @@ export function SupplierForm({ services }: { services: Pick<Service, "slug" | "n
       <div className="grid gap-4">
         <ConsentCheckbox name="declaration" wording={declaration.wording} checked={agreed} onChange={setAgreed} />
         {errors.declaration && <p className="text-sm font-semibold">{errors.declaration}</p>}
+        <ConsentCheckbox name="terms" wording={termsWording.wording} checked={termsAgreed} onChange={setTermsAgreed} />
+        <a href="/supplier-terms" target="_blank" className="-mt-2 ml-9 text-[15px] font-semibold text-blue underline">
+          Read the Specialist terms (opens in a new tab)
+        </a>
+        {errors.terms && <p className="text-sm font-semibold">{errors.terms}</p>}
         <p className="text-sm text-muted">
           Submitting doesn&apos;t guarantee you&apos;ll receive introductions. We review every business against our current
           requirements.

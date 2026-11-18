@@ -98,10 +98,10 @@ export default function HowItWorksPage() {
             <li>
               Each one has passed{" "}
               <Link href="/how-we-check" className="text-blue">
-                our four checks
+                our required checks
               </Link>
-              , including registration with the right trade scheme where the work needs one, such as Gas Safe for
-              gas work, which the law requires.
+              , including any registration the law requires for the work, such as Gas Safe for gas work. Those
+              who&apos;ve passed every one of our checks show the Vetted North Verified badge.
             </li>
             <li>They cover your postcode and do the kind of work you need.</li>
             <li>Their checks have been confirmed within the last 12 months.</li>

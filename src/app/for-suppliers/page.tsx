@@ -3,7 +3,9 @@ import Link from "next/link";
 import { photos } from "@/config/photos";
 import { Photo } from "@/components/ui/Photo";
 import { services } from "@/config/services";
-import { supplierCriteria } from "@/config/suppliers";
+import { badgeCriteria, supplierCriteria } from "@/config/suppliers";
+import { verifiedBadge } from "@/config/vetting";
+import { VerifiedBadge } from "@/components/checks/VerifiedBadge";
 import { primaryRegion } from "@/config/regions";
 import { vettingChecks } from "@/config/vetting";
 import { Eyebrow } from "@/components/ui/Section";
@@ -134,6 +136,26 @@ export default function ForSuppliersPage() {
             </li>
           ))}
         </ul>
+        <div className="grid gap-4 rounded-[var(--radius-panel)] border border-[var(--color-honey)] bg-surface p-5 sm:p-7">
+          <VerifiedBadge />
+          <h3 className="text-[22px] font-bold leading-tight">Stand out with the {verifiedBadge.name} badge</h3>
+          <p className="text-[15px] text-muted">
+            Homeowners see the badge, and every check behind it, when we introduce you. You don&apos;t need it to join,
+            and it doesn&apos;t change how many introductions you receive or what they cost. To show it, you also need:
+          </p>
+          <ul className="grid gap-3 sm:grid-cols-3">
+            {badgeCriteria.map((c) => (
+              <li key={c.title} className="grid content-start gap-1">
+                <p className="font-semibold">{c.title}</p>
+                <p className="text-[15px] text-muted">{c.detail}</p>
+              </li>
+            ))}
+          </ul>
+          <p className="text-[15px] text-muted">
+            If a check doesn&apos;t apply to your trade, for example a trade scheme for design work, we mark it as not
+            required and you can still show the badge.
+          </p>
+        </div>
         <p className="max-w-2xl text-[15px] text-muted">
           Meeting these requirements doesn&apos;t guarantee a place. We also consider the services and areas we need
           to cover.{" "}

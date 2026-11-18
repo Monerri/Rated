@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { vettingChecks, vettingStandard } from "@/config/vetting";
+import { requiredChecks, verifiedBadge, verifiedChecks, vettingChecks, vettingStandard } from "@/config/vetting";
+import { VerifiedBadge } from "@/components/checks/VerifiedBadge";
 import { demoSpecialist } from "@/data/specialists";
 import { formatMonthYear } from "@/lib/format";
 import { EvidenceCard } from "@/components/home/EvidenceCard";
@@ -11,7 +12,7 @@ import { ArrowIcon, TickIcon } from "@/components/ui/Icon";
 
 export const metadata: Metadata = {
   title: "How we check specialists",
-  description: "The four checks every specialist passes before we recommend them, and how we keep them up to date.",
+  description: "The checks every specialist passes before we recommend them, what the Vetted North Verified badge means, and how we keep checks up to date.",
 };
 
 const tips = [
@@ -21,6 +22,41 @@ const tips = [
   "Read a few recent reviews, not just the overall rating.",
 ];
 
+function CheckList({ checks, start }: { checks: typeof vettingChecks; start: number }) {
+  return (
+    <ol className="grid gap-6">
+      {checks.map((c, i) => (
+        <li key={c.id} className="grid gap-4 rounded-[var(--radius-panel)] border border-line bg-surface p-5 sm:grid-cols-[48px_1fr] sm:p-7">
+          <span className="grid size-10 place-items-center rounded-full bg-green text-surface" aria-hidden="true">
+            <TickIcon className="size-4" />
+          </span>
+          <div className="grid gap-4">
+            <h3 className="text-2xl font-bold">
+              <span className="sr-only">Check {start + i}: </span>
+              {c.title}
+            </h3>
+            <p className="text-lg">{c.summary}</p>
+            <dl className="grid gap-4">
+              <div className="grid gap-1">
+                <dt className="font-display font-bold">What we check</dt>
+                <dd className="text-muted">{c.whatWeCheck}</dd>
+              </div>
+              <div className="grid gap-1">
+                <dt className="font-display font-bold">Why it matters</dt>
+                <dd className="text-muted">{c.whyItMatters}</dd>
+              </div>
+              <div className="grid gap-1 rounded-[var(--radius-card)] bg-ground p-4">
+                <dt className="font-display font-bold">Worth knowing</dt>
+                <dd className="text-muted">{c.worthKnowing}</dd>
+              </div>
+            </dl>
+          </div>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
 export default function HowWeCheckPage() {
   return (
     <>
@@ -29,11 +65,12 @@ export default function HowWeCheckPage() {
           <div className="grid max-w-2xl gap-5">
             <Eyebrow>How we check specialists</Eyebrow>
             <h1 id="hwc-heading" className="text-[36px] font-extrabold leading-[1.08] tracking-[-0.02em] sm:text-5xl">
-              Four checks before we recommend anyone
+              Checked before we recommend anyone
             </h1>
             <p className="text-lg text-muted sm:text-xl">
-              Every specialist we recommend has passed the same four checks. We show you the evidence and the date the
-              checks were last confirmed, so you can see for yourself.
+              Every specialist we recommend has passed our required checks. Those who pass every one of our checks show
+              the {verifiedBadge.name} badge. We show you the evidence and the date the checks were last confirmed, so you
+              can see for yourself.
             </p>
             <p className="font-mono text-sm text-muted">
               Our standard was last reviewed: {formatMonthYear(vettingStandard.lastReviewed)}
@@ -46,37 +83,29 @@ export default function HowWeCheckPage() {
         </div>
       </section>
 
-      <section aria-label="The four checks" className="mx-auto grid max-w-4xl gap-6 px-4 py-14 sm:px-6 md:py-20">
-        <ol className="grid gap-6">
-          {vettingChecks.map((c, i) => (
-            <li key={c.id} className="grid gap-4 rounded-[var(--radius-panel)] border border-line bg-surface p-5 sm:grid-cols-[48px_1fr] sm:p-7">
-              <span className="grid size-10 place-items-center rounded-full bg-green text-surface" aria-hidden="true">
-                <TickIcon className="size-4" />
-              </span>
-              <div className="grid gap-4">
-                <h2 className="text-2xl font-bold">
-                  <span className="sr-only">Check {i + 1}: </span>
-                  {c.title}
-                </h2>
-                <p className="text-lg">{c.summary}</p>
-                <dl className="grid gap-4">
-                  <div className="grid gap-1">
-                    <dt className="font-display font-bold">What we check</dt>
-                    <dd className="text-muted">{c.whatWeCheck}</dd>
-                  </div>
-                  <div className="grid gap-1">
-                    <dt className="font-display font-bold">Why it matters</dt>
-                    <dd className="text-muted">{c.whyItMatters}</dd>
-                  </div>
-                  <div className="grid gap-1 rounded-[var(--radius-card)] bg-ground p-4">
-                    <dt className="font-display font-bold">Worth knowing</dt>
-                    <dd className="text-muted">{c.worthKnowing}</dd>
-                  </div>
-                </dl>
-              </div>
-            </li>
-          ))}
-        </ol>
+      <section aria-labelledby="required-heading" className="mx-auto grid max-w-4xl gap-6 px-4 pt-14 sm:px-6 md:pt-20">
+        <div className="grid gap-2">
+          <h2 id="required-heading" className="text-[28px] font-bold leading-tight">
+            Required for every specialist we recommend
+          </h2>
+          <p className="text-lg text-muted">We don&apos;t recommend anyone who hasn&apos;t passed these.</p>
+        </div>
+        <CheckList checks={requiredChecks} start={1} />
+      </section>
+
+      <section aria-labelledby="verified-heading" className="mx-auto grid max-w-4xl gap-6 px-4 py-14 sm:px-6 md:py-20">
+        <div className="grid gap-3">
+          <VerifiedBadge />
+          <h2 id="verified-heading" className="text-[28px] font-bold leading-tight">
+            Needed for the {verifiedBadge.name} badge
+          </h2>
+          <p className="text-lg text-muted">
+            Specialists show the badge once they&apos;ve also passed these. Where a check doesn&apos;t apply to their work,
+            we say so and why. The badge can&apos;t be bought: it&apos;s the same price for everyone, and it doesn&apos;t
+            change who we introduce.
+          </p>
+        </div>
+        <CheckList checks={verifiedChecks} start={requiredChecks.length + 1} />
       </section>
 
       <section id="trade-schemes" aria-labelledby="schemes-heading" className="mx-auto grid max-w-6xl scroll-mt-20 gap-5 px-4 pb-14 sm:px-6 md:pb-20">
@@ -103,7 +132,10 @@ export default function HowWeCheckPage() {
               We reconfirm every specialist&apos;s checks at least every {vettingStandard.checkValidityMonths} months. When we
               introduce them, we show <span className="font-mono text-base">Checks last confirmed: [date]</span>.
             </li>
-            <li>If a specialist&apos;s checks lapse, or they no longer meet one of them, we stop recommending them.</li>
+            <li>
+              If a specialist&apos;s checks lapse, or they no longer meet a required check, we stop recommending them. If they
+              no longer meet a badge check, they lose the badge.
+            </li>
             <li>We review the standard itself and may add checks over time. When we do, we&apos;ll update this page.</li>
           </ul>
         </div>

@@ -1,14 +1,14 @@
 ---
 title: Specialist terms
 description: The terms for home-improvement specialists who receive introductions through {{name}}, including prepaid credit.
-date: 2026-11-16
+date: 2026-11-18
 ---
 
 These terms apply to businesses ("you") that receive introductions to homeowners through {{name}} ("we", "us"). Our [terms of use](/terms) for homeowners and our [privacy notice](/privacy) explain how the service works from the homeowner's side.
 
 ## 1. Joining
 
-We only work with registered companies that pass our [current checks](/how-we-check). You accept these terms when you apply, by ticking a box on our application form, and they apply from the day we tell you we've accepted your business. If you didn't accept them when you applied, we email you a link to accept them online instead. Either way, we keep a record of who accepted them, when, and which version, and we don't send introductions until they've been accepted. We reconfirm your checks at least every 12 months. You must tell us promptly if anything changes that affects them, for example your insurance-backed guarantee provider or your scheme registration.
+We work with limited companies and sole traders that pass our [required checks](/how-we-check). For sole traders, that includes checking the owner's identity and address. Specialists who also pass our additional checks show the {{name}} Verified badge when we introduce them. The badge is shown to homeowners for information only: it doesn't affect which specialists receive an introduction, it isn't for sale, and we may remove it if you stop meeting a check. You accept these terms when you apply, by ticking a box on our application form, and they apply from the day we tell you we've accepted your business. If you didn't accept them when you applied, we email you a link to accept them online instead. Either way, we keep a record of who accepted them, when, and which version, and we don't send introductions until they've been accepted. We reconfirm your checks at least every 12 months. You must tell us promptly if anything changes that affects them, for example your insurance-backed guarantee provider or your scheme registration.
 
 ## 2. How introductions work
 

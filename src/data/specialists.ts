@@ -12,6 +12,8 @@ const CONFIRMED = "2026-09-01";
 function checks(companyNo: string, rating: number, reviews: number, scheme: string | null): VettingCheckResult[] {
   return [
     { id: "registered_company", passed: true, evidence: `Companies House no. ${companyNo}` },
+    { id: "legal_registration", passed: false, evidence: "", notApplicableReason: "Not applicable: no gas or refrigerant work" },
+    { id: "identity", passed: true, evidence: "Contact is a listed director" },
     { id: "insurance_backed_guarantee", passed: true, evidence: "Provider: Example IBG" },
     scheme
       ? { id: "competent_person_scheme", passed: true, evidence: `Scheme: ${scheme}` }

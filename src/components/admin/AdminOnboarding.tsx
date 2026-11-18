@@ -1,5 +1,7 @@
 "use client";
 
+import { verifiedBadge, vettingStandard } from "@/config/vetting";
+import { isCurrentlyVetted, isVerified, missingForBadge } from "@/lib/vetting";
 import { specialistTermsVersion } from "@/config/suppliers";
 import { useCallback, useEffect, useState } from "react";
 import { getService } from "@/config/services";
@@ -30,6 +32,20 @@ function servicesOf(slugs: string[]): string {
 }
 
 /** Onboarding status in words and a symbol, never colour alone. */
+/** Where a specialist stands on our checks, in words and a symbol. */
+function tierText(s: Specialist): string {
+  if (!isCurrentlyVetted(s)) {
+    const why = [
+      new Date(s.checksLastConfirmed) < new Date(Date.now() - 365 * 24 * 3600 * 1000) ? "checks over a year old" : null,
+      s.googleReviewCount < vettingStandard.minimumGoogleReviews ? `fewer than ${vettingStandard.minimumGoogleReviews} Google reviews` : null,
+      !(s.googleRating > vettingStandard.minimumGoogleRating) ? `rating not above ${vettingStandard.minimumGoogleRating}` : null,
+    ].filter(Boolean);
+    return `⚠ Not currently recommended${why.length ? `: ${why.join(", ")}` : ": a required check isn't passed"}. Edit their checks to fix this.`;
+  }
+  if (isVerified(s)) return `★ ${verifiedBadge.name}`;
+  return `✓ Checked, no badge yet. Still needed: ${missingForBadge(s).join(", ")}.`;
+}
+
 function onboardingText(s: Specialist): string {
   const o = s.onboarding!;
   if (o.status === "active") return `✓ Terms accepted ${date(o.terms!.acceptedAt)} by ${o.terms!.acceptedByName}`;
@@ -124,6 +140,8 @@ export function AdminOnboarding({ token, owner, onChanged }: { token: string; ow
   const removed = stored.filter((s) => s.onboarding?.status === "removed");
   const toReview = applications.filter((a) => a.status === "received" || a.status === "under_review");
   const done = applications.filter((a) => a.status === "accepted" || a.status === "declined");
+  // Trades people asked for that we don't cover yet, newest first.
+  const requestedTrades = applications.filter((a) => a.otherServices).map((a) => ({ trade: a.otherServices!, who: a.companyName, at: a.createdAt }));
 
   return (
     <div className="grid min-w-0 gap-10">
@@ -198,6 +216,24 @@ export function AdminOnboarding({ token, owner, onChanged }: { token: string; ow
         )}
       </section>
 
+      {requestedTrades.length > 0 && (
+        <section aria-labelledby="requested-trades" className="grid min-w-0 gap-3">
+          <h2 id="requested-trades" className="text-2xl font-bold">
+            Trades people have asked for ({requestedTrades.length})
+          </h2>
+          <p className="text-[15px] text-muted">
+            What applicants said they do beyond our current services. Useful when deciding which category to add next.
+          </p>
+          <ul className="grid gap-2 text-[15px]">
+            {requestedTrades.map((t, i) => (
+              <li key={i} className="rounded-[var(--radius-card)] border border-line bg-surface p-3">
+                <span className="font-semibold">{t.trade}</span> · {t.who} · {date(t.at)}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       <section aria-labelledby="onboarded" className="grid min-w-0 gap-3">
         <h2 id="onboarded" className="text-2xl font-bold">
           Real specialists
@@ -211,6 +247,7 @@ export function AdminOnboarding({ token, owner, onChanged }: { token: string; ow
             <li key={s.slug} className="grid min-w-0 gap-2 rounded-[var(--radius-card)] border border-line bg-surface p-4 text-[15px]">
               <p className="font-semibold">{s.name}</p>
               <p>{onboardingText(s)}</p>
+              <p className="font-semibold">{tierText(s)}</p>
               <p className="text-muted">
                 {servicesOf(s.services)} · {s.coverage ? `${s.coverage.radiusMiles} miles from ${s.coverage.basePostcode}` : ""} · checks
                 done {date(s.checksLastConfirmed)} by {s.onboarding?.checkedBy}
@@ -301,9 +338,9 @@ function ApplicationDetails({ a }: { a: SupplierApplication }) {
     ["Work taken on", a.leadTypes ? Object.entries(a.leadTypes).map(([s, k]) => `${getService(s)?.name ?? s}: ${k.join(", ")}`).join("; ") || "Everything" : "Everything"],
     ["Also does", a.otherServices ?? "Nothing else"],
     ["Where they work", a.basePostcode ? `Within ${a.radiusMiles} miles of ${a.basePostcode}${a.excludedPostcodes ? `, not ${a.excludedPostcodes}` : ""}` : a.areasCovered.join(", ")],
-    ["Companies House", a.companiesHouseNumber],
+    ["Business", a.businessType === "sole_trader" ? "Sole trader: check identity and address" : `Limited company, Companies House ${a.companiesHouseNumber}`],
     ["Trade scheme", a.competentPersonScheme],
-    ["Guarantee provider", a.insuranceBackedGuaranteeProvider],
+    ["Guarantee provider", a.insuranceBackedGuaranteeProvider || "None given"],
     ["Google profile", a.googleProfileUrl],
     ["About", a.description],
     ["Anything else", a.anythingElse ?? "Nothing"],

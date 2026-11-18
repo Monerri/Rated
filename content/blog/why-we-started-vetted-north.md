@@ -18,12 +18,13 @@ That's it. The number of specialists you choose, introduced openly, so you know 
 
 ## How we check the specialists we introduce
 
-Every specialist we recommend has passed four checks:
+Every specialist we recommend has passed our required checks:
 
-1. They're a properly registered company.
-2. They offer an insurance-backed guarantee for qualifying work.
-3. Where the work needs it, they're registered with an appropriate Competent Person Scheme.
-4. They have a Google rating above four stars.
+1. They're a properly registered business: a company on Companies House, or a sole trader whose identity and address we've checked.
+2. Where the law requires it, they're registered for the work, such as Gas Safe for gas.
+3. They have a Google rating above four stars, from at least ten reviews.
+
+Specialists who also have their identity confirmed, an insurance-backed guarantee and the right trade scheme registration, where the work needs them, show the {{name}} Verified badge.
 
 We show you the evidence for each specialist we introduce, along with the date the checks were last confirmed. You can read more on [how we check specialists](/how-we-check).
 

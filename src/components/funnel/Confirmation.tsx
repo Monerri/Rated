@@ -1,5 +1,7 @@
 "use client";
 
+import { verifiedBadge } from "@/config/vetting";
+import Link from "next/link";
 import { useState } from "react";
 import { site } from "@/config/site";
 import { notifyServiceAvailableWording, numberWord } from "@/lib/consent";
@@ -56,6 +58,13 @@ export function Confirmation({
             <EvidenceCard key={s.slug} specialist={s} />
           ))}
         </div>
+        <p className="text-[15px] text-muted">
+          Every specialist we introduce has passed our required checks. Those showing the {verifiedBadge.name} badge have
+          passed every one of our checks.{" "}
+          <Link href="/how-we-check" className="text-blue underline">
+            What we check
+          </Link>
+        </p>
         {list.some((s) => s.isDemo) && (
           <p className="text-[13px] text-muted">
             This is a prototype. The {many ? "specialists shown are" : "specialist shown is"} fictional demonstration data.

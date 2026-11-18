@@ -3,7 +3,8 @@ import Link from "next/link";
 import { Section } from "@/components/ui/Section";
 import { ButtonLink } from "@/components/ui/Button";
 import { ArrowIcon, TickIcon } from "@/components/ui/Icon";
-import { vettingChecks } from "@/config/vetting";
+import { requiredChecks } from "@/config/vetting";
+import { VerifiedBadge } from "@/components/checks/VerifiedBadge";
 import { getArticles } from "@/lib/content";
 import { ArticleCard } from "@/components/content/ArticleCard";
 import { primaryRegion } from "@/config/regions";
@@ -51,13 +52,13 @@ export function ChecksSection() {
     <Section
       id="checks"
       eyebrow="How we check specialists"
-      title="Four checks before we recommend anyone"
-      intro="Every specialist we introduce has passed these checks. We review them regularly and show you when they were last confirmed."
+      title="Checked before we recommend anyone"
+      intro="Every specialist we introduce has passed our required checks. Those who pass every check show the Vetted North Verified badge. We show you the evidence and when it was last confirmed."
     >
       <div className={photos.homeChecks.src ? "grid items-center gap-8 lg:grid-cols-[0.9fr_1.1fr]" : "grid"}>
         <Photo photo={photos.homeChecks} />
         <ul className={`grid gap-4 sm:grid-cols-2 ${photos.homeChecks.src ? "" : "lg:grid-cols-4"}`}>
-          {vettingChecks.map((c) => (
+          {requiredChecks.map((c) => (
             <li key={c.id} className="grid content-start gap-3 rounded-[var(--radius-card)] border border-line bg-surface p-5">
               <span className="grid size-7 place-items-center rounded-full bg-green text-surface" aria-hidden="true">
                 <TickIcon className="size-3.5" />
@@ -66,6 +67,14 @@ export function ChecksSection() {
               <p className="text-[15px] text-muted">{c.summary}</p>
             </li>
           ))}
+          <li className="grid content-start gap-3 rounded-[var(--radius-card)] border border-[var(--color-honey)] bg-surface p-5">
+            <VerifiedBadge size="sm" />
+            <h3 className="text-lg font-semibold">The highest standard</h3>
+            <p className="text-[15px] text-muted">
+              Specialists with the badge have also had their identity confirmed, and offer an insurance-backed guarantee and
+              trade scheme registration where the work needs them.
+            </p>
+          </li>
         </ul>
       </div>
       <p className="max-w-2xl text-[15px] text-muted">

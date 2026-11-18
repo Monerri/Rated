@@ -6,9 +6,12 @@ import { services as allServices } from "@/config/services";
 import { competentPersonSchemes } from "@/config/suppliers";
 import { getFunnel } from "@/funnels";
 import { launch } from "@/config/launch";
+import { verifiedBadge } from "@/config/vetting";
 import { buttonClass } from "@/components/ui/Button";
 import { FormError, TextField } from "@/components/ui/Form";
 import type { Specialist, SupplierApplication } from "@/lib/types";
+
+type CheckChoice = "passed" | "not_passed" | "not_required";
 
 /** The form's values, as typed. Sent to the server, which checks them again. */
 interface Values {
@@ -26,11 +29,20 @@ interface Values {
   about: string;
   googleRating: string;
   googleReviewCount: string;
+  businessType: "limited" | "sole_trader";
   companiesHouseNumber: string;
-  companyCheck: string;
+  businessCheck: string;
+  legalNeeded: boolean;
+  legalScheme: string;
+  legalRegistration: string;
+  legalCheck: string;
+  identityStatus: "passed" | "not_passed";
+  identityCheck: string;
+  guaranteeStatus: CheckChoice;
   guaranteeProvider: string;
   guaranteeCheck: string;
-  schemeNeeded: boolean;
+  guaranteeReason: string;
+  schemeStatus: CheckChoice;
   schemeName: string;
   schemeRegistration: string;
   schemeCheck: string;
@@ -40,14 +52,17 @@ interface Values {
 }
 
 const today = () => new Date().toISOString().slice(0, 10);
+const LEGAL_SCHEMES = ["gas-safe", "f-gas"];
 
 function allKinds(slug: string): string[] | null {
   return getFunnel(slug)?.leadTypes?.options.map((o) => o.value) ?? null;
 }
 
 export function valuesFromApplication(a: SupplierApplication): Values {
-  const scheme = competentPersonSchemes.find((s) => s.value === a.competentPersonScheme);
-  const notNeeded = a.competentPersonScheme === "not-applicable";
+  const scheme = competentPersonSchemes.find((s) => a.competentPersonScheme.startsWith(s.label));
+  const legal = !!scheme && LEGAL_SCHEMES.includes(scheme.value);
+  const named = !!scheme && !["other", "none", "not-applicable"].includes(scheme.value) && !legal;
+  const provider = a.insuranceBackedGuaranteeProvider?.trim() ?? "";
   return {
     ...blankValues(),
     companyName: a.companyName,
@@ -61,17 +76,33 @@ export function valuesFromApplication(a: SupplierApplication): Values {
     radiusMiles: a.radiusMiles ? String(a.radiusMiles) : "",
     excluded: a.excludedPostcodes ?? "",
     about: a.description.slice(0, 600),
-    companiesHouseNumber: a.companiesHouseNumber,
-    guaranteeProvider: a.insuranceBackedGuaranteeProvider,
-    schemeNeeded: !notNeeded,
-    schemeName: scheme && !["other", "none", "not-applicable"].includes(scheme.value) ? scheme.label : "",
+    businessType: a.businessType ?? "limited",
+    companiesHouseNumber: a.companiesHouseNumber ?? "",
+    legalNeeded: legal,
+    legalScheme: legal ? scheme!.label : "",
+    guaranteeStatus: provider ? "passed" : "not_passed",
+    guaranteeProvider: provider,
+    schemeStatus: a.competentPersonScheme.startsWith("Not applicable") ? "not_required" : named ? "passed" : "not_passed",
+    schemeName: named ? scheme!.label : "",
   };
 }
 
+function choiceOf(s: Specialist, id: Specialist["checks"][number]["id"]): CheckChoice {
+  const r = s.checks.find((c) => c.id === id);
+  return r?.passed ? "passed" : r?.notApplicableReason ? "not_required" : "not_passed";
+}
+
+const reasonOf = (s: Specialist, id: Specialist["checks"][number]["id"]) =>
+  s.checks.find((c) => c.id === id)?.notApplicableReason?.replace(/^Not applicable: /, "") ?? "";
+
 export function valuesFromSpecialist(s: Specialist): Values {
+  const business = s.checks.find((c) => c.id === "registered_company");
+  const legal = s.checks.find((c) => c.id === "legal_registration");
+  const legalMatch = legal?.passed ? legal.evidence.match(/^(.*?)(?:, registration (.*))?$/) : null;
   const scheme = s.checks.find((c) => c.id === "competent_person_scheme");
-  const match = scheme?.evidence.match(/^Scheme: (.*?)(?:, registration (.*))?$/);
+  const match = scheme?.passed ? scheme.evidence.match(/^Scheme: (.*?)(?:, registration (.*))?$/) : null;
   const notes = s.onboarding?.checkNotes;
+  const soleTrader = !!business?.soleTrader;
   return {
     ...blankValues(),
     companyName: s.name,
@@ -88,15 +119,24 @@ export function valuesFromSpecialist(s: Specialist): Values {
     about: s.about,
     googleRating: String(s.googleRating),
     googleReviewCount: String(s.googleReviewCount),
-    companiesHouseNumber: s.checks.find((c) => c.id === "registered_company")?.evidence.replace("Companies House no. ", "") ?? "",
-    companyCheck: notes?.company ?? "",
-    guaranteeProvider: s.checks.find((c) => c.id === "insurance_backed_guarantee")?.evidence.replace("Provider: ", "") ?? "",
-    guaranteeCheck: notes?.guarantee ?? "",
-    schemeNeeded: !scheme?.notApplicableReason,
+    businessType: soleTrader ? "sole_trader" : "limited",
+    companiesHouseNumber: soleTrader ? "" : (business?.evidence.replace("Companies House no. ", "") ?? ""),
+    businessCheck: notes?.company ?? "",
+    legalNeeded: !!legal?.passed,
+    legalScheme: legalMatch?.[1] ?? "",
+    legalRegistration: legalMatch?.[2] ?? "",
+    legalCheck: legal?.passed ? (notes?.legal ?? "") : "",
+    identityStatus: choiceOf(s, "identity") === "passed" ? "passed" : "not_passed",
+    identityCheck: choiceOf(s, "identity") === "passed" && !soleTrader ? (notes?.identity ?? "") : "",
+    guaranteeStatus: choiceOf(s, "insurance_backed_guarantee"),
+    guaranteeProvider: s.checks.find((c) => c.id === "insurance_backed_guarantee" && c.passed)?.evidence.replace("Provider: ", "") ?? "",
+    guaranteeCheck: choiceOf(s, "insurance_backed_guarantee") === "passed" ? (notes?.guarantee ?? "") : "",
+    guaranteeReason: reasonOf(s, "insurance_backed_guarantee"),
+    schemeStatus: choiceOf(s, "competent_person_scheme"),
     schemeName: match?.[1] ?? "",
     schemeRegistration: match?.[2] ?? "",
-    schemeCheck: scheme?.notApplicableReason ? "" : (notes?.scheme ?? ""),
-    schemeReason: scheme?.notApplicableReason?.replace(/^Not applicable: /, "") ?? "",
+    schemeCheck: choiceOf(s, "competent_person_scheme") === "passed" ? (notes?.scheme ?? "") : "",
+    schemeReason: reasonOf(s, "competent_person_scheme"),
     checksConfirmedOn: s.checksLastConfirmed,
   };
 }
@@ -117,11 +157,20 @@ export function blankValues(): Values {
     about: "",
     googleRating: "",
     googleReviewCount: "",
+    businessType: "limited",
     companiesHouseNumber: "",
-    companyCheck: "",
+    businessCheck: "",
+    legalNeeded: false,
+    legalScheme: "",
+    legalRegistration: "",
+    legalCheck: "",
+    identityStatus: "not_passed",
+    identityCheck: "",
+    guaranteeStatus: "not_passed",
     guaranteeProvider: "",
     guaranteeCheck: "",
-    schemeNeeded: true,
+    guaranteeReason: "",
+    schemeStatus: "not_passed",
     schemeName: "",
     schemeRegistration: "",
     schemeCheck: "",
@@ -130,6 +179,41 @@ export function blankValues(): Values {
     checkerConfirmed: false,
   };
 }
+
+/** Three choices for a badge check, as labelled radio buttons. */
+function Choice<T extends string>({
+  name,
+  value,
+  options,
+  onChange,
+}: {
+  name: string;
+  value: T;
+  options: { value: T; label: string }[];
+  onChange: (v: T) => void;
+}) {
+  return (
+    <div role="radiogroup" className="flex flex-wrap gap-2">
+      {options.map((o) => (
+        <label
+          key={o.value}
+          className={`inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full border-[1.5px] px-3 text-[15px] ${
+            value === o.value ? "border-ink font-semibold" : "border-line"
+          }`}
+        >
+          <input type="radio" name={name} checked={value === o.value} onChange={() => onChange(o.value)} className="accent-blue" />
+          {o.label}
+        </label>
+      ))}
+    </div>
+  );
+}
+
+const BADGE_CHOICES: { value: CheckChoice; label: string }[] = [
+  { value: "passed", label: "Passed" },
+  { value: "not_passed", label: "Not passed or not checked" },
+  { value: "not_required", label: "Not required" },
+];
 
 const textareaClass =
   "min-h-[110px] w-full rounded-lg border-[1.5px] border-line bg-surface px-3.5 py-3 text-[17px] text-ink focus:border-blue focus:outline-none focus:ring-[3px] focus:ring-blue-tint";
@@ -185,6 +269,11 @@ export function SpecialistForm({
   const [formError, setFormError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const set = <K extends keyof Values>(k: K, value: Values[K]) => setV((x) => ({ ...x, [k]: value }));
+  const badgeGaps = [
+    v.businessType === "limited" && v.identityStatus !== "passed" ? "identity" : null,
+    v.guaranteeStatus === "not_passed" ? "insurance-backed guarantee" : null,
+    v.schemeStatus === "not_passed" ? "trade scheme" : null,
+  ].filter(Boolean) as string[];
   const live = useMemo(() => allServices.filter((s) => s.status === "live" || v.services.includes(s.slug)), [v.services]);
 
   function toggleService(slug: string, on: boolean) {
@@ -206,9 +295,11 @@ export function SpecialistForm({
     const payload = {
       ...v,
       leadTypes: Object.fromEntries(v.services.filter((s) => allKinds(s)).map((s) => [s, kindsFor(s)])),
-      scheme: v.schemeNeeded
-        ? { needed: true, name: v.schemeName, registration: v.schemeRegistration, check: v.schemeCheck }
-        : { needed: false, reason: v.schemeReason },
+      business: { type: v.businessType, companiesHouseNumber: v.companiesHouseNumber, check: v.businessCheck },
+      legal: { needed: v.legalNeeded, scheme: v.legalScheme, registration: v.legalRegistration, check: v.legalCheck },
+      identity: { status: v.identityStatus, check: v.identityCheck },
+      guarantee: { status: v.guaranteeStatus, provider: v.guaranteeProvider, check: v.guaranteeCheck, reason: v.guaranteeReason },
+      scheme: { status: v.schemeStatus, name: v.schemeName, registration: v.schemeRegistration, check: v.schemeCheck, reason: v.schemeReason },
       applicationId,
     };
     const res = await fetch(mode === "edit" ? `/api/admin/specialists/${slug}` : "/api/admin/specialists", {
@@ -322,72 +413,174 @@ export function SpecialistForm({
         />
       </Fieldset>
 
-      <Fieldset legend="Our checks">
+      <Fieldset legend="Required checks: needed to be recommended">
         <p className="text-[15px] text-muted">
           Check each item against the official source. What you write under &ldquo;What you checked&rdquo; is kept for our records and
-          never shown to homeowners. The company number, guarantee provider, scheme and rating are shown to homeowners.
+          never shown to homeowners. Company numbers, registrations, providers, schemes, ratings and &ldquo;not required&rdquo; reasons
+          are shown to homeowners.
         </p>
-        <h3 className="font-bold">1. Registered company</h3>
-        <TextField
-          label="Companies House number"
-          value={v.companiesHouseNumber}
-          onChange={(e) => set("companiesHouseNumber", e.target.value)}
-          error={errors.companiesHouseNumber}
+        <h3 className="font-bold">1. Registered business</h3>
+        <Choice
+          name="businessType"
+          value={v.businessType}
+          options={[
+            { value: "limited", label: "Limited company" },
+            { value: "sole_trader", label: "Sole trader" },
+          ]}
+          onChange={(x) => set("businessType", x)}
         />
-        {/^[A-Z0-9]{8}$/i.test(v.companiesHouseNumber.trim()) && (
-          <a
-            href={`https://find-and-update.company-information.service.gov.uk/company/${v.companiesHouseNumber.trim().toUpperCase()}`}
-            target="_blank"
-            rel="noreferrer"
-            className="-mt-2 text-[15px] font-semibold text-blue underline"
-          >
-            Open on Companies House (new tab)
-          </a>
+        {v.businessType === "limited" ? (
+          <>
+            <TextField
+              label="Companies House number"
+              value={v.companiesHouseNumber}
+              onChange={(e) => set("companiesHouseNumber", e.target.value)}
+              error={errors.companiesHouseNumber}
+            />
+            {/^[A-Z0-9]{8}$/i.test(v.companiesHouseNumber.trim()) && (
+              <a
+                href={`https://find-and-update.company-information.service.gov.uk/company/${v.companiesHouseNumber.trim().toUpperCase()}`}
+                target="_blank"
+                rel="noreferrer"
+                className="-mt-2 text-[15px] font-semibold text-blue underline"
+              >
+                Open on Companies House (new tab)
+              </a>
+            )}
+          </>
+        ) : (
+          <p className="-mt-1 text-sm text-muted">
+            Sole traders aren&apos;t on Companies House. Check photo ID (passport or driving licence) and proof of address (for
+            example a recent utility or council tax bill) in the owner&apos;s name. Note what you saw, but don&apos;t keep copies.
+          </p>
         )}
         <TextField
           label="What you checked"
-          hint="For example: Active, incorporated 2014, registered address and directors match."
-          value={v.companyCheck}
-          onChange={(e) => set("companyCheck", e.target.value)}
-          error={errors.companyCheck}
+          hint={
+            v.businessType === "limited"
+              ? "For example: Active, incorporated 2014, registered address and directors match."
+              : "For example: Driving licence and council tax bill seen, name and address match."
+          }
+          value={v.businessCheck}
+          onChange={(e) => set("businessCheck", e.target.value)}
+          error={errors.businessCheck}
         />
 
-        <h3 className="font-bold">2. Insurance-backed guarantee</h3>
-        <TextField label="Provider" value={v.guaranteeProvider} onChange={(e) => set("guaranteeProvider", e.target.value)} error={errors.guaranteeProvider} />
+        <h3 className="font-bold">2. Legal registration for the work</h3>
+        <Choice
+          name="legalNeeded"
+          value={v.legalNeeded ? "yes" : "no"}
+          options={[
+            { value: "no", label: "Not needed: no gas or refrigerant work" },
+            { value: "yes", label: "Needed: they do gas or refrigerant work" },
+          ]}
+          onChange={(x) => set("legalNeeded", x === "yes")}
+        />
+        {v.legalNeeded && (
+          <>
+            <TextField label="Registration" hint="Gas Safe Register for gas work. F gas certification for air conditioning and refrigerant work." value={v.legalScheme} onChange={(e) => set("legalScheme", e.target.value)} error={errors.legalScheme} />
+            <TextField label="Registration number (optional)" value={v.legalRegistration} onChange={(e) => set("legalRegistration", e.target.value)} />
+            <TextField
+              label="What you checked"
+              hint="For example: Found on the Gas Safe register, registration current."
+              value={v.legalCheck}
+              onChange={(e) => set("legalCheck", e.target.value)}
+              error={errors.legalCheck}
+            />
+          </>
+        )}
+
+        <h3 className="font-bold">3. Google rating</h3>
+        <TextField label="Rating" inputMode="decimal" hint="Must be above 4, for example 4.7." value={v.googleRating} onChange={(e) => set("googleRating", e.target.value)} error={errors.googleRating} />
+        <TextField label="Number of reviews" inputMode="numeric" hint="At least 10." value={v.googleReviewCount} onChange={(e) => set("googleReviewCount", e.target.value)} error={errors.googleReviewCount} />
         <TextField
-          label="What you checked"
-          hint="For example: Membership certificate seen, valid to March 2027."
-          value={v.guaranteeCheck}
-          onChange={(e) => set("guaranteeCheck", e.target.value)}
-          error={errors.guaranteeCheck}
+          label="Google profile link (optional)"
+          type="url"
+          value={v.googleProfileUrl}
+          onChange={(e) => set("googleProfileUrl", e.target.value)}
+          error={errors.googleProfileUrl}
         />
+      </Fieldset>
 
-        <h3 className="font-bold">3. Trade scheme</h3>
+      <Fieldset legend={`For the ${verifiedBadge.name} badge`}>
+        <p className="text-[15px] text-muted">
+          They show the badge when each of these is Passed or Not required. &ldquo;Not required&rdquo; needs a reason, which
+          homeowners see, for example &ldquo;design work only&rdquo;.
+        </p>
+
+        <h3 className="font-bold">4. Identity confirmed</h3>
+        {v.businessType === "sole_trader" ? (
+          <p className="-mt-1 text-[15px]">✓ Covered by the identity and address check above.</p>
+        ) : (
+          <>
+            <Choice
+              name="identityStatus"
+              value={v.identityStatus}
+              options={[
+                { value: "passed", label: "Passed" },
+                { value: "not_passed", label: "Not passed or not checked" },
+              ]}
+              onChange={(x) => set("identityStatus", x)}
+            />
+            {v.identityStatus === "passed" && (
+              <TextField
+                label="What you checked"
+                hint="For example: Sam Fitter is a listed director on Companies House."
+                value={v.identityCheck}
+                onChange={(e) => set("identityCheck", e.target.value)}
+                error={errors.identityCheck}
+              />
+            )}
+          </>
+        )}
+
+        <h3 className="font-bold">5. Insurance-backed guarantee</h3>
+        <Choice name="guaranteeStatus" value={v.guaranteeStatus} options={BADGE_CHOICES} onChange={(x) => set("guaranteeStatus", x)} />
+        {v.guaranteeStatus === "passed" && (
+          <>
+            <TextField label="Provider" value={v.guaranteeProvider} onChange={(e) => set("guaranteeProvider", e.target.value)} error={errors.guaranteeProvider} />
+            <TextField
+              label="What you checked"
+              hint="For example: Membership certificate seen, valid to March 2027."
+              value={v.guaranteeCheck}
+              onChange={(e) => set("guaranteeCheck", e.target.value)}
+              error={errors.guaranteeCheck}
+            />
+          </>
+        )}
+        {v.guaranteeStatus === "not_required" && (
+          <TextField
+            label="Why it isn't needed"
+            hint="Shown to homeowners, for example: Design and planning work only."
+            value={v.guaranteeReason}
+            onChange={(e) => set("guaranteeReason", e.target.value)}
+            error={errors.guaranteeReason}
+          />
+        )}
+
+        <h3 className="font-bold">6. Trade scheme</h3>
         <p className="-mt-2 text-sm text-muted">
           Which schemes each service needs is listed on the{" "}
           <a href="/how-we-check" target="_blank" className="font-semibold text-blue underline">
             How we check page (new tab)
           </a>
-          . Gas work always needs Gas Safe.
+          .
         </p>
-        <Check
-          label="No scheme is needed for the services above"
-          checked={!v.schemeNeeded}
-          onChange={(c) => set("schemeNeeded", !c)}
-        />
-        {v.schemeNeeded ? (
+        <Choice name="schemeStatus" value={v.schemeStatus} options={BADGE_CHOICES} onChange={(x) => set("schemeStatus", x)} />
+        {v.schemeStatus === "passed" && (
           <>
-            <TextField label="Scheme" hint="For example: Gas Safe Register, NICEIC, FENSA, MCS." value={v.schemeName} onChange={(e) => set("schemeName", e.target.value)} error={errors.schemeName} />
+            <TextField label="Scheme" hint="For example: NICEIC, FENSA, MCS." value={v.schemeName} onChange={(e) => set("schemeName", e.target.value)} error={errors.schemeName} />
             <TextField label="Registration number (optional)" value={v.schemeRegistration} onChange={(e) => set("schemeRegistration", e.target.value)} />
             <TextField
               label="What you checked"
-              hint="For example: Found on the Gas Safe register, registration current."
+              hint="For example: Found on the NICEIC register, registration current."
               value={v.schemeCheck}
               onChange={(e) => set("schemeCheck", e.target.value)}
               error={errors.schemeCheck}
             />
           </>
-        ) : (
+        )}
+        {v.schemeStatus === "not_required" && (
           <TextField
             label="Why no scheme is needed"
             hint="Shown to homeowners, for example: Building control approves the work."
@@ -397,17 +590,14 @@ export function SpecialistForm({
           />
         )}
 
-        <h3 className="font-bold">4. Google rating</h3>
-        <TextField label="Rating" inputMode="decimal" hint="Must be above 4, for example 4.7." value={v.googleRating} onChange={(e) => set("googleRating", e.target.value)} error={errors.googleRating} />
-        <TextField label="Number of reviews" inputMode="numeric" value={v.googleReviewCount} onChange={(e) => set("googleReviewCount", e.target.value)} error={errors.googleReviewCount} />
-        <TextField
-          label="Google profile link (optional)"
-          type="url"
-          value={v.googleProfileUrl}
-          onChange={(e) => set("googleProfileUrl", e.target.value)}
-          error={errors.googleProfileUrl}
-        />
+        <p className="rounded-[var(--radius-card)] border border-line p-3 text-[15px] font-semibold" role="status">
+          {badgeGaps.length === 0
+            ? `★ They'll show the ${verifiedBadge.name} badge.`
+            : `○ No badge yet. Still needed: ${badgeGaps.join(", ")}.`}
+        </p>
+      </Fieldset>
 
+      <Fieldset legend="Date of the checks">
         <TextField
           label="Date you did these checks"
           type="date"

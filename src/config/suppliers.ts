@@ -3,13 +3,22 @@ import { site } from "@/config/site";
 /** "Who we're looking for", shown on the For Suppliers page. Mirrors the vetting checks. */
 export const supplierCriteria = [
   { title: "Established home-improvement businesses", detail: "With a track record of completed work in the areas you cover." },
-  { title: "Properly registered companies", detail: "Registered with Companies House. We may also look at financial health." },
-  { title: "Appropriate insurance-backed guarantees", detail: "So homeowners are protected for qualifying work." },
+  {
+    title: "Limited companies and sole traders",
+    detail: "Companies registered at Companies House, or sole traders, for whom we check identity and address instead.",
+  },
+  { title: "Legal registration for the work", detail: "Gas Safe for any gas work, and F gas certification for refrigerant work, which the law requires." },
+  { title: "A Google rating above four stars", detail: "From at least ten reviews on your Google Business profile." },
+];
+
+/** What a specialist needs for the Verified badge, shown on the For suppliers page. */
+export const badgeCriteria = [
+  { title: "Identity confirmed", detail: "For companies, your contact is a listed director. For sole traders, it's part of the identity check." },
+  { title: "An insurance-backed guarantee", detail: "Where it's relevant to your work, so homeowners are protected for qualifying work." },
   {
     title: "The right trade scheme registration",
-    detail: "Gas Safe for any gas work, which the law requires. Otherwise the scheme your trade needs, for example FENSA or Certass for windows, NICEIC or NAPIT for electrical work, or MCS for solar and heat pumps.",
+    detail: "Where your trade has one, for example FENSA or Certass for windows, NICEIC or NAPIT for electrical work, or MCS for solar and heat pumps.",
   },
-  { title: "A Google rating above four stars", detail: "Based on your Google Business profile." },
 ];
 
 /**
@@ -52,7 +61,7 @@ export function supplierDeclarationWording() {
  * content/legal/supplier-terms.md. Change both together when the terms change,
  * so every acceptance records which version it was.
  */
-export const specialistTermsVersion = "2026-11-16";
+export const specialistTermsVersion = "2026-11-18";
 
 /** How long a "please accept our terms" link stays valid. */
 export const termsInviteDays = 30;

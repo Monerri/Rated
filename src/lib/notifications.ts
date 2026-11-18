@@ -1,7 +1,8 @@
 import { site } from "@/config/site";
 import { launch } from "@/config/launch";
 import { bindings } from "@/lib/cloudflare";
-import { vettingChecks } from "@/config/vetting";
+import { verifiedBadge, vettingChecks } from "@/config/vetting";
+import { checkStatus, isVerified } from "@/lib/vetting";
 import { formatMonthYear } from "@/lib/format";
 import { numberWord, SAVED_PROGRESS_MONTHS } from "@/lib/consent";
 import { formatCredits, priceListFor } from "@/lib/billing";
@@ -109,12 +110,21 @@ const DEMO_NOTE =
   "Please note: this is a prototype. The specialists below are fictional demonstration data, not real companies.\n\n";
 
 function checksBlock(s: Specialist): string {
-  const lines = vettingChecks.map((def) => {
+  const badge = isVerified(s)
+    ? `  ★ ${verifiedBadge.name}: passed every one of our checks`
+    : `  Checked specialist: passed our required checks (not yet ${verifiedBadge.name})`;
+  const lines = vettingChecks.flatMap((def) => {
+    const status = checkStatus(s, def.id);
     const r = s.checks.find((c) => c.id === def.id);
-    if (r && !r.passed && r.notApplicableReason) return `  – ${def.title}: ${r.notApplicableReason}`;
-    return `  ✓ ${def.title}: ${r?.evidence ?? ""}`;
+    if (status === "not_recorded" && def.id === "legal_registration") return [];
+    if (status === "passed") {
+      const evidence = def.id === "registered_company" && r?.soleTrader ? "sole trader, identity and address checked" : (r?.evidence ?? "");
+      return [`  ✓ ${def.title}: ${evidence}`];
+    }
+    if (status === "not_required") return [`  – ${def.title}: ${r?.notApplicableReason ?? "not required"}`];
+    return [`  ○ ${def.title}: not checked`];
   });
-  return `${lines.join("\n")}\n  Checks last confirmed: ${formatMonthYear(s.checksLastConfirmed)}`;
+  return `${badge}\n${lines.join("\n")}\n  Checks last confirmed: ${formatMonthYear(s.checksLastConfirmed)}`;
 }
 
 /** Sent to the homeowner first, so they know who will contact them and why. */
@@ -146,6 +156,8 @@ ${earlier}${fewer}What happens next
 1. We're passing your answers and contact details to ${nameList} now.
 2. ${n === 1 ? "They'll" : "Each will"} contact you ${site.specialistResponseTime} by phone or email to talk through your project.
 3. Any quote is between you and them, and there's no obligation to go ahead.
+
+Every specialist we introduce has passed our required checks. Those marked ${verifiedBadge.name} have passed every one of our checks. What we check: ${site.url}/how-we-check
 
 No other company has been given your details. In about two weeks we'll email you once to ask how it went.
 
@@ -434,7 +446,7 @@ export function supplierApplicationInternalEmail(a: SupplierApplication, service
     to: site.supplierApplicationsEmail,
     subject: `New supplier application: ${a.companyName}`,
     text: `Company: ${a.companyName}
-Companies House: ${a.companiesHouseNumber} (https://find-and-update.company-information.service.gov.uk/company/${a.companiesHouseNumber})
+${a.businessType === "sole_trader" ? "Business: sole trader (check identity and address)" : `Companies House: ${a.companiesHouseNumber} (https://find-and-update.company-information.service.gov.uk/company/${a.companiesHouseNumber})`}
 Contact: ${a.contactName}, ${a.phone}, ${a.email}
 Website: ${a.website ?? "not given"}
 Services: ${serviceName}${
@@ -444,7 +456,7 @@ Services: ${serviceName}${
     }${a.otherServices ? `\nAlso does: ${a.otherServices}` : ""}
 Where they work: ${a.basePostcode ? `within ${a.radiusMiles} miles of ${a.basePostcode}${a.excludedPostcodes ? `, not ${a.excludedPostcodes}` : ""}` : [...a.areasCovered, a.otherAreas].filter(Boolean).join(", ")}
 Trade schemes: ${a.competentPersonScheme}
-Insurance-backed guarantee provider: ${a.insuranceBackedGuaranteeProvider}
+Insurance-backed guarantee provider: ${a.insuranceBackedGuaranteeProvider || "none given"}
 Google profile: ${a.googleProfileUrl}
 
 About the business:

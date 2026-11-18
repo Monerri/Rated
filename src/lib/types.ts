@@ -114,9 +114,11 @@ export interface ServiceOverride {
 /** The checks a specialist must pass. New checks are added here, not hard-coded in pages. */
 export type VettingCheckId =
   | "registered_company"
+  | "legal_registration"
+  | "google_rating"
+  | "identity"
   | "insurance_backed_guarantee"
-  | "competent_person_scheme"
-  | "google_rating";
+  | "competent_person_scheme";
 
 export interface VettingCheckResult {
   id: VettingCheckId;
@@ -125,6 +127,8 @@ export interface VettingCheckResult {
   evidence: string;
   /** Present when a check does not apply to this specialist's work. */
   notApplicableReason?: string;
+  /** For the registered business check: a sole trader, checked by identity and address rather than Companies House. */
+  soleTrader?: boolean;
 }
 
 export interface Specialist {
@@ -185,7 +189,7 @@ export interface SpecialistOnboarding {
   phone: string;
   googleProfileUrl: string | null;
   /** What was checked for each of our checks, for our records (never shown to homeowners). */
-  checkNotes: { company: string; guarantee: string; scheme: string; google: string };
+  checkNotes: { company: string; guarantee: string; scheme: string; google: string; legal?: string; identity?: string };
   checkedBy: AdminRole;
   /** The reference they use on bank transfers, for example VN-REALFLOORS. Unique. */
   paymentReference?: string;
@@ -330,7 +334,7 @@ export interface SpecialistCoverage {
 /** The parts of a specialist record that may be shown to homeowners. */
 export type PublicSpecialist = Pick<
   Specialist,
-  "slug" | "name" | "isDemo" | "services" | "googleRating" | "checks" | "checksLastConfirmed"
+  "slug" | "name" | "isDemo" | "services" | "googleRating" | "googleReviewCount" | "checks" | "checksLastConfirmed"
 >;
 
 /** A business asking to be considered for introductions. Not an approval. */
@@ -360,6 +364,9 @@ export interface SupplierApplication {
   radiusMiles?: number | null;
   /** Postcodes inside the radius they don't cover, as typed. */
   excludedPostcodes?: string | null;
+  /** Limited company or sole trader. Missing on older applications, which were all limited companies. */
+  businessType?: "limited" | "sole_trader";
+  /** Empty for sole traders. */
   companiesHouseNumber: string;
   competentPersonScheme: string;
   insuranceBackedGuaranteeProvider: string;

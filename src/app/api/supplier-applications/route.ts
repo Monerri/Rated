@@ -60,6 +60,7 @@ export async function POST(request: Request) {
   const radiusMiles = Number(body.radiusMiles);
   const excludedPostcodes = str(body.excludedPostcodes, 300);
   const excludedValid = !excludedPostcodes || excludedPostcodes.split(/[\s,;]+/).filter(Boolean).every((x) => POSTCODE_PART.test(x.toUpperCase()));
+  const businessType = body.businessType === "sole_trader" ? "sole_trader" : "limited";
   const companiesHouseNumber = typeof body.companiesHouseNumber === "string" ? normaliseCompanyNumber(body.companiesHouseNumber) : null;
   const scheme = competentPersonSchemes.find((s) => s.value === body.competentPersonScheme);
   const schemeOther = str(body.competentPersonSchemeOther, 120);
@@ -79,7 +80,8 @@ export async function POST(request: Request) {
     if (problem) errors.email = problem;
   }
   if (websiteRaw && !website) errors.website = "Please enter a valid web address, or leave this blank.";
-  if (servicesOffered.length === 0 && !otherServices) errors.servicesOffered = "Please choose at least one service.";
+  if (servicesOffered.length === 0 && !otherServices)
+    errors.servicesOffered = "Please choose at least one service, or tell us your trade in the box below.";
   for (const [slug, kinds] of Object.entries(leadTypes)) {
     if (kinds.length === 0) errors.servicesOffered = `Please tell us which ${getService(slug)?.name.toLowerCase()} work you take on.`;
   }
@@ -87,10 +89,9 @@ export async function POST(request: Request) {
   else if ((await lookupPostcode(basePostcode)) === null) errors.basePostcode = "We couldn't find that postcode. Please check it.";
   if (!radiusOptions.includes(radiusMiles)) errors.radiusMiles = `Please choose how far you'll travel, up to ${maxRadiusMiles} miles.`;
   if (!excludedValid) errors.excludedPostcodes = "Please list postcode areas or districts only, separated by commas, for example TD, DG, NE71.";
-  if (!companiesHouseNumber) errors.companiesHouseNumber = "Please enter an 8-character Companies House number, for example 01234567 or SC123456.";
+  if (businessType === "limited" && !companiesHouseNumber) errors.companiesHouseNumber = "Please enter an 8-character Companies House number, for example 01234567 or SC123456.";
   if (!scheme) errors.competentPersonScheme = "Please choose an option.";
   if (scheme?.value === "other" && !schemeOther) errors.competentPersonSchemeOther = "Please tell us which scheme.";
-  if (!ibgProvider) errors.insuranceBackedGuaranteeProvider = "Please tell us who provides your insurance-backed guarantee.";
   if (!googleProfileUrl) errors.googleProfileUrl = "Please enter a link to your Google Business profile or reviews.";
   if (!description) errors.description = "Please tell us a little about your business.";
 
@@ -128,9 +129,10 @@ export async function POST(request: Request) {
     basePostcode,
     radiusMiles,
     excludedPostcodes: excludedPostcodes?.toUpperCase() ?? null,
-    companiesHouseNumber: companiesHouseNumber!,
+    businessType,
+    companiesHouseNumber: businessType === "limited" ? companiesHouseNumber! : "",
     competentPersonScheme: `${scheme!.value === "other" ? `Other: ${schemeOther}` : scheme!.label}${otherSchemes ? `; also: ${otherSchemes}` : ""}`,
-    insuranceBackedGuaranteeProvider: ibgProvider!,
+    insuranceBackedGuaranteeProvider: ibgProvider ?? "",
     googleProfileUrl: googleProfileUrl!,
     description: description!,
     anythingElse,

@@ -3,7 +3,7 @@ import qrcode from "qrcode-generator";
 import { launch } from "@/config/launch";
 import { primaryRegion } from "@/config/regions";
 import { site } from "@/config/site";
-import { vettingChecks } from "@/config/vetting";
+import { requiredChecks, verifiedBadge, verifiedChecks } from "@/config/vetting";
 import { LogoMark } from "@/components/ui/Logo";
 import { FlyerControls } from "@/components/suppliers/FlyerControls";
 
@@ -81,10 +81,17 @@ export default async function SupplierFlyerPage({ searchParams }: Props) {
           <div className="grid content-start gap-2">
             <h2 className="text-xl font-bold">What we check</h2>
             <ul className="grid list-disc gap-1.5 pl-5 text-[15px]">
-              {vettingChecks.map((c) => (
+              {requiredChecks.map((c) => (
                 <li key={c.id}>{c.title}</li>
               ))}
             </ul>
+            <p className="text-[15px] font-semibold">For the {verifiedBadge.name} badge, also:</p>
+            <ul className="grid list-disc gap-1.5 pl-5 text-[15px]">
+              {verifiedChecks.map((c) => (
+                <li key={c.id}>{c.title}</li>
+              ))}
+            </ul>
+            <p className="text-[13px] text-muted">Limited companies and sole traders welcome.</p>
           </div>
         </div>
 

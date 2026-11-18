@@ -5,7 +5,8 @@ import { addCredit } from "@/lib/billing";
 import { newPaymentReference, paymentReference, topUpInstructions } from "@/lib/payments";
 import { site } from "@/config/site";
 import { specialistTermsVersion, specialistTermsWording, termsInviteDays } from "@/config/suppliers";
-import { vettingStandard } from "@/config/vetting";
+import { verifiedBadge, vettingStandard } from "@/config/vetting";
+import { isVerified, missingForBadge } from "@/lib/vetting";
 import { getFunnel } from "@/funnels";
 import { bindings } from "@/lib/cloudflare";
 import { lookupPostcode } from "@/lib/geo";
@@ -39,13 +40,19 @@ export interface SpecialistDraft {
   about: string;
   googleRating: number;
   googleReviewCount: number;
-  companiesHouseNumber: string;
-  companyCheck: string;
-  guaranteeProvider: string;
-  guaranteeCheck: string;
-  scheme: { needed: true; name: string; registration: string; check: string } | { needed: false; reason: string };
+  /** Limited company (Companies House) or sole trader (identity and address checked instead). */
+  business: { type: "limited"; companiesHouseNumber: string; check: string } | { type: "sole_trader"; check: string };
+  /** Gas Safe or F gas, if their work legally needs it. Required to be recommended. */
+  legal: { needed: false } | { needed: true; scheme: string; registration: string; check: string };
+  /** For the badge. Sole traders are covered by the identity and address check. */
+  identity: { status: "passed"; check: string } | { status: "not_passed" };
+  guarantee: OptionalCheck<{ provider: string }>;
+  scheme: OptionalCheck<{ name: string; registration: string }>;
   checksConfirmedOn: string;
 }
+
+/** A check needed only for the Verified badge: passed (with details), not passed, or not required (with a reason). */
+type OptionalCheck<T> = ({ status: "passed"; check: string } & T) | { status: "not_passed" } | { status: "not_required"; reason: string };
 
 export type Errors = Record<string, string>;
 
@@ -81,16 +88,31 @@ export function parseDraft(body: Record<string, unknown> | null): { ok: true; dr
   const about = str(b.about, 600) ?? "";
   const googleRating = Math.round(Number(b.googleRating) * 10) / 10;
   const googleReviewCount = Math.round(Number(b.googleReviewCount));
-  const companiesHouseNumber = normaliseCompanyNumber(String(b.companiesHouseNumber ?? ""));
-  const companyCheck = str(b.companyCheck, 300) ?? "";
-  const guaranteeProvider = str(b.guaranteeProvider, 160) ?? "";
-  const guaranteeCheck = str(b.guaranteeCheck, 300) ?? "";
-  const s = (typeof b.scheme === "object" && b.scheme !== null ? b.scheme : {}) as Record<string, unknown>;
-  const schemeNeeded = s.needed !== false;
-  const schemeName = str(s.name, 120) ?? "";
-  const schemeRegistration = str(s.registration, 60) ?? "";
-  const schemeCheck = str(s.check, 300) ?? "";
-  const schemeReason = str(s.reason, 200) ?? "";
+  const obj = (v: unknown) => (typeof v === "object" && v !== null ? v : {}) as Record<string, unknown>;
+  const bz = obj(b.business);
+  const soleTrader = bz.type === "sole_trader";
+  const companiesHouseNumber = normaliseCompanyNumber(String(bz.companiesHouseNumber ?? ""));
+  const businessCheck = str(bz.check, 300) ?? "";
+  const lg = obj(b.legal);
+  const legalNeeded = lg.needed === true;
+  const legalScheme = str(lg.scheme, 120) ?? "";
+  const legalRegistration = str(lg.registration, 60) ?? "";
+  const legalCheck = str(lg.check, 300) ?? "";
+  const id = obj(b.identity);
+  const identityCheck = str(id.check, 300) ?? "";
+  const identityPassed = soleTrader || id.status === "passed";
+  const optional = (v: Record<string, unknown>) => ({
+    status: v.status === "passed" || v.status === "not_required" ? v.status : "not_passed",
+    check: str(v.check, 300) ?? "",
+    reason: str(v.reason, 200) ?? "",
+  });
+  const g = obj(b.guarantee);
+  const guarantee = optional(g);
+  const guaranteeProvider = str(g.provider, 160) ?? "";
+  const sc = obj(b.scheme);
+  const scheme = optional(sc);
+  const schemeName = str(sc.name, 120) ?? "";
+  const schemeRegistration = str(sc.registration, 60) ?? "";
   const checksConfirmedOn = String(b.checksConfirmedOn ?? "");
   const confirmedDate = new Date(`${checksConfirmedOn}T00:00:00Z`);
 
@@ -107,15 +129,29 @@ export function parseDraft(body: Record<string, unknown> | null): { ok: true; dr
   if (!(googleRating > 0 && googleRating <= 5)) errors.googleRating = "Enter their Google rating, for example 4.7.";
   else if (!(googleRating > vettingStandard.minimumGoogleRating)) errors.googleRating = `Their rating must be above ${vettingStandard.minimumGoogleRating} to pass our checks.`;
   if (!(googleReviewCount >= 1)) errors.googleReviewCount = "Enter how many Google reviews they have.";
-  if (!companiesHouseNumber) errors.companiesHouseNumber = "Enter an 8-character Companies House number, for example 01234567 or SC123456.";
-  if (!companyCheck) errors.companyCheck = "Say what you checked, for example \"Active on Companies House, details match\".";
-  if (!guaranteeProvider) errors.guaranteeProvider = "Enter who provides their insurance-backed guarantee.";
-  if (!guaranteeCheck) errors.guaranteeCheck = "Say what you checked, for example \"Membership certificate seen, valid to 2027\".";
-  if (schemeNeeded) {
-    if (!schemeName) errors.schemeName = "Enter the scheme, for example Gas Safe Register.";
-    if (!schemeCheck) errors.schemeCheck = "Say what you checked, for example \"Found on the Gas Safe register\".";
-  } else if (!schemeReason) {
-    errors.schemeReason = "Say why no scheme is needed, for example \"Building control approves the work\".";
+  else if (googleReviewCount < vettingStandard.minimumGoogleReviews)
+    errors.googleReviewCount = `They need at least ${vettingStandard.minimumGoogleReviews} reviews to pass our checks.`;
+  if (!soleTrader && !companiesHouseNumber) errors.companiesHouseNumber = "Enter an 8-character Companies House number, for example 01234567 or SC123456.";
+  if (!businessCheck)
+    errors.businessCheck = soleTrader
+      ? "Say what you checked, for example \"Driving licence and council tax bill seen, names and address match\"."
+      : "Say what you checked, for example \"Active on Companies House, details match\".";
+  if (legalNeeded) {
+    if (!legalScheme) errors.legalScheme = "Enter the registration, for example Gas Safe Register.";
+    if (!legalCheck) errors.legalCheck = "Say what you checked, for example \"Found on the Gas Safe register\".";
+  }
+  if (!soleTrader && id.status === "passed" && !identityCheck) errors.identityCheck = "Say what you checked, for example \"Sam Fitter is a listed director\".";
+  if (guarantee.status === "passed") {
+    if (!guaranteeProvider) errors.guaranteeProvider = "Enter who provides their insurance-backed guarantee.";
+    if (!guarantee.check) errors.guaranteeCheck = "Say what you checked, for example \"Membership certificate seen, valid to 2027\".";
+  } else if (guarantee.status === "not_required" && !guarantee.reason) {
+    errors.guaranteeReason = "Say why it isn't needed, for example \"Design work only\". Homeowners see this.";
+  }
+  if (scheme.status === "passed") {
+    if (!schemeName) errors.schemeName = "Enter the scheme, for example NICEIC.";
+    if (!scheme.check) errors.schemeCheck = "Say what you checked, for example \"Found on the NICEIC register\".";
+  } else if (scheme.status === "not_required" && !scheme.reason) {
+    errors.schemeReason = "Say why no scheme is needed, for example \"Building control approves the work\". Homeowners see this.";
   }
   if (Number.isNaN(confirmedDate.getTime()) || confirmedDate > new Date()) errors.checksConfirmedOn = "Enter the date you did the checks.";
   if (b.checkerConfirmed !== true) errors.checkerConfirmed = "Please confirm you've checked each item.";
@@ -138,13 +174,23 @@ export function parseDraft(body: Record<string, unknown> | null): { ok: true; dr
       about,
       googleRating,
       googleReviewCount,
-      companiesHouseNumber: companiesHouseNumber!,
-      companyCheck,
-      guaranteeProvider,
-      guaranteeCheck,
-      scheme: schemeNeeded
-        ? { needed: true, name: schemeName, registration: schemeRegistration, check: schemeCheck }
-        : { needed: false, reason: schemeReason },
+      business: soleTrader
+        ? { type: "sole_trader", check: businessCheck }
+        : { type: "limited", companiesHouseNumber: companiesHouseNumber!, check: businessCheck },
+      legal: legalNeeded ? { needed: true, scheme: legalScheme, registration: legalRegistration, check: legalCheck } : { needed: false },
+      identity: identityPassed ? { status: "passed", check: soleTrader ? "Covered by the identity and address check" : identityCheck } : { status: "not_passed" },
+      guarantee:
+        guarantee.status === "passed"
+          ? { status: "passed", provider: guaranteeProvider, check: guarantee.check }
+          : guarantee.status === "not_required"
+            ? { status: "not_required", reason: guarantee.reason }
+            : { status: "not_passed" },
+      scheme:
+        scheme.status === "passed"
+          ? { status: "passed", name: schemeName, registration: schemeRegistration, check: scheme.check }
+          : scheme.status === "not_required"
+            ? { status: "not_required", reason: scheme.reason }
+            : { status: "not_passed" },
       checksConfirmedOn,
     },
   };
@@ -164,22 +210,45 @@ function slugFor(name: string, taken: Set<string>): string {
   return slug;
 }
 
+const notApplicable = (id: VettingCheckResult["id"], reason: string): VettingCheckResult => ({
+  id,
+  passed: false,
+  evidence: "",
+  notApplicableReason: `Not applicable: ${reason}`,
+});
+const notPassed = (id: VettingCheckResult["id"]): VettingCheckResult => ({ id, passed: false, evidence: "" });
+
+/** The public results of each check. "What you checked" notes stay in onboarding.checkNotes. */
 function checksFrom(d: SpecialistDraft): VettingCheckResult[] {
   return [
-    { id: "registered_company", passed: true, evidence: `Companies House no. ${d.companiesHouseNumber}` },
-    { id: "insurance_backed_guarantee", passed: true, evidence: `Provider: ${d.guaranteeProvider}` },
-    d.scheme.needed
+    d.business.type === "limited"
+      ? { id: "registered_company", passed: true, evidence: `Companies House no. ${d.business.companiesHouseNumber}` }
+      : { id: "registered_company", passed: true, evidence: "Sole trader: identity and address checked", soleTrader: true },
+    d.legal.needed
+      ? { id: "legal_registration", passed: true, evidence: `${d.legal.scheme}${d.legal.registration ? `, registration ${d.legal.registration}` : ""}` }
+      : notApplicable("legal_registration", "no gas or refrigerant work"),
+    {
+      id: "google_rating",
+      passed: d.googleRating > vettingStandard.minimumGoogleRating && d.googleReviewCount >= vettingStandard.minimumGoogleReviews,
+      evidence: `${d.googleRating.toFixed(1)} from ${d.googleReviewCount} reviews`,
+    },
+    d.identity.status === "passed"
+      ? { id: "identity", passed: true, evidence: d.business.type === "sole_trader" ? "Owner's identity checked" : "Contact is a listed director" }
+      : notPassed("identity"),
+    d.guarantee.status === "passed"
+      ? { id: "insurance_backed_guarantee", passed: true, evidence: `Provider: ${d.guarantee.provider}` }
+      : d.guarantee.status === "not_required"
+        ? notApplicable("insurance_backed_guarantee", d.guarantee.reason)
+        : notPassed("insurance_backed_guarantee"),
+    d.scheme.status === "passed"
       ? {
           id: "competent_person_scheme",
           passed: true,
           evidence: `Scheme: ${d.scheme.name}${d.scheme.registration ? `, registration ${d.scheme.registration}` : ""}`,
         }
-      : { id: "competent_person_scheme", passed: false, evidence: "", notApplicableReason: `Not applicable: ${d.scheme.reason}` },
-    {
-      id: "google_rating",
-      passed: d.googleRating > vettingStandard.minimumGoogleRating,
-      evidence: `${d.googleRating.toFixed(1)} from ${d.googleReviewCount} reviews`,
-    },
+      : d.scheme.status === "not_required"
+        ? notApplicable("competent_person_scheme", d.scheme.reason)
+        : notPassed("competent_person_scheme"),
   ];
 }
 
@@ -203,9 +272,11 @@ export async function buildSpecialist(
   const slug = existing?.slug ?? slugFor(d.companyName, taken);
   const reference = existing ? paymentReference(existing) : newPaymentReference(slug, everyone.map(paymentReference));
   const checkNotes = {
-    company: d.companyCheck,
-    guarantee: d.guaranteeCheck,
-    scheme: d.scheme.needed ? d.scheme.check : d.scheme.reason,
+    company: d.business.check,
+    legal: d.legal.needed ? d.legal.check : "Not needed: no gas or refrigerant work",
+    identity: d.identity.status === "passed" ? d.identity.check : "Not checked",
+    guarantee: d.guarantee.status === "passed" ? d.guarantee.check : d.guarantee.status === "not_required" ? d.guarantee.reason : "Not checked",
+    scheme: d.scheme.status === "passed" ? d.scheme.check : d.scheme.status === "not_required" ? d.scheme.reason : "Not checked",
     google: `${d.googleRating.toFixed(1)} from ${d.googleReviewCount} reviews`,
   };
   const specialist: Specialist = {
@@ -393,6 +464,8 @@ When you applied, ${t.acceptedByName} accepted our Specialist terms for ${s.name
 
 You can read the terms at any time at ${site.url}/supplier-terms. We'll give you notice before they change.
 
+${badgeLine(s)}
+
 ${
       foundingCredits > 0
         ? `As a founding specialist, we've added ${foundingCredits} free credits to your account. You don't need to top up yet.
@@ -525,4 +598,10 @@ If you have any questions, please reply to this email.
 ${site.name}
 `,
   };
+}
+
+/** For the welcome email: their badge, or exactly what they need for it. */
+function badgeLine(s: Specialist): string {
+  if (isVerified(s)) return `Your checks: you've passed every one, so homeowners will see the ${verifiedBadge.name} badge when we introduce you.`;
+  return `Your checks: you've passed our required checks, so we can recommend you. To show the ${verifiedBadge.name} badge as well, you'll also need: ${missingForBadge(s).join(", ").toLowerCase()}. Reply to this email when you do, and we'll update your checks.`;
 }

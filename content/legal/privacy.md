@@ -2,7 +2,7 @@
 title: Privacy notice
 description: How {{name}} collects, uses, shares and protects your personal information.
 date: 2026-10-08
-updated: 2026-11-10
+updated: 2026-11-18
 ---
 
 This notice explains what personal information we collect, why, who we share it with and your rights. We've tried to keep it clear and specific.
@@ -63,7 +63,7 @@ You can contact us about privacy at **{{privacyEmail}}**.
 
 ### When a business applies to receive introductions
 
-**What:** company and contact details, accreditation, guarantee and review information, and anything else you tell us.
+**What:** business and contact details, accreditation, guarantee and review information, and anything else you tell us. For sole traders, we also check the owner's identity and address by looking at photo ID and proof of address. We note what we saw and when, but don't keep copies of the documents.
 
 **Why:** to review the business against our requirements and, if it's suitable, to discuss working together.
 

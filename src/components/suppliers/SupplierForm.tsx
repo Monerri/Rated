@@ -20,6 +20,7 @@ export function SupplierForm({ services }: { services: Pick<Service, "slug" | "n
   const [agreed, setAgreed] = useState(false);
   const [scheme, setScheme] = useState("");
   const [offered, setOffered] = useState<string[]>([]);
+  const [businessType, setBusinessType] = useState<"limited" | "sole_trader">("limited");
   const [status, setStatus] = useState<"idle" | "sending" | "done">("idle");
   const doneRef = useRef<HTMLHeadingElement>(null);
 
@@ -36,6 +37,7 @@ export function SupplierForm({ services }: { services: Pick<Service, "slug" | "n
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         companyName: get("companyName"),
+        businessType,
         contactName: get("contactName"),
         email: get("email"),
         phone: get("phone"),
@@ -106,15 +108,46 @@ export function SupplierForm({ services }: { services: Pick<Service, "slug" | "n
 
       <fieldset className="grid gap-4">
         <legend className="mb-2 font-display text-lg font-bold">Your business</legend>
-        <TextField label="Company name" name="companyName" autoComplete="organization" maxLength={160} error={errors.companyName} />
+        <div role="radiogroup" aria-label="Type of business" className="grid gap-2">
+          <p className="text-[15px] font-semibold">Type of business</p>
+          {(
+            [
+              { value: "limited", label: "Limited company", hint: "Registered at Companies House" },
+              { value: "sole_trader", label: "Sole trader", hint: "We'll check your identity and address instead" },
+            ] as const
+          ).map((o) => (
+            <label key={o.value} className="flex min-h-11 cursor-pointer items-start gap-3 text-[15px]">
+              <input
+                type="radio"
+                name="businessType"
+                checked={businessType === o.value}
+                onChange={() => setBusinessType(o.value)}
+                className="mt-1 size-5 accent-[var(--color-blue)]"
+              />
+              <span>
+                {o.label}
+                <span className="block text-sm text-muted">{o.hint}</span>
+              </span>
+            </label>
+          ))}
+        </div>
         <TextField
-          label="Companies House number"
-          name="companiesHouseNumber"
-          hint="8 characters, for example 01234567 or SC123456."
-          autoCapitalize="characters"
-          maxLength={10}
-          error={errors.companiesHouseNumber}
+          label={businessType === "limited" ? "Company name" : "Business or trading name"}
+          name="companyName"
+          autoComplete="organization"
+          maxLength={160}
+          error={errors.companyName}
         />
+        {businessType === "limited" && (
+          <TextField
+            label="Companies House number"
+            name="companiesHouseNumber"
+            hint="8 characters, for example 01234567 or SC123456."
+            autoCapitalize="characters"
+            maxLength={10}
+            error={errors.companiesHouseNumber}
+          />
+        )}
         <TextField label="Website (optional)" name="website" type="url" inputMode="url" autoComplete="url" error={errors.website} />
       </fieldset>
 
@@ -157,7 +190,12 @@ export function SupplierForm({ services }: { services: Pick<Service, "slug" | "n
             {errors.servicesOffered}
           </p>
         )}
-        <TextField label="Anything else you do (optional)" name="otherServices" maxLength={300} />
+        <TextField
+          label="Don't see your trade? Tell us what you do (optional)"
+          name="otherServices"
+          maxLength={300}
+          hint="We're adding new kinds of work. Tell us your trade, even if none of the services above fit, and we'll consider adding it."
+        />
       </fieldset>
 
       <fieldset className="grid gap-4">
@@ -212,9 +250,10 @@ export function SupplierForm({ services }: { services: Pick<Service, "slug" | "n
           />
         )}
         <TextField
-          label="Insurance-backed guarantee provider"
+          label="Insurance-backed guarantee provider (optional)"
           name="insuranceBackedGuaranteeProvider"
           maxLength={160}
+          hint="Leave blank if you don't offer one. You can still join, though you'll need one for the Verified badge where it's relevant to your work."
           error={errors.insuranceBackedGuaranteeProvider}
         />
         <TextField

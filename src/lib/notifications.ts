@@ -2,7 +2,8 @@ import { site } from "@/config/site";
 import { launch } from "@/config/launch";
 import { bindings } from "@/lib/cloudflare";
 import { verifiedBadge, vettingChecks } from "@/config/vetting";
-import { checkStatus, isVerified } from "@/lib/vetting";
+import { isVerified } from "@/lib/vetting";
+import { checkRows } from "@/lib/checkSummary";
 import { formatMonthYear } from "@/lib/format";
 import { numberWord, SAVED_PROGRESS_MONTHS } from "@/lib/consent";
 import { formatCredits, priceListFor } from "@/lib/billing";
@@ -13,6 +14,8 @@ export interface Email {
   to: string;
   subject: string;
   text: string;
+  /** Formatted version, added when sending (see withFooter). */
+  html?: string;
   replyTo?: string;
 }
 
@@ -40,6 +43,7 @@ function resendSender(apiKey: string, from: string): EmailSender {
           to: [email.to],
           subject: email.subject,
           text: email.text,
+          ...(email.html ? { html: email.html } : {}),
           reply_to: email.replyTo ?? site.contactEmail,
         }),
       });
@@ -72,8 +76,27 @@ export function companyFooter(): string {
   return `\n\n--\n${site.name} is a trading name of ${l.companyName}, registered in ${l.placeOfRegistration}, company no. ${l.companyNumber}. Registered office: ${l.registeredOffice}.`;
 }
 
-function withFooter(email: Email): Email {
-  return { ...email, text: `${email.text.trimEnd()}${companyFooter()}\n` };
+const escapeHtml = (t: string) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+/** Web addresses become links. Runs on escaped text, so only our own markup is added. */
+const linkify = (t: string) => t.replace(/https?:\/\/[^\s<]+[^\s<.,;:!?)]/g, (url) => `<a href="${url}" style="color:#1d5fa8">${url}</a>`);
+
+/**
+ * Adds the company details to every email. The plain-text version ends with
+ * them at normal size (plain text has no sizes). The formatted version keeps
+ * the email's layout exactly, with the details at half the size of the text.
+ */
+export function withFooter(email: Email): Email {
+  const body = email.text.trimEnd();
+  const footer = companyFooter().replace(/^\s*--\s*/, "");
+  return {
+    ...email,
+    text: `${body}${companyFooter()}\n`,
+    html: `<!doctype html><html><body style="margin:0;padding:16px;background:#ffffff">
+<div style="font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.5;color:#1c2321;white-space:pre-wrap">${linkify(escapeHtml(body))}</div>
+<p style="font-family:Arial,Helvetica,sans-serif;font-size:8px;line-height:1.4;color:#5b6461;margin:24px 0 0;border-top:1px solid #e3ded4;padding-top:8px">${escapeHtml(footer)}</p>
+</body></html>`,
+  };
 }
 
 /**
@@ -113,17 +136,7 @@ function checksBlock(s: Specialist): string {
   const badge = isVerified(s)
     ? `  ★ ${verifiedBadge.name}: passed every one of our checks`
     : `  Checked specialist: passed our required checks (not yet ${verifiedBadge.name})`;
-  const lines = vettingChecks.flatMap((def) => {
-    const status = checkStatus(s, def.id);
-    const r = s.checks.find((c) => c.id === def.id);
-    if (status === "not_recorded" && def.id === "legal_registration") return [];
-    if (status === "passed") {
-      const evidence = def.id === "registered_company" && r?.soleTrader ? "sole trader, identity and address checked" : (r?.evidence ?? "");
-      return [`  ✓ ${def.title}: ${evidence}`];
-    }
-    if (status === "not_required") return [`  – ${def.title}: ${r?.notApplicableReason ?? "not required"}`];
-    return [`  ○ ${def.title}: not checked`];
-  });
+  const lines = checkRows(s).map((row) => `  ${row.status === "passed" ? "✓" : row.status === "not_required" ? "–" : "○"} ${row.title}: ${row.detail}`);
   return `${badge}\n${lines.join("\n")}\n  Checks last confirmed: ${formatMonthYear(s.checksLastConfirmed)}`;
 }
 

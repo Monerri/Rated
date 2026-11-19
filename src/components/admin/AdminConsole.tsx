@@ -398,7 +398,7 @@ export function AdminConsole() {
               inputMode="numeric"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              hint={`Recorded as free credits, not money received. They're used before bought credits and are never paid out. Founding specialists get ${launch.foundingCredits} automatically when they accept the terms.`}
+              hint={`Recorded as free credits, not money received. They're used before bought credits and are never paid out. New specialists get ${launch.welcomeCredits} welcome credits automatically when they go live, plus ${launch.foundingCredits} Founding Supplier credits if they applied by ${launch.foundingLastDay}.`}
             />
           )}
           {(kind === "refund" || kind === "adjustment") && (

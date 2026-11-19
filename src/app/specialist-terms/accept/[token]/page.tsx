@@ -72,8 +72,8 @@ export default async function AcceptTermsPage({ params }: Props) {
         token={token}
         consent={consent}
         afterwards={
-          launch.onboardingPhase && launch.foundingCredits > 0
-            ? `We've added ${launch.foundingCredits} free founding credits to your account. We start advertising to homeowners in ${launch.advertisingFrom}; until then introductions will be few, and any you receive are free.`
+          launch.onboardingPhase
+            ? `We've added your free credits to your account. We start advertising to homeowners in ${launch.advertisingFrom}; until then introductions will be few, and any you receive are free.`
             : "To start receiving introductions, top up your credits: reply to our email and we'll send you the payment details."
         }
       />

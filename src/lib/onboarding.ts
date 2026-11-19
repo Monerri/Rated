@@ -1,6 +1,6 @@
 import { maxRadiusMiles } from "@/config/coverage";
 import { getService } from "@/config/services";
-import { launch } from "@/config/launch";
+import { freeCreditsFor, launch } from "@/config/launch";
 import { addCredit } from "@/lib/billing";
 import { newPaymentReference, paymentReference, topUpInstructions } from "@/lib/payments";
 import { site } from "@/config/site";
@@ -376,9 +376,9 @@ The link works for ${termsInviteDays} days. If it runs out, reply to this email 
 
 What happens next
 ${
-      launch.onboardingPhase && launch.foundingCredits > 0
+      launch.onboardingPhase && launch.welcomeCredits + launch.foundingCredits > 0
         ? `1. Accept the terms using the link above.
-2. We'll add ${launch.foundingCredits} free founding credits to your account straight away. You don't need to top up yet.
+2. We'll add your free credits to your account straight away. You don't need to top up yet.
 3. We start advertising to homeowners in ${launch.advertisingFrom}. Until then introductions will be few, and any you receive are free.`
         : `1. Accept the terms using the link above.
 2. Top up your credits by bank transfer. We'll send you our bank details and your own payment reference once you've accepted.
@@ -426,8 +426,9 @@ export async function acceptTerms(
 /**
  * Makes a specialist active with their terms acceptance: either from the
  * emailed link, or (`onApproval`) the acceptance they gave on their
- * application, in which case this is their welcome email. Adds founding
- * credits during the onboarding phase.
+ * application, in which case this is their welcome email. Adds their free
+ * credits: welcome credits, plus Founding Supplier credits if they applied
+ * before the deadline (or, without an application, were approved before it).
  */
 export async function activateSpecialist(
   s: Specialist,
@@ -436,10 +437,11 @@ export async function activateSpecialist(
 ): Promise<{ specialist: Specialist; emailed: boolean }> {
   const updated: Specialist = { ...s, onboarding: { ...s.onboarding!, status: "active", termsInvite: null, terms } };
   await recordStore.saveSpecialist(updated);
-  // The founding offer: free credits for specialists who join before we start advertising.
-  const founding = launch.onboardingPhase ? launch.foundingCredits : 0;
-  if (founding > 0) await addCredit(s.slug, "promo", founding, "Founding specialist credits");
-  const emailed = await trySend(termsAcceptedEmail(updated, founding, onApproval));
+  const application = s.onboarding?.applicationId ? await recordStore.getSupplierApplication(s.onboarding.applicationId) : null;
+  const free = freeCreditsFor(application?.createdAt ?? s.onboarding!.approvedAt);
+  if (free.welcome > 0) await addCredit(s.slug, "promo", free.welcome, "Welcome credits");
+  if (free.founding > 0) await addCredit(s.slug, "promo", free.founding, "Founding Supplier credits");
+  const emailed = await trySend(termsAcceptedEmail(updated, free, onApproval));
   return { specialist: updated, emailed };
 }
 
@@ -448,7 +450,8 @@ export function currentTermsFromApplication(a: SupplierApplication | null): Term
   return a?.termsAcceptance?.version === specialistTermsVersion ? a.termsAcceptance : null;
 }
 
-function termsAcceptedEmail(s: Specialist, foundingCredits: number, onApproval: boolean): Email {
+function termsAcceptedEmail(s: Specialist, free: { welcome: number; founding: number }, onApproval: boolean): Email {
+  const total = free.welcome + free.founding;
   const t = s.onboarding!.terms!;
   return {
     to: s.enquiryEmail,
@@ -467,11 +470,19 @@ You can read the terms at any time at ${site.url}/supplier-terms. We'll give you
 ${badgeLine(s)}
 
 ${
-      foundingCredits > 0
-        ? `As a founding specialist, we've added ${foundingCredits} free credits to your account. You don't need to top up yet.
-
+      total > 0
+        ? `${
+            free.founding > 0
+              ? `As a Founding Supplier, you get ${free.welcome} welcome credits plus ${free.founding} Founding Supplier credits: ${total} free credits in all, now on your account.`
+              : `We've added ${total} free welcome credits to your account.`
+          } You don't need to top up yet. Free credits are used before any you buy, and they have no cash value.
+${
+  launch.onboardingPhase
+    ? `
 We start advertising to homeowners in ${launch.advertisingFrom}, so please don't expect many introductions before then. Because the site is already live, you may still receive some. Those are free: they're recorded on your account but not charged, and they don't use your free credits. We'll email you at least 14 days before introductions start to be charged.
-
+`
+    : ""
+}
 When you'd like to add more credits, here's how:
 
 ${topUpInstructions(s)}`

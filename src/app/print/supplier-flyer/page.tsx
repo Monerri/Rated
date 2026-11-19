@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import qrcode from "qrcode-generator";
-import { launch } from "@/config/launch";
+import { foundingOfferOpen, launch } from "@/config/launch";
 import { primaryRegion } from "@/config/regions";
 import { site } from "@/config/site";
 import { requiredChecks, verifiedBadge, verifiedChecks } from "@/config/vetting";
@@ -31,7 +31,7 @@ export default async function SupplierFlyerPage({ searchParams }: Props) {
   qr.addData(link);
   qr.make();
   const svg = qr.createSvgTag({ cellSize: 6, margin: 0, scalable: true });
-  const founding = launch.onboardingPhase && launch.foundingCredits > 0;
+  const founding = foundingOfferOpen();
 
   return (
     <div className="mx-auto grid max-w-[210mm] gap-6 px-4 py-8 print:p-0">
@@ -58,11 +58,12 @@ export default async function SupplierFlyerPage({ searchParams }: Props) {
         {founding && (
           <div className="grid gap-2 rounded-[var(--radius-card)] border-2 border-ink bg-ground p-5">
             <p className="font-serif text-[26px] font-bold leading-tight">
-              Founding specialists: {launch.foundingCredits} free credits
+              Founding Supplier offer: {launch.welcomeCredits + launch.foundingCredits} free credits
             </p>
             <p className="text-[15px]">
-              Join before we start advertising to homeowners in {launch.advertisingFrom} and get {launch.foundingCredits} free
-              credits, worth £{launch.foundingCredits} of introductions. Any introductions before then are free too.
+              Apply by {launch.foundingLastDay} and, once approved, get {launch.welcomeCredits} welcome credits plus{" "}
+              {launch.foundingCredits} Founding Supplier credits, worth £{launch.welcomeCredits + launch.foundingCredits} of
+              introductions. Any introductions before we launch to homeowners in January are free too.
             </p>
           </div>
         )}

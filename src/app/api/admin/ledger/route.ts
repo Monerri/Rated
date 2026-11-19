@@ -39,7 +39,7 @@ const KINDS = ["topup", "promo", "refund", "adjustment", "forfeit", "payout"] as
 /**
  * Adds to a specialist's account.
  * - topup: `amountPounds` received; credits and any bonus are worked out here
- * - promo: free credits (owner only), for example founding credits; no money received
+ * - promo: free credits (owner only), for example welcome or Founding Supplier credits; no money received
  * - refund: positive `amountCredits` given back, for example for a disputed lead
  * - adjustment: `amountCredits` either way, to correct a mistake
  * - forfeit: removes the whole remaining balance (a leaver after the hold period)

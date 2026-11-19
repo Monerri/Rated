@@ -11,7 +11,7 @@ import { vettingChecks } from "@/config/vetting";
 import { Eyebrow } from "@/components/ui/Section";
 import { ArrowIcon, TickIcon } from "@/components/ui/Icon";
 import { SupplierForm } from "@/components/suppliers/SupplierForm";
-import { launch } from "@/config/launch";
+import { foundingOfferOpen, launch } from "@/config/launch";
 
 export const metadata: Metadata = {
   title: "For suppliers",
@@ -73,22 +73,25 @@ export default function ForSuppliersPage() {
         </div>
       </section>
 
-      {launch.onboardingPhase && launch.foundingCredits > 0 && (
+      {(launch.welcomeCredits > 0 || foundingOfferOpen()) && (
         <section aria-labelledby="founding-heading" className="border-b border-line bg-ground">
           <div className="mx-auto grid max-w-6xl gap-6 px-4 py-12 sm:px-6 md:grid-cols-[1fr_1.2fr] md:gap-12">
             <div className="grid content-start gap-3">
-              <Eyebrow>Founding specialists</Eyebrow>
+              <Eyebrow>{foundingOfferOpen() ? "Founding Supplier offer" : "Welcome credits"}</Eyebrow>
               <h2 id="founding-heading" className="text-[28px] font-bold leading-tight md:text-[34px]">
-                {launch.foundingCredits} free credits when you join now
+                {foundingOfferOpen()
+                  ? `${launch.welcomeCredits + launch.foundingCredits} free credits when you apply by ${launch.foundingLastDay}`
+                  : `${launch.welcomeCredits} free credits when you join`}
               </h2>
               <p className="text-lg text-muted">
-                Specialists we approve before we start advertising to homeowners get {launch.foundingCredits} free credits,
-                worth £{launch.foundingCredits} of introductions, as soon as they&apos;re approved.
+                Every specialist we approve gets {launch.welcomeCredits} free welcome credits.
+                {foundingOfferOpen() &&
+                  ` Apply by ${launch.foundingLastDay} and, if we approve you, you'll also get ${launch.foundingCredits} Founding Supplier credits: ${launch.welcomeCredits + launch.foundingCredits} in all, worth £${launch.welcomeCredits + launch.foundingCredits} of introductions.`}
               </p>
             </div>
             <div className="grid content-start gap-3 rounded-[var(--radius-panel)] border border-line bg-surface p-5 text-[15px] sm:p-6">
-              <p className="font-display text-lg font-bold">Where we are now</p>
-              <ul className="grid gap-2">
+              {launch.onboardingPhase && <p className="font-display text-lg font-bold">Where we are now</p>}
+              {launch.onboardingPhase && <ul className="grid gap-2">
                 <li>
                   Our website is live, and we&apos;re welcoming and checking specialists across {primaryRegion.name}. We start
                   advertising to homeowners in {launch.advertisingFrom}.
@@ -102,9 +105,10 @@ export default function ForSuppliersPage() {
                   they&apos;re recorded on your account but not charged, and they don&apos;t use your free credits.
                 </li>
                 <li>We&apos;ll email you at least 14 days before introductions start to be charged.</li>
-              </ul>
+              </ul>}
               <p className="text-sm text-muted">
-                Free credits have no cash value and can&apos;t be transferred. See our{" "}
+                Free credits are only given if we approve your business. They have no cash value and can&apos;t be
+                transferred. Welcome credits may be withdrawn for specialists who join later. See our{" "}
                 <Link href="/supplier-terms" className="text-blue underline">
                   specialist terms
                 </Link>

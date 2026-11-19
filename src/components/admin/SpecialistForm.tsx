@@ -326,7 +326,7 @@ export function SpecialistForm({
       mode === "edit"
         ? `${v.companyName}'s details are saved.`
         : body?.activated
-          ? `${v.companyName} is approved and live. They accepted the Specialist terms when they applied${launch.onboardingPhase && launch.foundingCredits > 0 ? `, and their ${launch.foundingCredits} founding credits have been added` : ""}. ${body.welcomeEmailSent ? "We've emailed them a welcome with how to top up." : "The welcome email couldn't be sent, so please let them know."}`
+          ? `${v.companyName} is approved and live. They accepted the Specialist terms when they applied${launch.welcomeCredits + launch.foundingCredits > 0 ? ", and their free credits have been added" : ""}. ${body.welcomeEmailSent ? "We've emailed them a welcome with how to top up." : "The welcome email couldn't be sent, so please let them know."}`
           : body?.termsEmailSent
           ? `${v.companyName} is approved. We've emailed them a link to accept the Specialist terms. They'll be considered for leads once they accept and you've recorded their first top-up.`
           : `${v.companyName} is approved, but the terms email couldn't be sent. Use "Send the terms link again" on their entry.`,

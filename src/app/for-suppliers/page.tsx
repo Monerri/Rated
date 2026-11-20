@@ -35,7 +35,7 @@ const process = [
 
 export default function ForSuppliersPage() {
   return (
-    <>
+    <div>
       <section aria-labelledby="suppliers-heading" className="border-b border-line bg-surface">
         <div className="mx-auto grid max-w-6xl gap-6 px-4 py-12 sm:px-6 md:py-16 lg:grid-cols-[1.2fr_0.8fr] lg:items-center lg:gap-12">
           <div className="grid max-w-2xl gap-5">
@@ -197,6 +197,6 @@ export default function ForSuppliersPage() {
         </div>
         <SupplierForm services={services.map(({ slug, name }) => ({ slug, name }))} />
       </section>
-    </>
+    </div>
   );
 }

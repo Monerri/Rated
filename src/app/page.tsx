@@ -13,7 +13,7 @@ import {
 
 export default function HomePage() {
   return (
-    <>
+    <div>
       <Hero />
       <Section
         id="services"
@@ -30,6 +30,6 @@ export default function HomePage() {
       <AreaSection />
       <Faq />
       <FinalCta />
-    </>
+    </div>
   );
 }

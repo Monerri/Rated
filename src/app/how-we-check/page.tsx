@@ -59,7 +59,7 @@ function CheckList({ checks, start }: { checks: typeof vettingChecks; start: num
 
 export default function HowWeCheckPage() {
   return (
-    <>
+    <div>
       <section aria-labelledby="hwc-heading" className="border-b border-line bg-surface">
         <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:px-6 md:py-16 lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:gap-12">
           <div className="grid max-w-2xl gap-5">
@@ -170,6 +170,6 @@ export default function HowWeCheckPage() {
           .
         </p>
       </section>
-    </>
+    </div>
   );
 }

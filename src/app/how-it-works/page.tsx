@@ -25,7 +25,7 @@ const asks = [
 
 export default function HowItWorksPage() {
   return (
-    <>
+    <div>
       <section aria-labelledby="hiw-heading" className="border-b border-line bg-surface">
         <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:px-6 md:py-16">
           <div className="grid max-w-2xl gap-5">
@@ -151,6 +151,6 @@ export default function HowItWorksPage() {
           Find a specialist <ArrowIcon />
         </ButtonLink>
       </section>
-    </>
+    </div>
   );
 }

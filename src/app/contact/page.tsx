@@ -10,7 +10,16 @@ export const metadata: Metadata = {
   description: `Get in touch with ${site.name}.`,
 };
 
-export default function ContactPage() {
+/**
+ * `?topic=service` preselects "Suggesting a service we don't cover", and
+ * `&service=...` (what someone typed in the service search) starts the message.
+ */
+export default async function ContactPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  const params = await searchParams;
+  const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
+  const topic = contactTopics.some((t) => t.value === first(params.topic)) ? first(params.topic) : undefined;
+  const service = first(params.service).trim().slice(0, 80);
+  const message = topic === "service" && service ? `I'm looking for: ${service}\n\n` : undefined;
   return (
     <div className="mx-auto grid max-w-5xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-[1fr_1.2fr] md:py-16">
       <header className="grid content-start gap-4">
@@ -44,7 +53,7 @@ export default function ContactPage() {
           </li>
         </ul>
       </header>
-      <ContactForm topics={contactTopics} />
+      <ContactForm topics={contactTopics} initialTopic={topic} initialMessage={message} />
     </div>
   );
 }

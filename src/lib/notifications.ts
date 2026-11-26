@@ -491,6 +491,7 @@ export const contactTopics = [
   { value: "specialist", label: "A specialist you introduced" },
   { value: "privacy", label: "My personal information" },
   { value: "supplier", label: "Receiving introductions (for businesses)" },
+  { value: "service", label: "Suggesting a service we don't cover" },
   { value: "other", label: "Something else" },
 ];
 

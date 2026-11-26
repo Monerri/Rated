@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useId, useMemo, useState } from "react";
+import { useId, useMemo, useRef, useState } from "react";
 import type { Service } from "@/lib/types";
 import { matchesSearch } from "@/lib/serviceSearch";
 import { buttonClass } from "@/components/ui/Button";
@@ -16,6 +16,7 @@ import { RegisterInterest } from "@/components/interest/RegisterInterest";
  */
 export function ServiceSearch({ live, comingSoon }: { live: Service[]; comingSoon: Service[] }) {
   const id = useId();
+  const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
   const [looked, setLooked] = useState(false);
   const typed = query.trim();
@@ -41,6 +42,7 @@ export function ServiceSearch({ live, comingSoon }: { live: Service[]; comingSoo
           </svg>
           <input
             id={id}
+            ref={inputRef}
             type="search"
             autoComplete="off"
             spellCheck={false}
@@ -88,7 +90,7 @@ export function ServiceSearch({ live, comingSoon }: { live: Service[]; comingSoo
           <p className="text-muted">
             We&apos;re adding services as we check more specialists. Tell us what you need and we&apos;ll bear it in mind.
           </p>
-          <Link href="/contact" className={buttonClass("secondary", "sm", "justify-self-start")}>
+          <Link href={`/contact?topic=service&service=${encodeURIComponent(typed)}`} className={buttonClass("secondary", "sm", "justify-self-start")}>
             Tell us what you need
           </Link>
         </div>
@@ -96,6 +98,32 @@ export function ServiceSearch({ live, comingSoon }: { live: Service[]; comingSoo
 
       <LiveServiceCards services={shown.live} />
       <RegisterInterest services={shown.comingSoon} />
+
+      {!(noMatch && looked) && (
+        <div className="grid gap-3 rounded-[var(--radius-panel)] border border-line bg-surface p-5">
+          <h2 className="text-xl font-bold">Can&apos;t find the service you need?</h2>
+          <p className="text-muted">
+            Try typing it in the{" "}
+            <button
+              type="button"
+              onClick={() => {
+                inputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+                inputRef.current?.focus({ preventScroll: true });
+              }}
+              className="font-semibold text-blue underline underline-offset-2"
+            >
+              search box
+            </button>{" "}
+            above, as it may be listed under a different name. If it still isn&apos;t there, let us know and we&apos;ll look into adding it.
+          </p>
+          <Link
+            href={typed ? `/contact?topic=service&service=${encodeURIComponent(typed)}` : "/contact?topic=service"}
+            className={buttonClass("secondary", "sm", "justify-self-start")}
+          >
+            Suggest a service
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

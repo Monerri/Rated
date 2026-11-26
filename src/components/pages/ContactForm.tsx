@@ -4,7 +4,16 @@ import { useState } from "react";
 import { buttonClass } from "@/components/ui/Button";
 import { FormError, SelectField, TextAreaField, TextField } from "@/components/ui/Form";
 
-export function ContactForm({ topics }: { topics: { value: string; label: string }[] }) {
+export function ContactForm({
+  topics,
+  initialTopic,
+  initialMessage,
+}: {
+  topics: { value: string; label: string }[];
+  /** Preselects a topic, for links such as /contact?topic=service. */
+  initialTopic?: string;
+  initialMessage?: string;
+}) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [status, setStatus] = useState<"idle" | "sending" | "done">("idle");
@@ -43,8 +52,8 @@ export function ContactForm({ topics }: { topics: { value: string; label: string
       </div>
       <TextField label="Name" name="name" autoComplete="name" maxLength={120} error={errors.name} />
       <TextField label="Email" name="email" type="email" autoComplete="email" maxLength={254} error={errors.email} />
-      <SelectField label="What's it about?" name="topic" options={topics} error={errors.topic} />
-      <TextAreaField label="Message" name="message" rows={6} maxLength={5000} error={errors.message} />
+      <SelectField label="What's it about?" name="topic" options={topics} error={errors.topic} defaultValue={initialTopic ?? ""} />
+      <TextAreaField label="Message" name="message" rows={6} maxLength={5000} error={errors.message} defaultValue={initialMessage} />
       {formError && <FormError>{formError}</FormError>}
       <button type="submit" disabled={status === "sending"} className={buttonClass("primary", "md", "w-full sm:w-auto sm:justify-self-start")}>
         {status === "sending" ? "Sending…" : "Send message"}

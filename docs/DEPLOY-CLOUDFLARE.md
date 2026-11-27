@@ -43,7 +43,7 @@ Merge the work into `main` (or run **Actions → Deploy to Cloudflare → Run wo
 
 ### 6. Email addresses
 
-The site uses hello@, privacy@ and suppliers@vettednorth.com. Set them up under **Email → Email Routing** to forward to your usual inbox. It's free.
+The site uses hello@, privacy@ and suppliers@vettednorth.com. They're aliases on a Zoho Mail mailbox (Mail Lite, EU data centre), which works in Mac Mail and on the web. Zoho gives you the MX, SPF and DKIM records to add in Cloudflare DNS. Keep a DMARC record (`_dmarc`) reporting to dmarc@. Cloudflare Email Routing (free, forwarding only) is an alternative if you only need to receive.
 
 ## Database (Cloudflare D1)
 

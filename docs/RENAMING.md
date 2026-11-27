@@ -12,7 +12,7 @@ The trading name, web address, email addresses and company details are kept in o
 
 1. Connect the domain to the Worker in Cloudflare, and verify it in Resend so emails can be sent from it.
 2. In `src/config/site.ts`, change `domain`. The contact, privacy and suppliers email addresses follow it.
-3. Set up Email Routing for hello@, privacy@ and suppliers@ on the new domain.
+3. Add the new domain to the Zoho Mail account (or set up Email Routing) with hello@, privacy@ and suppliers@, and copy the SPF, DKIM and DMARC records across.
 4. In `wrangler.jsonc`, change `SITE_URL` and `LINK_ORIGIN`, and in `.github/workflows/deploy.yml` change `SITE_URL`.
 5. In Cloudflare, redirect the old domain to the new one so existing links and emails keep working.
 

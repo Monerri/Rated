@@ -15,6 +15,7 @@ import { bathroomsFunnel } from "@/funnels/bathrooms";
 import { gardensDrivewaysFunnel } from "@/funnels/gardens-driveways";
 import { flooringFunnel } from "@/funnels/flooring";
 import { plumbingFunnel } from "@/funnels/plumbing";
+import { drainageGroundworksFunnel } from "@/funnels/drainage-groundworks";
 import { electricalFunnel } from "@/funnels/electrical";
 import { securitySystemsFunnel } from "@/funnels/security-systems";
 
@@ -49,6 +50,7 @@ const funnels: Record<string, FunnelConfig> = Object.fromEntries(
     gardensDrivewaysFunnel,
     flooringFunnel,
     plumbingFunnel,
+    drainageGroundworksFunnel,
     electricalFunnel,
     securitySystemsFunnel,
   ].map((f) => [

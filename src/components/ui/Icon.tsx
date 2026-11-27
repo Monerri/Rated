@@ -163,6 +163,14 @@ const paths: Record<IconName, React.ReactNode> = {
       <path d="M8 6v4M5 6h6" />
     </>
   ),
+  drainage: (
+    <>
+      <path d="M3 13h15M26 13h3" />
+      <rect x="17" y="5" width="10" height="3" rx="1" />
+      <path d="M19 8v11M25 8v11" />
+      <rect x="4" y="19" width="24" height="7" rx="3.5" />
+    </>
+  ),
   electrical: (
     <>
       <rect x="6" y="4" width="20" height="24" rx="2" />

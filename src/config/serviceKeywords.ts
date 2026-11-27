@@ -2,8 +2,7 @@
  * The search directory: everyday words people type when looking for each
  * service. It's never shown on the cards; it only decides which cards a
  * search finds. A word can appear under more than one service, so
- * "pipework" finds both Plumbing & Heating and Gardens, Driveways &
- * Landscaping (drains).
+ * "pipework" finds both Plumbing & Heating and Drainage & Groundworks.
  *
  * The service's name and summary are searched too. Add a list when a new
  * service is added, and add words here when people search for something
@@ -80,8 +79,8 @@ export const serviceKeywords: Record<string, string[]> = {
     "garden", "gardens", "driveway", "driveways", "drive", "block paving", "paving", "resin", "resin bound", "tarmac", "asphalt",
     "gravel", "imprinted concrete", "patio", "patios", "paths", "path", "slabs", "porcelain paving", "indian stone", "fencing",
     "fence", "fence panels", "gates", "garden wall", "retaining wall", "decking", "deck", "landscaper", "landscaping",
-    "landscape gardener", "turf", "lawn", "artificial grass", "astro", "pergola", "raised beds", "groundworks", "ground works",
-    "drainage", "drains", "drain", "soakaway", "pipework", "dropped kerb", "dropped curb", "edging", "steps", "garden design",
+    "landscape gardener", "turf", "lawn", "artificial grass", "astro", "pergola", "raised beds",
+    "dropped kerb", "dropped curb", "edging", "steps", "garden design",
     "outdoor lighting", "sleepers",
   ],
   flooring: [
@@ -89,6 +88,17 @@ export const serviceKeywords: Record<string, string[]> = {
     "luxury vinyl", "karndean", "amtico", "wood floor", "wooden floor", "hardwood", "engineered wood", "solid wood", "oak floor",
     "parquet", "herringbone", "chevron", "floor tiles", "tiles", "tiling", "stairs carpet", "stair runner", "underlay",
     "floor sanding", "sanding", "levelling", "screed", "subfloor", "skirting",
+  ],
+  "drainage-groundworks": [
+    "drainage", "drains", "drain", "drainage engineer", "blocked drain", "drain unblocking", "drain survey", "cctv drain survey",
+    "drain camera", "drain repair", "drain relining", "relining", "collapsed drain", "sewer", "sewers", "sewer connection",
+    "manhole", "inspection chamber", "gully", "gulley", "soakaway", "french drain", "land drainage", "waterlogged",
+    "flooded garden", "surface water", "rainwater", "pipework", "water pipe", "water main", "water supply pipe",
+    "supply pipe", "lead pipe", "lead pipe replacement", "water leak", "underground leak", "new water connection",
+    "watersafe", "wiaps", "septic tank", "septic", "cesspit", "cesspool", "treatment plant", "sewage treatment plant",
+    "klargester", "groundworks", "ground works", "groundworker", "excavation", "digger", "mini digger", "digging",
+    "site clearance", "concrete base", "base", "slab", "concrete slab", "shed base", "garage base", "retaining wall",
+    "trench", "trenching", "ducting",
   ],
   plumbing: [
     "plumber", "plumbers", "plumbing", "boiler", "boilers", "new boiler", "boiler repair", "boiler service", "boiler servicing",

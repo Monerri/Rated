@@ -41,6 +41,7 @@ export const schemes = {
   arb: { name: "Architects Registration Board", url: "https://arb.org.uk" },
   nsi: { name: "NSI", url: "https://www.nsi.org.uk" },
   ssaib: { name: "SSAIB", url: "https://www.ssaib.org" },
+  waterSafe: { name: "An approved contractor listed on WaterSafe (for example through WIAPS)", url: "https://www.watersafe.org.uk" },
 } satisfies Record<string, Scheme>;
 
 export type SchemeLevel = "law" | "required" | "where-relevant";
@@ -170,4 +171,14 @@ export const serviceSchemes: Record<string, ServiceSchemes> = {
     note: "No trade scheme applies. A new driveway in a front garden usually needs to drain into the garden or use a permeable surface to avoid needing planning permission.",
   },
   flooring: { requirements: [], note: "No trade scheme applies to fitting floors." },
+  "drainage-groundworks": {
+    requirements: [
+      {
+        level: "where-relevant",
+        anyOf: [schemes.waterSafe],
+        covers: "Underground water supply pipes, so the contractor can certify the work meets the Water Fittings Regulations.",
+      },
+    ],
+    note: "No trade scheme applies to drains, septic tanks or groundworks. New drains usually need Building Regulations approval, and a new connection to a public sewer needs the water company's permission.",
+  },
 };

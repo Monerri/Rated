@@ -35,6 +35,7 @@ const basePrices: Prices = {
   flooring: { exclusive: 30, shared: 15 },
   "ev-charging": { exclusive: 30, shared: 15 },
   plumbing: { exclusive: 30, shared: 15 },
+  "drainage-groundworks": { exclusive: 30, shared: 15 },
   electrical: { exclusive: 30, shared: 15 },
   "security-systems": { exclusive: 30, shared: 15 },
 };
@@ -57,6 +58,7 @@ const londonSouthEastPrices: Prices = {
   flooring: { exclusive: 40, shared: 20 },
   "ev-charging": { exclusive: 40, shared: 20 },
   plumbing: { exclusive: 40, shared: 20 },
+  "drainage-groundworks": { exclusive: 40, shared: 20 },
   electrical: { exclusive: 40, shared: 20 },
   "security-systems": { exclusive: 40, shared: 20 },
 };

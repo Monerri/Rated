@@ -28,6 +28,7 @@ export type IconName =
   | "garden"
   | "flooring"
   | "plumbing"
+  | "drainage"
   | "electrical"
   | "security"
   | "air-con"

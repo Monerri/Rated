@@ -5,7 +5,7 @@ import { addCredit } from "@/lib/billing";
 import { newPaymentReference, paymentReference, topUpInstructions } from "@/lib/payments";
 import { site } from "@/config/site";
 import { specialistTermsVersion, specialistTermsWording, termsInviteDays } from "@/config/suppliers";
-import { verifiedBadge, vettingStandard } from "@/config/vetting";
+import { verifiedBadge, vettingStandard, soleTraderChecklist } from "@/config/vetting";
 import { isVerified, missingForBadge } from "@/lib/vetting";
 import { getFunnel } from "@/funnels";
 import { bindings } from "@/lib/cloudflare";
@@ -41,7 +41,7 @@ export interface SpecialistDraft {
   googleRating: number;
   googleReviewCount: number;
   /** Limited company (Companies House) or sole trader (identity and address checked instead). */
-  business: { type: "limited"; companiesHouseNumber: string; check: string } | { type: "sole_trader"; check: string };
+  business: { type: "limited"; companiesHouseNumber: string; check: string } | { type: "sole_trader"; check: string; checklist: string[] };
   /** Gas Safe or F gas, if their work legally needs it. Required to be recommended. */
   legal: { needed: false } | { needed: true; scheme: string; registration: string; check: string };
   /** For the badge. Sole traders are covered by the identity and address check. */
@@ -93,6 +93,8 @@ export function parseDraft(body: Record<string, unknown> | null): { ok: true; dr
   const soleTrader = bz.type === "sole_trader";
   const companiesHouseNumber = normaliseCompanyNumber(String(bz.companiesHouseNumber ?? ""));
   const businessCheck = str(bz.check, 300) ?? "";
+  const ticked = Array.isArray(bz.checklist) ? bz.checklist.filter((x): x is string => typeof x === "string") : [];
+  const checklist = soleTraderChecklist.filter((c) => ticked.includes(c.id)).map((c) => c.id);
   const lg = obj(b.legal);
   const legalNeeded = lg.needed === true;
   const legalScheme = str(lg.scheme, 120) ?? "";
@@ -132,6 +134,8 @@ export function parseDraft(body: Record<string, unknown> | null): { ok: true; dr
   else if (googleReviewCount < vettingStandard.minimumGoogleReviews)
     errors.googleReviewCount = `They need at least ${vettingStandard.minimumGoogleReviews} reviews to pass our checks.`;
   if (!soleTrader && !companiesHouseNumber) errors.companiesHouseNumber = "Enter an 8-character Companies House number, for example 01234567 or SC123456.";
+  if (soleTrader && soleTraderChecklist.some((c) => c.required && !checklist.includes(c.id)))
+    errors.soleTraderChecklist = "Tick every required item. If you can't, the sole trader hasn't passed this check yet.";
   if (!businessCheck)
     errors.businessCheck = soleTrader
       ? "Say what you checked, for example \"Driving licence and council tax bill seen, names and address match\"."
@@ -175,7 +179,7 @@ export function parseDraft(body: Record<string, unknown> | null): { ok: true; dr
       googleRating,
       googleReviewCount,
       business: soleTrader
-        ? { type: "sole_trader", check: businessCheck }
+        ? { type: "sole_trader", check: businessCheck, checklist }
         : { type: "limited", companiesHouseNumber: companiesHouseNumber!, check: businessCheck },
       legal: legalNeeded ? { needed: true, scheme: legalScheme, registration: legalRegistration, check: legalCheck } : { needed: false },
       identity: identityPassed ? { status: "passed", check: soleTrader ? "Covered by the identity and address check" : identityCheck } : { status: "not_passed" },
@@ -278,6 +282,7 @@ export async function buildSpecialist(
     guarantee: d.guarantee.status === "passed" ? d.guarantee.check : d.guarantee.status === "not_required" ? d.guarantee.reason : "Not checked",
     scheme: d.scheme.status === "passed" ? d.scheme.check : d.scheme.status === "not_required" ? d.scheme.reason : "Not checked",
     google: `${d.googleRating.toFixed(1)} from ${d.googleReviewCount} reviews`,
+    ...(d.business.type === "sole_trader" ? { soleTraderChecklist: d.business.checklist } : {}),
   };
   const specialist: Specialist = {
     slug,

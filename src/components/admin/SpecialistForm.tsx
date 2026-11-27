@@ -6,7 +6,7 @@ import { services as allServices } from "@/config/services";
 import { competentPersonSchemes } from "@/config/suppliers";
 import { getFunnel } from "@/funnels";
 import { launch } from "@/config/launch";
-import { verifiedBadge } from "@/config/vetting";
+import { verifiedBadge, soleTraderChecklist } from "@/config/vetting";
 import { buttonClass } from "@/components/ui/Button";
 import { FormError, TextField } from "@/components/ui/Form";
 import type { Specialist, SupplierApplication } from "@/lib/types";
@@ -32,6 +32,8 @@ interface Values {
   businessType: "limited" | "sole_trader";
   companiesHouseNumber: string;
   businessCheck: string;
+  /** Sole traders: ids of the checklist items ticked (config/vetting.ts). */
+  soleTraderChecks: string[];
   legalNeeded: boolean;
   legalScheme: string;
   legalRegistration: string;
@@ -122,6 +124,7 @@ export function valuesFromSpecialist(s: Specialist): Values {
     businessType: soleTrader ? "sole_trader" : "limited",
     companiesHouseNumber: soleTrader ? "" : (business?.evidence.replace("Companies House no. ", "") ?? ""),
     businessCheck: notes?.company ?? "",
+    soleTraderChecks: notes?.soleTraderChecklist ?? [],
     legalNeeded: !!legal?.passed,
     legalScheme: legalMatch?.[1] ?? "",
     legalRegistration: legalMatch?.[2] ?? "",
@@ -160,6 +163,7 @@ export function blankValues(): Values {
     businessType: "limited",
     companiesHouseNumber: "",
     businessCheck: "",
+    soleTraderChecks: [],
     legalNeeded: false,
     legalScheme: "",
     legalRegistration: "",
@@ -295,7 +299,7 @@ export function SpecialistForm({
     const payload = {
       ...v,
       leadTypes: Object.fromEntries(v.services.filter((s) => allKinds(s)).map((s) => [s, kindsFor(s)])),
-      business: { type: v.businessType, companiesHouseNumber: v.companiesHouseNumber, check: v.businessCheck },
+      business: { type: v.businessType, companiesHouseNumber: v.companiesHouseNumber, check: v.businessCheck, checklist: v.soleTraderChecks },
       legal: { needed: v.legalNeeded, scheme: v.legalScheme, registration: v.legalRegistration, check: v.legalCheck },
       identity: { status: v.identityStatus, check: v.identityCheck },
       guarantee: { status: v.guaranteeStatus, provider: v.guaranteeProvider, check: v.guaranteeCheck, reason: v.guaranteeReason },
@@ -449,10 +453,24 @@ export function SpecialistForm({
             )}
           </>
         ) : (
-          <p className="-mt-1 text-sm text-muted">
-            Sole traders aren&apos;t on Companies House. Check photo ID (passport or driving licence) and proof of address (for
-            example a recent utility or council tax bill) in the owner&apos;s name. Note what you saw, but don&apos;t keep copies.
-          </p>
+          <div className="grid gap-3 rounded-lg border border-line p-4">
+            <p className="text-sm text-muted">
+              Sole traders aren&apos;t on Companies House, so check the owner&apos;s identity and address instead. Tick each item
+              once you&apos;ve seen it. Note what you saw, but don&apos;t keep copies.
+            </p>
+            {soleTraderChecklist.map((c) => (
+              <Check
+                key={c.id}
+                label={c.label}
+                hint={c.hint}
+                checked={v.soleTraderChecks.includes(c.id)}
+                onChange={(on) =>
+                  set("soleTraderChecks", on ? [...v.soleTraderChecks, c.id] : v.soleTraderChecks.filter((x) => x !== c.id))
+                }
+              />
+            ))}
+            {errors.soleTraderChecklist && <p className="text-sm font-semibold">{errors.soleTraderChecklist}</p>}
+          </div>
         )}
         <TextField
           label="What you checked"

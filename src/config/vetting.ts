@@ -113,3 +113,42 @@ export const vettingChecks: VettingCheckDefinition[] = [
 
 export const requiredChecks = vettingChecks.filter((c) => c.tier === "required");
 export const verifiedChecks = vettingChecks.filter((c) => c.tier === "verified");
+
+/**
+ * How we check a sole trader's identity and address (they aren't on
+ * Companies House). Shown as a checklist on /admin so every sole trader is
+ * checked the same way. Required items must all be ticked to approve; the
+ * HMRC item is optional. We note what we saw but never keep copies.
+ */
+export const soleTraderChecklist: { id: string; label: string; hint: string; required: boolean }[] = [
+  {
+    id: "photo-id",
+    label: "Photo ID seen",
+    hint: "A passport or photocard driving licence, in date.",
+    required: true,
+  },
+  {
+    id: "name-matches",
+    label: "The name on the ID matches the person applying",
+    hint: "The owner of the business, not an employee.",
+    required: true,
+  },
+  {
+    id: "proof-of-address",
+    label: "Proof of address seen, dated in the last 3 months",
+    hint: "A utility bill, bank statement or council tax bill in the owner's name.",
+    required: true,
+  },
+  {
+    id: "address-matches",
+    label: "The address matches where they trade from",
+    hint: "Or, if they trade from elsewhere, you've confirmed that address too.",
+    required: true,
+  },
+  {
+    id: "hmrc",
+    label: "Optional: registered with HMRC for Self Assessment",
+    hint: "For example a letter from HMRC showing their UTR. Shows they're a genuine business.",
+    required: false,
+  },
+];

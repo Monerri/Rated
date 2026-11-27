@@ -190,7 +190,16 @@ export interface SpecialistOnboarding {
   phone: string;
   googleProfileUrl: string | null;
   /** What was checked for each of our checks, for our records (never shown to homeowners). */
-  checkNotes: { company: string; guarantee: string; scheme: string; google: string; legal?: string; identity?: string };
+  checkNotes: {
+    company: string;
+    guarantee: string;
+    scheme: string;
+    google: string;
+    legal?: string;
+    identity?: string;
+    /** Sole traders: the checklist items ticked (ids from soleTraderChecklist in config/vetting.ts). */
+    soleTraderChecklist?: string[];
+  };
   checkedBy: AdminRole;
   /** The reference they use on bank transfers, for example VN-REALFLOORS. Unique. */
   paymentReference?: string;

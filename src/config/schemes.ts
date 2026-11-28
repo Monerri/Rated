@@ -41,6 +41,7 @@ export const schemes = {
   arb: { name: "Architects Registration Board", url: "https://arb.org.uk" },
   nsi: { name: "NSI", url: "https://www.nsi.org.uk" },
   ssaib: { name: "SSAIB", url: "https://www.ssaib.org" },
+  pca: { name: "Property Care Association", url: "https://www.property-care.org" },
   waterSafe: { name: "An approved contractor listed on WaterSafe (for example through WIAPS)", url: "https://www.watersafe.org.uk" },
 } satisfies Record<string, Scheme>;
 
@@ -171,6 +172,34 @@ export const serviceSchemes: Record<string, ServiceSchemes> = {
     note: "No trade scheme applies. A new driveway in a front garden usually needs to drain into the garden or use a permeable surface to avoid needing planning permission.",
   },
   flooring: { requirements: [], note: "No trade scheme applies to fitting floors." },
+  "painting-decorating": {
+    requirements: [],
+    note: "No trade scheme is required for painting and decorating. The Painting and Decorating Association is a voluntary trade body.",
+  },
+  plastering: {
+    requirements: [],
+    note: "No trade scheme is required for plastering. Renewing the render on more than a quarter of an outside wall usually needs Building Regulations approval.",
+  },
+  "carpentry-joinery": {
+    requirements: [],
+    note: "No trade scheme is required for carpentry. Fire doors should be fitted to the manufacturer's instructions, and some installers are certified to fit them.",
+  },
+  roofline: { requirements: [], note: "No trade scheme applies to fascias, soffits and guttering." },
+  stoves: {
+    requirements: [
+      { level: "law", anyOf: [schemes.gasSafe], covers: "Gas stoves and gas fires." },
+      {
+        level: "where-relevant",
+        anyOf: [schemes.hetas],
+        covers: "Wood burners and other solid fuel stoves, so the installer can certify the work meets Building Regulations.",
+      },
+    ],
+  },
+  "damp-proofing": {
+    requirements: [
+      { level: "where-relevant", anyOf: [schemes.pca], covers: "Damp and timber surveys and treatments." },
+    ],
+  },
   "drainage-groundworks": {
     requirements: [
       {

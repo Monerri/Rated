@@ -13,7 +13,7 @@ export const serviceKeywords: Record<string, string[]> = {
     "window", "door", "double glazing", "triple glazing", "glazing", "glazier", "upvc", "pvc", "aluminium", "timber windows",
     "composite door", "front door", "back door", "patio door", "bifold", "bi fold", "french doors", "sliding door", "casement",
     "sash", "sash windows", "tilt and turn", "frames", "glass", "misted", "blown", "condensation between panes", "draughty windows",
-    "secondary glazing", "letterbox", "door lock", "handles", "porch", "stable door", "garage door", "roller door", "lantern",
+    "secondary glazing", "letterbox", "door lock", "handles", "porch", "stable door", "garage door", "garage doors", "roller door", "roller garage door", "up and over", "sectional door", "sectional garage door", "electric garage door", "garage door motor", "lantern",
     "skylight", "fensa", "window fitter",
   ],
   "conservatory-roofs": [
@@ -25,7 +25,9 @@ export const serviceKeywords: Record<string, string[]> = {
     "kitchen extension", "rear extension", "side extension", "orangery", "new build", "new house", "self build", "custom build",
     "builder", "builders", "building work", "construction", "garage conversion", "convert garage", "knock through", "open plan",
     "steel beam", "rsj", "load bearing", "foundations", "groundworks", "ground works", "footings", "brickwork", "bricklayer",
-    "block work", "annexe", "granny flat", "porch", "outbuilding", "replacement dwelling", "house builder",
+    "block work", "annexe", "granny flat", "porch", "outbuilding", "replacement dwelling", "house builder", "pointing", "repointing",
+    "re pointing", "brick repairs", "brick repair", "spalling", "spalled bricks", "cracked bricks", "garden wall", "boundary wall",
+    "lime mortar", "mortar", "chimney rebuild", "brickie",
   ],
   roofing: [
     "roof", "roofer", "roofing", "re roof", "reroof", "tiles", "roof tiles", "slates", "slate", "slipped tiles", "flat roof", "felt",
@@ -99,6 +101,40 @@ export const serviceKeywords: Record<string, string[]> = {
     "klargester", "groundworks", "ground works", "groundworker", "excavation", "digger", "mini digger", "digging",
     "site clearance", "concrete base", "base", "slab", "concrete slab", "shed base", "garage base", "retaining wall",
     "trench", "trenching", "ducting",
+  ],
+  "painting-decorating": [
+    "painter", "painters", "painting", "decorator", "decorators", "decorating", "painter and decorator", "paint", "emulsion",
+    "gloss", "wallpaper", "wallpapering", "paper hanging", "feature wall", "ceiling painting", "woodwork", "skirting painting",
+    "exterior painting", "masonry paint", "render painting", "artex", "textured ceiling", "spray painting", "spraying",
+    "kitchen spraying", "kitchen respray", "upvc spraying", "door spraying", "cabinet painting",
+  ],
+  plastering: [
+    "plasterer", "plasterers", "plastering", "plaster", "skim", "skimming", "reskim", "re skim", "replaster", "re plaster",
+    "ceiling", "ceilings", "artex", "textured ceiling", "coving", "cornice", "ceiling rose", "plasterboard", "dry lining",
+    "drylining", "stud wall", "cracks", "cracked plaster", "blown plaster", "render", "rendering", "re render", "renderer",
+    "k rend", "monocouche", "pebble dash", "pebbledash", "roughcast",
+  ],
+  "carpentry-joinery": [
+    "carpenter", "carpenters", "carpentry", "joiner", "joiners", "joinery", "internal doors", "internal door", "door hanging",
+    "hang doors", "fire door", "fire doors", "staircase", "stairs", "banister", "balustrade", "spindles", "skirting",
+    "skirting boards", "architrave", "architraves", "panelling", "wall panelling", "fitted wardrobes", "wardrobe", "wardrobes",
+    "built in wardrobes", "fitted furniture", "alcove", "alcoves", "shelving", "media wall", "window seat", "understairs storage",
+    "bespoke", "made to measure",
+  ],
+  roofline: [
+    "fascia", "fascias", "soffit", "soffits", "fascias and soffits", "bargeboard", "bargeboards", "roofline", "gutter",
+    "gutters", "guttering", "downpipe", "downpipes", "blocked gutter", "leaking gutter", "gutter repair", "gutter cleaning",
+    "upvc cladding", "cladding", "dry verge",
+  ],
+  stoves: [
+    "stove", "stoves", "wood burner", "woodburner", "wood burning stove", "log burner", "logburner", "multi fuel stove",
+    "multifuel", "gas stove", "gas fire", "fireplace", "fire place", "hearth", "fire surround", "inglenook", "flue", "flue liner",
+    "chimney liner", "twin wall flue", "chimney", "hetas", "ecodesign", "open fire",
+  ],
+  "damp-proofing": [
+    "damp", "damp proofing", "damp proof", "dpc", "damp proof course", "rising damp", "penetrating damp", "condensation",
+    "mould", "mold", "black mould", "damp survey", "damp surveyor", "wet rot", "dry rot", "rot", "woodworm", "timber treatment",
+    "cellar", "basement", "tanking", "waterproofing", "cellar conversion", "salt marks", "tide marks", "pca",
   ],
   plumbing: [
     "plumber", "plumbers", "plumbing", "boiler", "boilers", "new boiler", "boiler repair", "boiler service", "boiler servicing",

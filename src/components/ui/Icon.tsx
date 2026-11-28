@@ -171,6 +171,63 @@ const paths: Record<IconName, React.ReactNode> = {
       <rect x="4" y="19" width="24" height="7" rx="3.5" />
     </>
   ),
+  painting: (
+    <>
+      <rect x="5" y="4" width="18" height="7" rx="1.5" />
+      <path d="M23 7.5h3v6H15v4" />
+      <rect x="13" y="17.5" width="4" height="10" rx="1" />
+    </>
+  ),
+  plastering: (
+    <>
+      <path d="M4 18h20l2 4H6z" />
+      <path d="M15 18v-5a3 3 0 0 1 3-3h2" />
+      <path d="M20 7v6" />
+      <path d="M4 27h24" />
+    </>
+  ),
+  carpentry: (
+    <>
+      <path d="M4 22 20 6l4 4L8 26H4z" />
+      <path d="M8 22l2 2M11 19l2 2M14 16l2 2M17 13l2 2" />
+      <path d="M22 4l6 6" />
+    </>
+  ),
+  roofline: (
+    <>
+      <path d="M3 15 16 5l13 10" />
+      <path d="M6 13v4h20v-4" />
+      <path d="M4 17h24v3H4z" />
+      <path d="M26 20v8M23 28h6" />
+    </>
+  ),
+  stove: (
+    <>
+      <path d="M14 3v7M18 3v7M12 10h8" />
+      <rect x="7" y="10" width="18" height="14" rx="2" />
+      <path d="M11 24v4M21 24v4M11 14h10v6H11z" />
+      <path d="M16 19c-1.5-1-1.5-2.5 0-4 1.5 1.5 1.5 3 0 4z" />
+    </>
+  ),
+  damp: (
+    <>
+      <path d="M4 4h24v24H4z" />
+      <path d="M4 12h24M4 20h24M12 4v8M20 12v8M12 20v8" />
+      <path d="M16 13c2 2.5 3 4 3 5.5a3 3 0 0 1-6 0c0-1.5 1-3 3-5.5z" />
+    </>
+  ),
+  brickwork: (
+    <>
+      <rect x="3" y="7" width="26" height="18" rx="1" />
+      <path d="M3 13h26M3 19h26M11 7v6M21 7v6M7 13v6M16 13v6M25 13v6M11 19v6M21 19v6" />
+    </>
+  ),
+  garage: (
+    <>
+      <path d="M3 13 16 5l13 8v15H3z" />
+      <path d="M7 28V16h18v12M7 20h18M7 24h18" />
+    </>
+  ),
   electrical: (
     <>
       <rect x="6" y="4" width="20" height="24" rx="2" />

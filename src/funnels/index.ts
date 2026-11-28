@@ -16,6 +16,12 @@ import { gardensDrivewaysFunnel } from "@/funnels/gardens-driveways";
 import { flooringFunnel } from "@/funnels/flooring";
 import { plumbingFunnel } from "@/funnels/plumbing";
 import { drainageGroundworksFunnel } from "@/funnels/drainage-groundworks";
+import { paintingDecoratingFunnel } from "@/funnels/painting-decorating";
+import { plasteringFunnel } from "@/funnels/plastering";
+import { carpentryJoineryFunnel } from "@/funnels/carpentry-joinery";
+import { rooflineFunnel } from "@/funnels/roofline";
+import { stovesFunnel } from "@/funnels/stoves";
+import { dampProofingFunnel } from "@/funnels/damp-proofing";
 import { electricalFunnel } from "@/funnels/electrical";
 import { securitySystemsFunnel } from "@/funnels/security-systems";
 
@@ -51,6 +57,12 @@ const funnels: Record<string, FunnelConfig> = Object.fromEntries(
     flooringFunnel,
     plumbingFunnel,
     drainageGroundworksFunnel,
+    paintingDecoratingFunnel,
+    plasteringFunnel,
+    carpentryJoineryFunnel,
+    rooflineFunnel,
+    stovesFunnel,
+    dampProofingFunnel,
     electricalFunnel,
     securitySystemsFunnel,
   ].map((f) => [

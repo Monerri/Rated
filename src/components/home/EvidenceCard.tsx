@@ -46,18 +46,28 @@ export function EvidenceCard({ specialist }: { specialist: PublicSpecialist }) {
         {checkRows(specialist).map((row) => {
           const label = row.status === "passed" ? "passed" : row.status === "not_required" ? "not required" : "not fully checked";
           return (
-            <li key={row.title} className="grid min-w-0 grid-cols-[22px_1fr] items-start gap-2.5">
+            <li
+              key={row.title}
+              className={`grid min-w-0 grid-cols-[22px_1fr] items-start gap-2.5 ${
+                row.special ? "-mx-2 rounded-lg border border-sand-line bg-sand px-2 py-2" : ""
+              }`}
+            >
               <span
                 className={`mt-0.5 grid size-[22px] place-items-center rounded-full ${
-                  row.status === "passed" ? "bg-green text-surface" : "border-[1.5px] border-line text-muted"
+                  row.special
+                    ? "bg-honey text-[13px] leading-none text-surface"
+                    : row.status === "passed"
+                      ? "bg-green text-surface"
+                      : "border-[1.5px] border-line text-muted"
                 }`}
                 aria-hidden="true"
               >
-                {row.status === "passed" ? <TickIcon /> : row.status === "not_required" ? "–" : "○"}
+                {row.special ? "★" : row.status === "passed" ? <TickIcon /> : row.status === "not_required" ? "–" : "○"}
               </span>
               <span className="min-w-0">
                 <span className={`block text-[15px] font-semibold leading-snug ${row.status === "partial" ? "text-muted" : ""}`}>
                   {row.title}
+                  {row.special && <span className="ml-1.5 text-[11px] font-semibold uppercase tracking-wide text-honey">Extra protection</span>}
                   <span className="sr-only">: {label}</span>
                 </span>
                 {/* Always one line; the full text is in the tooltip if it ever has to be cut short. */}

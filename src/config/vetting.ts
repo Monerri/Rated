@@ -91,7 +91,7 @@ export const vettingChecks: VettingCheckDefinition[] = [
     title: "Insurance-backed guarantee",
     summary: "We check the business offers an insurance-backed guarantee, where it's relevant to the work.",
     whatWeCheck:
-      "That the business offers an insurance-backed guarantee for qualifying work, and who provides it. For work where guarantees like this aren't offered, for example design and planning, this check doesn't apply.",
+      "That the business offers an insurance-backed guarantee for qualifying work, and who provides it. For work where guarantees like this aren't offered, for example design and planning, this check doesn't apply. Separately, we show how long the business guarantees its own workmanship, from its written guarantee.",
     whyItMatters:
       "An insurance-backed guarantee is designed to protect the installer's workmanship guarantee if the company stops trading during the guarantee period.",
     worthKnowing:

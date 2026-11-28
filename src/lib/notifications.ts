@@ -136,7 +136,7 @@ function checksBlock(s: Specialist): string {
   const badge = isVerified(s)
     ? `  ★ ${verifiedBadge.name}: passed every one of our checks`
     : `  Checked specialist: passed our required checks (not yet ${verifiedBadge.name})`;
-  const lines = checkRows(s).map((row) => `  ${row.status === "passed" ? "✓" : row.status === "not_required" ? "–" : "○"} ${row.title}: ${row.detail}`);
+  const lines = checkRows(s).map((row) => `  ${row.special ? "★" : row.status === "passed" ? "✓" : row.status === "not_required" ? "–" : "○"} ${row.title}: ${row.detail}`);
   return `${badge}\n${lines.join("\n")}\n  Checks last confirmed: ${formatMonthYear(s.checksLastConfirmed)}`;
 }
 

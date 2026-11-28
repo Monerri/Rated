@@ -589,7 +589,7 @@ export function SpecialistForm({
         <TextField
           label="Their own workmanship guarantee (years)"
           inputMode="numeric"
-          hint="As they told us; check their written guarantee if you can. 0 means none; leave blank if you don't know. Homeowners see it when there's no insurance-backed guarantee."
+          hint="From their written guarantee: ask to see it before you save. Homeowners see it as a ticked line. 0 means none; leave blank if you don't know."
           value={v.workmanshipYears}
           onChange={(e) => set("workmanshipYears", e.target.value)}
           error={errors.workmanshipGuaranteeYears}

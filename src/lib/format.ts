@@ -12,8 +12,18 @@ export function ordinal(n: number): string {
   return `${n}${suffix}.`;
 }
 
-/** "1st. January", or "31st. January 2027" with the year. UK dates (the deadlines are midnight in winter, so UTC is UK time). */
+/** "1st. January", or "31st. January 2027" with the year: the owner's date style, in UK time. Use this for every date shown. */
 export function ordinalDate(iso: string, withYear = false): string {
-  const d = new Date(iso);
-  return `${ordinal(d.getUTCDate())} ${ORDINAL_MONTHS[d.getUTCMonth()]}${withYear ? ` ${d.getUTCFullYear()}` : ""}`;
+  // The date as it is in the UK, so a moment just after midnight in summer time isn't shown as the day before.
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "numeric", year: "numeric", timeZone: "Europe/London" })
+      .formatToParts(new Date(iso))
+      .map((p) => [p.type, p.value]),
+  );
+  return `${ordinal(Number(parts.day))} ${ORDINAL_MONTHS[Number(parts.month) - 1]}${withYear ? ` ${parts.year}` : ""}`;
+}
+
+/** The time in the UK, for example "14:05". */
+export function ukTime(iso: string): string {
+  return new Date(iso).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/London" });
 }

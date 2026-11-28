@@ -28,7 +28,7 @@ const STATUS_LABELS: Record<SupplierApplication["status"], string> = {
 };
 
 function date(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+  return ordinalDate(iso, true);
 }
 
 function servicesOf(slugs: string[]): string {

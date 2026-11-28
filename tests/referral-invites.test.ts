@@ -11,6 +11,8 @@ test("dates use the owner's style: 1st. January, 31st. January 2027", () => {
   assert.deepEqual([1, 2, 3, 4, 11, 12, 13, 21, 22, 23, 31].map(ordinal), ["1st.", "2nd.", "3rd.", "4th.", "11th.", "12th.", "13th.", "21st.", "22nd.", "23rd.", "31st."]);
   assert.equal(ordinalDate("2027-01-01T00:00:00Z"), "1st. January");
   assert.equal(ordinalDate("2027-01-31T23:59:59Z", true), "31st. January 2027");
+  // UK time: just after midnight in summer is already the next day in the UK.
+  assert.equal(ordinalDate("2026-06-30T23:30:00Z", true), "1st. July 2026");
 });
 
 test("the email is personalised and has no '1 January' style dates", () => {

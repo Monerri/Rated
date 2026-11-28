@@ -1,3 +1,4 @@
+import { ordinalDate } from "@/lib/format";
 import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
@@ -88,12 +89,7 @@ export function getArticle(collection: Collection, slug: string, now = new Date(
 }
 
 export function formatDate(iso: string): string {
-  return new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    timeZone: "UTC",
-  });
+  return ordinalDate(`${iso}T12:00:00Z`, true);
 }
 
 /** A single document from content/legal (privacy, terms). Not date-filtered. */

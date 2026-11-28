@@ -1,3 +1,4 @@
+import { ordinalDate } from "@/lib/format";
 import { maxRadiusMiles } from "@/config/coverage";
 import { getService } from "@/config/services";
 import { freeCreditsFor, launch } from "@/config/launch";
@@ -469,7 +470,7 @@ function termsAcceptedEmail(s: Specialist, free: { welcome: number; founding: nu
 
 ${onApproval ? `Good news: ${s.name} has passed our checks for ${serviceList(s)}, and you're now set up to receive introductions.
 
-When you applied, ${t.acceptedByName} accepted our Specialist terms for ${s.name}, and they now apply. That was on ` : `Thanks. This confirms that ${t.acceptedByName} accepted our Specialist terms for ${s.name} on `}${new Date(t.acceptedAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/London" })}. You agreed:
+When you applied, ${t.acceptedByName} accepted our Specialist terms for ${s.name}, and they now apply. That was on ` : `Thanks. This confirms that ${t.acceptedByName} accepted our Specialist terms for ${s.name} on `}${ordinalDate(t.acceptedAt, true)}. You agreed:
 
 "${t.wording}"
 

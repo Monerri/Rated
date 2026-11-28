@@ -28,7 +28,7 @@ export const launch = {
   /** Applications received before this moment (UK midnight) qualify for the Founding Supplier offer. */
   foundingDeadline: "2027-01-01T00:00:00Z",
   /** The last day to apply, in words. */
-  foundingLastDay: "31 December 2026",
+  foundingLastDay: "31st. December 2026",
 };
 
 /** Whether the Founding Supplier offer is still open for new applications. */

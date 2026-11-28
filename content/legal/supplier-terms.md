@@ -25,11 +25,11 @@ We work with limited companies and sole traders that pass our [required checks](
 - **Bonus credits can be used for introductions in the same way as other credits, but they are never paid out as cash.**
 - **Free credits.** We may add free credits to your account. Free credits are used for introductions before credits you've bought. They have no cash value, are never paid out, can't be transferred, and end if you leave or we stop introducing you.
 - **Welcome credits.** At the moment, every specialist we approve receives **50 free welcome credits** when their account goes live. We may change or withdraw this offer for specialists who apply after we change it. That won't affect credits already added to your account.
-- **Founding Supplier offer.** If your application reaches us on or before **31 December 2026** and we approve your business, you also receive **100 Founding Supplier credits**, so 150 free credits in all. The offer is subject to approval: applying doesn't guarantee a place, and no credits are given to businesses we don't approve. Founding Supplier credits are free credits, so the rules above apply to them.
+- **Founding Supplier offer.** If your application reaches us on or before **31st. December 2026** and we approve your business, you also receive **100 Founding Supplier credits**, so 150 free credits in all. The offer is subject to approval: applying doesn't guarantee a place, and no credits are given to businesses we don't approve. Founding Supplier credits are free credits, so the rules above apply to them.
 - **Referral credits.** An approved specialist (the recommender) and a business they recommend to us (the recommended business) each receive **30 free credits** if all of these are met:
   - the recommended business enters the recommender's business name in the "Who recommended us?" field on its application. A recommendation can't be added after the application is submitted;
   - the recommended business is new to {{name}}: it hasn't previously registered with us, applied or been recommended;
-  - the application is submitted by **31 January 2027**;
+  - the application is submitted by **31st. January 2027**;
   - we approve the recommended business and it accepts these terms; and
   - we can reasonably identify the named recommender as an approved specialist at the time of the application.
 

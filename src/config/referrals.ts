@@ -8,10 +8,10 @@
 export const referrals = {
   /** Free credits each business receives. */
   credits: 30,
-  /** Applications must reach us before this moment: 31 January 2027, 23:59:59 UK time (GMT in winter). */
+  /** Applications must reach us before this moment: 31st. January 2027, 23:59:59 UK time (GMT in winter). */
   deadline: "2027-01-31T23:59:59.999Z",
   /** The deadline in words, for pages and emails. */
-  lastDay: "31 January 2027",
+  lastDay: "31st. January 2027",
   /** Longest name accepted in "Who recommended us?". */
   maxNameLength: 120,
 };

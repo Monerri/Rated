@@ -1,3 +1,4 @@
+import { ordinalDate } from "@/lib/format";
 import { site } from "@/config/site";
 
 /** "Who we're looking for", shown on the For Suppliers page. Mirrors the vetting checks. */
@@ -67,7 +68,7 @@ export const specialistTermsVersion = "2026-11-28";
 export const termsInviteDays = 30;
 
 function termsDate(): string {
-  return new Date(`${specialistTermsVersion}T00:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
+  return ordinalDate(`${specialistTermsVersion}T12:00:00Z`, true);
 }
 
 /**
@@ -86,6 +87,6 @@ export function applicationTermsWording() {
 export function specialistTermsWording(companyName: string) {
   return {
     wordingId: `specialist_terms.${specialistTermsVersion}`,
-    wording: `I'm authorised to act for ${companyName}, and on its behalf I agree to the ${site.name} Specialist terms dated ${new Date(`${specialistTermsVersion}T00:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" })}, including how prepaid credits, bonus credits and refunds work.`,
+    wording: `I'm authorised to act for ${companyName}, and on its behalf I agree to the ${site.name} Specialist terms dated ${termsDate()}, including how prepaid credits, bonus credits and refunds work.`,
   };
 }

@@ -1,5 +1,6 @@
 import { authorised } from "@/lib/admin";
 import { sendDueFeedbackRequests } from "@/lib/feedback";
+import { sendDueReferralInvites } from "@/lib/referralInvites";
 import { bindings } from "@/lib/cloudflare";
 import { jsonError, requestOrigin } from "@/lib/request";
 
@@ -9,5 +10,6 @@ export async function POST(request: Request) {
   // Scheduled requests don't come from a browser, so use the configured address for links.
   const { LINK_ORIGIN, SITE_URL } = bindings();
   const origin = LINK_ORIGIN ?? SITE_URL ?? requestOrigin(request);
-  return Response.json({ feedback: await sendDueFeedbackRequests(origin.replace(/\/$/, "")) });
+  const base = origin.replace(/\/$/, "");
+  return Response.json({ feedback: await sendDueFeedbackRequests(base), referralInvites: await sendDueReferralInvites(base) });
 }

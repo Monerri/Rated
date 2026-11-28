@@ -9,6 +9,8 @@ import { coveringServices } from "@/lib/serviceSearch";
 import { buttonClass } from "@/components/ui/Button";
 import { FormError } from "@/components/ui/Form";
 import { ReferralPanel } from "@/components/admin/ReferralPanel";
+import { referralInvitesFrom, referralsOpen } from "@/config/referrals";
+import { ordinalDate } from "@/lib/format";
 import { blankValues, SpecialistForm, valuesFromApplication, valuesFromSpecialist } from "@/components/admin/SpecialistForm";
 import type { Specialist, SupplierApplication } from "@/lib/types";
 
@@ -97,6 +99,16 @@ export function AdminOnboarding({ token, owner, onChanged }: { token: string; ow
     const body = (await res.json().catch(() => ({}))) as { error?: string };
     if (!res.ok) return setError(body.error ?? "That didn't work.");
     setMessage(`A new terms link has been emailed to ${s.name}. Any earlier link no longer works.`);
+    await load();
+  }
+
+  async function sendReferralInvite(s: Specialist) {
+    setError(null);
+    setMessage(null);
+    const res = await fetch(`/api/admin/specialists/${s.slug}/referral-invite`, { method: "POST", headers });
+    const body = (await res.json().catch(() => ({}))) as { error?: string };
+    if (!res.ok) return setError(body.error ?? "That didn't work.");
+    setMessage(`The referral invite has been emailed to ${s.name}.`);
     await load();
   }
 
@@ -325,6 +337,7 @@ export function AdminOnboarding({ token, owner, onChanged }: { token: string; ow
               <p className="text-muted">
                 {s.onboarding?.contactName}, {s.onboarding?.phone}, {s.enquiryEmail}
               </p>
+              {s.onboarding?.status === "active" && <p className="text-muted">{offersText(s)}</p>}
               {s.onboarding?.paymentReference && (
                 <p className="text-muted">
                   Payment reference: <span className="font-mono text-ink">{s.onboarding.paymentReference}</span>
@@ -334,6 +347,11 @@ export function AdminOnboarding({ token, owner, onChanged }: { token: string; ow
                 <button type="button" className={buttonClass("secondary", "sm")} onClick={() => setEditing({ kind: "edit", specialist: s })}>
                   Edit details and checks
                 </button>
+                {s.onboarding?.status === "active" && !s.onboarding.referralInviteSentAt && !s.onboarding.offersOptOut && referralsOpen() && (
+                  <button type="button" className={buttonClass("secondary", "sm")} onClick={() => void sendReferralInvite(s)}>
+                    Send the referral invite
+                  </button>
+                )}
                 {s.onboarding?.status !== "active" && (
                   <button type="button" className={buttonClass("secondary", "sm")} onClick={() => void resendTerms(s)}>
                     Send the terms link again
@@ -398,6 +416,14 @@ export function AdminOnboarding({ token, owner, onChanged }: { token: string; ow
       </section>
     </div>
   );
+}
+
+/** The referral invite and offers status, in words and symbols. */
+function offersText(s: Specialist): string {
+  const o = s.onboarding!;
+  if (o.offersOptOut) return `✕ Asked not to receive offers (${date(o.offersOptOut.at)})`;
+  if (o.referralInviteSentAt) return `✓ Referral invite sent ${date(o.referralInviteSentAt)}`;
+  return `○ Referral invite not sent yet (sent automatically the morning after going live, for specialists live from ${ordinalDate(referralInvitesFrom, true)})`;
 }
 
 function ApplicationDetails({ a }: { a: SupplierApplication }) {

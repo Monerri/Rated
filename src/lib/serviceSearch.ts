@@ -1,4 +1,5 @@
 import { serviceKeywords } from "@/config/serviceKeywords";
+import { services } from "@/config/services";
 import type { Service } from "@/lib/types";
 
 /**
@@ -71,4 +72,20 @@ export function matchesSearch(s: Service, query: string): boolean {
   if (typed.length === 0) return true;
   const vocab = vocabulary(s);
   return typed.every((t) => vocab.some((w) => wordMatches(t, w)));
+}
+
+/**
+ * Live services that cover what an applicant typed in "Don't see your trade?",
+ * using the same matching as the service search. The text is tried whole and
+ * in parts ("drainage, groundworks and fencing"), and counts as covered only
+ * if every part matches a live service.
+ */
+export function coveringServices(text: string, live: Service[] = services.filter((s) => s.status === "live")): string[] {
+  const whole = live.filter((s) => matchesSearch(s, text));
+  if (whole.length) return whole.map((s) => s.name);
+  const parts = text.split(/,|;|\/|&|\band\b|\n/i).map((p) => p.trim()).filter(Boolean);
+  if (parts.length < 2) return [];
+  const perPart = parts.map((p) => live.filter((s) => matchesSearch(s, p)));
+  if (perPart.some((m) => m.length === 0)) return [];
+  return [...new Set(perPart.flat().map((s) => s.name))];
 }

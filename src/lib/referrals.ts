@@ -1,6 +1,7 @@
 import { referrals, referralsOpen } from "@/config/referrals";
 import { site } from "@/config/site";
 import { formatCredits } from "@/lib/credits";
+import { ordinalDate, ukTime } from "@/lib/format";
 import { trySend, type Email } from "@/lib/notifications";
 import { recordStore } from "@/lib/records";
 import type {
@@ -189,7 +190,7 @@ export function referralFlags(input: {
   const earlierApps = applications.filter((x) => x.id !== a.id && x.createdAt < a.createdAt);
   for (const x of earlierApps) {
     const same = shared(me, ofApplication(x));
-    if (same.length) flags.push({ flag: "not_new", detail: `Earlier application from ${x.companyName} (${x.createdAt.slice(0, 10)}) has the same ${same.join(", ")}.` });
+    if (same.length) flags.push({ flag: "not_new", detail: `Earlier application from ${x.companyName} (${ordinalDate(x.createdAt, true)}) has the same ${same.join(", ")}.` });
   }
   for (const s of specialists.filter((s) => !s.isDemo && s.onboarding?.applicationId !== a.id)) {
     const same = shared(me, ofSpecialist(s));
@@ -211,7 +212,7 @@ export function referralFlags(input: {
   }
 
   // (d)
-  if (!referralsOpen(at)) flags.push({ flag: "late", detail: `Submitted ${at.slice(0, 16).replace("T", " ")} UTC, after ${referrals.lastDay}.` });
+  if (!referralsOpen(at)) flags.push({ flag: "late", detail: `Submitted ${ordinalDate(at, true)} at ${ukTime(at)}, after ${referrals.lastDay}.` });
 
   return flags;
 }

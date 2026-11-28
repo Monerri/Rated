@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ordinalDate } from "@/lib/format";
 import Link from "next/link";
 import { getService } from "@/config/services";
 import { site } from "@/config/site";
@@ -65,7 +66,7 @@ export default async function AcceptTermsPage({ params }: Props) {
             Read the full Specialist terms (opens in a new tab)
           </Link>
           , dated{" "}
-          {new Date(`${specialistTermsVersion}T00:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" })}.
+          {ordinalDate(`${specialistTermsVersion}T12:00:00Z`, true)}.
         </p>
       </section>
       <AcceptTermsForm

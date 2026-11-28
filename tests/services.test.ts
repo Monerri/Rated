@@ -50,3 +50,8 @@ test("decorating and plastering leads go to specialists who take that kind of wo
   assert.deepEqual(getFunnel("plastering")!.leadTypes!.of({ work: ["render"] }), ["rendering"]);
   assert.deepEqual(getFunnel("carpentry-joinery")!.leadTypes!.of({ work: ["wardrobes"] }), ["fitted-furniture"]);
 });
+
+test("Electrical comes before Insulation", () => {
+  const order = live.map((s) => s.slug);
+  assert.ok(order.indexOf("electrical") < order.indexOf("insulation"));
+});

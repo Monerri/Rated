@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { referrals } from "@/config/referrals";
+import { ordinalDate, ukTime } from "@/lib/format";
 import { buttonClass } from "@/components/ui/Button";
 import { FormError } from "@/components/ui/Form";
 import type { ReferralFlag } from "@/lib/types";
@@ -91,19 +92,19 @@ export function ReferralPanel({ token, applicationId }: { token: string; applica
       <h3 className="font-bold">Referral</h3>
       <p>
         <span className="font-semibold">Recommended by (as typed):</span> &ldquo;{state.recommendedBy.name}&rdquo;
-        <span className="text-muted"> · submitted {state.recommendedBy.submittedAt.slice(0, 16).replace("T", " ")} UTC</span>
+        <span className="text-muted"> · submitted {ordinalDate(state.recommendedBy.submittedAt, true)} at {ukTime(state.recommendedBy.submittedAt)}</span>
       </p>
 
       {state.award ? (
         <p role="status" className="font-semibold">
-          ✓ {referrals.credits} referral credits added {state.award.awardedAt.slice(0, 10)}: {state.award.recommendedName}
+          ✓ {referrals.credits} referral credits added {ordinalDate(state.award.awardedAt, true)}: {state.award.recommendedName}
           {state.award.recommenderEntryId ? ` and ${state.award.recommenderName}` : ` (not ${state.award.recommenderName}, who had left)`}.
         </p>
       ) : (
         <>
           {state.confirmation && (
             <p className="font-semibold">
-              … Confirmed as {state.confirmation.recommenderName} on {state.confirmation.confirmedAt.slice(0, 10)}. Credits are added once
+              … Confirmed as {state.confirmation.recommenderName} on {ordinalDate(state.confirmation.confirmedAt, true)}. Credits are added once
               the business is approved and has accepted the Specialist terms.
             </p>
           )}

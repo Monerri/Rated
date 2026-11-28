@@ -64,10 +64,10 @@ export const services: Service[] = [
     regions: ["north-east-england"],
   },
   {
-    slug: "insulation",
-    name: "Insulation",
-    summary: "Loft, cavity wall and other insulation.",
-    icon: "insulation",
+    slug: "electrical",
+    name: "Electrical",
+    summary: "Rewiring, new circuits, consumer units and electrical repairs.",
+    icon: "electrical",
     status: "live",
     regions: ["north-east-england"],
   },
@@ -102,7 +102,7 @@ services.push(
   live("stoves", "Wood Burners & Stoves", "Wood burners, multi-fuel and gas stoves, flue liners and fireplaces.", "stove"),
   live("damp-proofing", "Damp Proofing", "Rising and penetrating damp, condensation, rot and cellar waterproofing.", "damp"),
   live("drainage-groundworks", "Drainage & Groundworks", "Drains, soakaways, underground water pipes, septic tanks and groundworks.", "drainage"),
-  live("electrical", "Electrical", "Rewiring, new circuits, consumer units and electrical repairs.", "electrical"),
+  live("insulation", "Insulation", "Loft, cavity wall and other insulation.", "insulation"),
   live("security-systems", "Security Systems", "Burglar alarms, CCTV, smart doorbells and security lighting.", "security"),
 );
 

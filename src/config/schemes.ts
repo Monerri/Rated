@@ -10,7 +10,7 @@
  * - "where-relevant": we check it where the job calls for it.
  *
  * Sources (checked October 2026): GOV.UK list of competent person schemes
- * (updated 17 September 2026); HSE on Gas Safe registration (Gas Safety
+ * (updated 17th. September 2026); HSE on Gas Safe registration (Gas Safety
  * (Installation and Use) Regulations 1998, regulation 3); GOV.UK on F gas
  * company certification; the Architects Act 1997 (protected title).
  */

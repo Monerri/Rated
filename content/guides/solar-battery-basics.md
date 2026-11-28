@@ -36,7 +36,7 @@ Under the **Smart Export Guarantee**, larger energy suppliers must offer a payme
 
 ## Costs and VAT
 
-At the time of writing, the installation of solar panels and batteries in homes in Great Britain is **zero-rated for VAT** until 31 March 2027. Check the current position on GOV.UK, as tax rules can change.
+At the time of writing, the installation of solar panels and batteries in homes in Great Britain is **zero-rated for VAT** until 31st. March 2027. Check the current position on GOV.UK, as tax rules can change.
 
 ## Permissions
 

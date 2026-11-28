@@ -12,6 +12,8 @@ import { Eyebrow } from "@/components/ui/Section";
 import { ArrowIcon, TickIcon } from "@/components/ui/Icon";
 import { SupplierForm } from "@/components/suppliers/SupplierForm";
 import { foundingOfferOpen, launch } from "@/config/launch";
+import { referrals, referralsOpen } from "@/config/referrals";
+import { site } from "@/config/site";
 
 export const metadata: Metadata = {
   title: "For suppliers",
@@ -115,6 +117,29 @@ export default function ForSuppliersPage() {
                 .
               </p>
             </div>
+          </div>
+        </section>
+      )}
+
+      {referralsOpen() && (
+        <section aria-labelledby="referral-heading" className="border-b border-line bg-surface">
+          <div className="mx-auto grid max-w-6xl gap-3 px-4 py-12 sm:px-6">
+            <Eyebrow>Referrals</Eyebrow>
+            <h2 id="referral-heading" className="text-[28px] font-bold leading-tight md:text-[34px]">
+              Recommended by a specialist?
+            </h2>
+            <p className="max-w-3xl text-lg text-muted">
+              If a {site.name} specialist recommended us, enter their business name in &lsquo;Who recommended us?&rsquo; on{" "}
+              <a href="#apply" className="text-blue underline">
+                the form
+              </a>
+              . Once you&apos;re approved, you&apos;ll both get {referrals.credits} extra credits, on top of any other offer.
+              Applications must be submitted by {referrals.lastDay}. See the{" "}
+              <Link href="/supplier-terms" className="text-blue underline">
+                referral terms
+              </Link>{" "}
+              for details.
+            </p>
           </div>
         </section>
       )}

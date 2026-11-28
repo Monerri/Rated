@@ -7,6 +7,7 @@ import { useCallback, useEffect, useState } from "react";
 import { getService } from "@/config/services";
 import { buttonClass } from "@/components/ui/Button";
 import { FormError } from "@/components/ui/Form";
+import { ReferralPanel } from "@/components/admin/ReferralPanel";
 import { blankValues, SpecialistForm, valuesFromApplication, valuesFromSpecialist } from "@/components/admin/SpecialistForm";
 import type { Specialist, SupplierApplication } from "@/lib/types";
 
@@ -116,6 +117,9 @@ export function AdminOnboarding({ token, owner, onChanged }: { token: string; ow
       <section className="grid min-w-0 gap-4">
         <h2 className="text-2xl font-bold">{title}</h2>
         {editing.kind === "application" && <ApplicationDetails a={editing.application} />}
+        {editing.kind === "application" && editing.application.recommendedBy && (
+          <ReferralPanel token={token} applicationId={editing.application.id} />
+        )}
         <SpecialistForm
           token={token}
           mode={editing.kind === "edit" ? "edit" : "approve"}
@@ -168,6 +172,7 @@ export function AdminOnboarding({ token, owner, onChanged }: { token: string; ow
               <p className="font-semibold">{a.companyName}</p>
               <p className="text-muted">
                 {servicesOf(a.servicesOffered ?? [a.mainService])} · {a.basePostcode ? `${a.radiusMiles} miles from ${a.basePostcode}` : a.areasCovered.join(", ")} · applied {date(a.createdAt)}
+                {a.recommendedBy ? ` · recommended by “${a.recommendedBy.name}”` : ""}
               </p>
               <div className="flex flex-wrap gap-2">
                 <button type="button" className={buttonClass("primary", "sm")} onClick={() => setEditing({ kind: "application", application: a })}>
@@ -181,6 +186,7 @@ export function AdminOnboarding({ token, owner, onChanged }: { token: string; ow
                 </button>
               </div>
               {open === a.id && <ApplicationDetails a={a} />}
+              {open === a.id && a.recommendedBy && <ReferralPanel token={token} applicationId={a.id} />}
               {declining?.id === a.id && (
                 <DeclineForm
                   token={token}
@@ -204,10 +210,25 @@ export function AdminOnboarding({ token, owner, onChanged }: { token: string; ow
             {showDone && (
               <ul className="grid gap-2 text-[15px]">
                 {done.map((a) => (
-                  <li key={a.id} className="rounded-[var(--radius-card)] border border-line bg-surface p-3">
-                    <span className="font-semibold">{a.companyName}</span> · {STATUS_LABELS[a.status]}
-                    {a.review ? ` ${date(a.review.at)} by ${a.review.by}` : ""}
-                    {a.review?.declineReason ? ` · ${a.review.declineReason}` : ""}
+                  <li key={a.id} className="grid gap-2 rounded-[var(--radius-card)] border border-line bg-surface p-3">
+                    <p>
+                      <span className="font-semibold">{a.companyName}</span> · {STATUS_LABELS[a.status]}
+                      {a.review ? ` ${date(a.review.at)} by ${a.review.by}` : ""}
+                      {a.review?.declineReason ? ` · ${a.review.declineReason}` : ""}
+                      {a.recommendedBy ? ` · recommended by “${a.recommendedBy.name}”` : ""}
+                    </p>
+                    {a.status === "accepted" && a.recommendedBy && (
+                      <>
+                        <button
+                          type="button"
+                          className={`${buttonClass("secondary", "sm")} justify-self-start`}
+                          onClick={() => setOpen(open === a.id ? null : a.id)}
+                        >
+                          {open === a.id ? "Hide referral" : "Referral"}
+                        </button>
+                        {open === a.id && <ReferralPanel token={token} applicationId={a.id} />}
+                      </>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -343,6 +364,7 @@ function ApplicationDetails({ a }: { a: SupplierApplication }) {
     ["Guarantee provider", a.insuranceBackedGuaranteeProvider || "None given"],
     ["Google profile", a.googleProfileUrl],
     ["About", a.description],
+    ["Recommended by", a.recommendedBy ? `“${a.recommendedBy.name}” (as typed). Confirm or check it in Referral below.` : "Nobody named"],
     ["Anything else", a.anythingElse ?? "Nothing"],
     ["Came from", a.source?.utm?.source ? `${a.source.utm.source}${a.source.utm.medium ? ` (${a.source.utm.medium})` : ""}` : (a.source?.referrer ?? "Not known")],
     [

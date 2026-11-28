@@ -135,6 +135,7 @@ Charged for leads: ${formatCredits(-sum(entries, "lead"))}
 Money received for top-ups: ${formatPounds(topups)}
 Bonus credits given with top-ups: ${formatCredits(sum(entries, "bonus"))}
 Free credits given (no money received): ${formatCredits(sum(entries, "promo"))}
+Referral credits given (no money received): ${formatCredits(sum(entries, "referral_bonus"))}
 Refunds to balances: ${formatCredits(sum(entries, "refund"))}
 Leads missed because of low balances: ${missed.length}
 Credits held by specialists: ${formatCredits(Object.values(balances).reduce((t, b) => t + b, 0))} at face value

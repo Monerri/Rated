@@ -7,6 +7,8 @@ import type {
   LedgerEntry,
   ListingSwitch,
   MissedLead,
+  ReferralAward,
+  ReferralConfirmation,
   SavedProgress,
   ServiceOverride,
   Specialist,
@@ -77,6 +79,19 @@ export interface RecordStore {
   addListingSwitch(record: ListingSwitch): Promise<void>;
   /** The latest switch for every specialist who has one. */
   getListingSwitches(): Promise<Record<string, ListingSwitch>>;
+
+  /** Saves (or, before any award, replaces) the owner's confirmation of who recommended an application. */
+  saveReferralConfirmation(c: ReferralConfirmation): Promise<void>;
+  getReferralConfirmation(applicationId: string): Promise<ReferralConfirmation | null>;
+  listReferralConfirmations(): Promise<ReferralConfirmation[]>;
+  /**
+   * Records a referral award and its two ledger lines in one step. False,
+   * with nothing written, if this application has already had an award, so
+   * a referral can never be paid twice.
+   */
+  claimReferralAward(award: ReferralAward, lines: LedgerEntry[]): Promise<boolean>;
+  getReferralAward(applicationId: string): Promise<ReferralAward | null>;
+  listReferralAwards(): Promise<ReferralAward[]>;
 }
 
 /**
@@ -96,6 +111,8 @@ interface Memory {
   missed: MissedLead[];
   feedback: Map<string, FeedbackRequest>;
   switches: ListingSwitch[];
+  referralConfirmations?: Map<string, ReferralConfirmation>;
+  referralAwards?: Map<string, ReferralAward>;
 }
 
 const g = globalThis as typeof globalThis & { __vnMemory?: Memory };
@@ -234,6 +251,28 @@ const prototypeStore: RecordStore = {
     for (const r of memory.switches ?? []) out[r.supplierSlug] = r;
     return out;
   },
+  async saveReferralConfirmation(c) {
+    (memory.referralConfirmations ??= new Map()).set(c.applicationId, c);
+  },
+  async getReferralConfirmation(id) {
+    return memory.referralConfirmations?.get(id) ?? null;
+  },
+  async listReferralConfirmations() {
+    return [...(memory.referralConfirmations ?? new Map()).values()];
+  },
+  async claimReferralAward(award, lines) {
+    const awards = (memory.referralAwards ??= new Map());
+    if (awards.has(award.applicationId)) return false;
+    awards.set(award.applicationId, award);
+    memory.ledger.push(...lines);
+    return true;
+  },
+  async getReferralAward(id) {
+    return memory.referralAwards?.get(id) ?? null;
+  },
+  async listReferralAwards() {
+    return [...(memory.referralAwards ?? new Map()).values()];
+  },
 };
 
 /**
@@ -266,6 +305,10 @@ const SCHEMA = [
   "CREATE INDEX IF NOT EXISTS listing_switches_by_supplier ON listing_switches (supplier_slug, created_at)",
   // Specialists approved on /admin, stored whole. Kept while they work with us and six years after (privacy notice).
   "CREATE TABLE IF NOT EXISTS specialists (slug TEXT PRIMARY KEY, created_at TEXT NOT NULL, updated_at TEXT NOT NULL, data TEXT NOT NULL)",
+  // Referral credits (November 2026): the owner's confirmation per application, and at most one award per application.
+  // Kept like the ledger, as the record of why referral credits were given.
+  "CREATE TABLE IF NOT EXISTS referral_confirmations (application_id TEXT PRIMARY KEY, created_at TEXT NOT NULL, data TEXT NOT NULL)",
+  "CREATE TABLE IF NOT EXISTS referral_awards (application_id TEXT PRIMARY KEY, created_at TEXT NOT NULL, data TEXT NOT NULL)",
 ];
 
 /**
@@ -534,6 +577,45 @@ function d1Queries(db: D1): RecordStore {
       }
       return out;
     },
+
+    async saveReferralConfirmation(c) {
+      await db
+        .prepare("INSERT OR REPLACE INTO referral_confirmations (application_id, created_at, data) VALUES (?, ?, ?)")
+        .bind(c.applicationId, c.confirmedAt, JSON.stringify(c))
+        .run();
+    },
+    getReferralConfirmation: (id) => one<ReferralConfirmation>("SELECT data FROM referral_confirmations WHERE application_id = ?", id),
+    async listReferralConfirmations() {
+      const { results } = await db.prepare("SELECT data FROM referral_confirmations ORDER BY created_at DESC").all<{ data: string }>();
+      return results.map((row) => JSON.parse(row.data) as ReferralConfirmation);
+    },
+    async claimReferralAward(award, lines) {
+      // One transaction: if this application already has an award, the first
+      // insert fails and nothing (including the ledger lines) is written.
+      try {
+        await db.batch([
+          db
+            .prepare("INSERT INTO referral_awards (application_id, created_at, data) VALUES (?, ?, ?)")
+            .bind(award.applicationId, award.awardedAt, JSON.stringify(award)),
+          ...lines.map((e) =>
+            db
+              .prepare(
+                "INSERT INTO credit_ledger (id, supplier_slug, created_at, kind, amount_credits, paid_pence, enquiry_id, note) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+              )
+              .bind(e.id, e.supplierSlug, e.createdAt, e.kind, e.amountCredits, e.paidPence ?? null, e.enquiryId, e.note),
+          ),
+        ]);
+        return true;
+      } catch (err) {
+        if (String(err instanceof Error ? err.message : err).includes("UNIQUE")) return false;
+        throw err;
+      }
+    },
+    getReferralAward: (id) => one<ReferralAward>("SELECT data FROM referral_awards WHERE application_id = ?", id),
+    async listReferralAwards() {
+      const { results } = await db.prepare("SELECT data FROM referral_awards ORDER BY created_at DESC").all<{ data: string }>();
+      return results.map((row) => JSON.parse(row.data) as ReferralAward);
+    },
   };
 }
 
@@ -574,4 +656,10 @@ export const recordStore: RecordStore = {
   listMissedLeads: (since) => currentStore().listMissedLeads(since),
   addListingSwitch: (r) => currentStore().addListingSwitch(r),
   getListingSwitches: () => currentStore().getListingSwitches(),
+  saveReferralConfirmation: (c) => currentStore().saveReferralConfirmation(c),
+  getReferralConfirmation: (id) => currentStore().getReferralConfirmation(id),
+  listReferralConfirmations: () => currentStore().listReferralConfirmations(),
+  claimReferralAward: (a, lines) => currentStore().claimReferralAward(a, lines),
+  getReferralAward: (id) => currentStore().getReferralAward(id),
+  listReferralAwards: () => currentStore().listReferralAwards(),
 };

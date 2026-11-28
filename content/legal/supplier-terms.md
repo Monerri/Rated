@@ -1,7 +1,7 @@
 ---
 title: Specialist terms
 description: The terms for home-improvement specialists who receive introductions through {{name}}, including prepaid credit.
-date: 2026-11-19
+date: 2026-11-28
 ---
 
 These terms apply to businesses ("you") that receive introductions to homeowners through {{name}} ("we", "us"). Our [terms of use](/terms) for homeowners and our [privacy notice](/privacy) explain how the service works from the homeowner's side.
@@ -26,6 +26,14 @@ We work with limited companies and sole traders that pass our [required checks](
 - **Free credits.** We may add free credits to your account. Free credits are used for introductions before credits you've bought. They have no cash value, are never paid out, can't be transferred, and end if you leave or we stop introducing you.
 - **Welcome credits.** At the moment, every specialist we approve receives **50 free welcome credits** when their account goes live. We may change or withdraw this offer for specialists who apply after we change it. That won't affect credits already added to your account.
 - **Founding Supplier offer.** If your application reaches us on or before **31 December 2026** and we approve your business, you also receive **100 Founding Supplier credits**, so 150 free credits in all. The offer is subject to approval: applying doesn't guarantee a place, and no credits are given to businesses we don't approve. Founding Supplier credits are free credits, so the rules above apply to them.
+- **Referral credits.** An approved specialist (the recommender) and a business they recommend to us (the recommended business) each receive **30 free credits** if all of these are met:
+  - the recommended business enters the recommender's business name in the "Who recommended us?" field on its application. A recommendation can't be added after the application is submitted;
+  - the recommended business is new to {{name}}: it hasn't previously registered with us, applied or been recommended;
+  - the application is submitted by **31 January 2027**;
+  - we approve the recommended business and it accepts these terms; and
+  - we can reasonably identify the named recommender as an approved specialist at the time of the application.
+
+  A business can't recommend itself or a business under the same ownership. Referral credits are in addition to any other offer, and there's no limit on the number of businesses a specialist can recommend. Referral credits are free credits: they have no cash value, can't be transferred, and end if the specialist leaves or we stop introducing them. We won't accept lists of businesses in place of an application: the recommended business must complete its own application. Our decision on whether a referral qualifies is final, and we may withdraw referral credits obtained through misuse.
 - Credits can only be used to pay for introductions. They aren't a deposit, don't earn interest and can't be transferred to another business.
 - Our current prices are set out in your price list, in credits with their pound value. Each introduction is charged at the price in force when it's sent. We'll give you at least 30 days' notice of any price increase.
 

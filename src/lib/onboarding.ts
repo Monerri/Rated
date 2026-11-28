@@ -13,6 +13,7 @@ import { lookupPostcode } from "@/lib/geo";
 import { trySend, type Email } from "@/lib/notifications";
 import { normalisePostcode, postcodeArea } from "@/lib/postcode";
 import { recordStore } from "@/lib/records";
+import { awardReferralIfDue } from "@/lib/referrals";
 import { EMAIL, normaliseCompanyNumber, normalisePhone, normaliseUrl, requestOrigin, str } from "@/lib/request";
 import { allSpecialists } from "@/lib/specialistDirectory";
 import type { AdminRole, Specialist, SupplierApplication, TermsAcceptance, VettingCheckResult } from "@/lib/types";
@@ -447,6 +448,8 @@ export async function activateSpecialist(
   if (free.welcome > 0) await addCredit(s.slug, "promo", free.welcome, "Welcome credits");
   if (free.founding > 0) await addCredit(s.slug, "promo", free.founding, "Founding Supplier credits");
   const emailed = await trySend(termsAcceptedEmail(updated, free, onApproval));
+  // Referral credits, if the owner has already confirmed who recommended them. Otherwise they're added on confirmation.
+  if (s.onboarding?.applicationId) await awardReferralIfDue(s.onboarding.applicationId);
   return { specialist: updated, emailed };
 }
 

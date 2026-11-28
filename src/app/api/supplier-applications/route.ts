@@ -6,6 +6,7 @@ import { getService, services } from "@/config/services";
 import { applicationTermsWording, competentPersonSchemes, specialistTermsVersion, supplierDeclarationWording } from "@/config/suppliers";
 import { supplierAcknowledgementEmail, supplierApplicationInternalEmail, trySend } from "@/lib/notifications";
 import { recordStore } from "@/lib/records";
+import { parseRecommendedBy } from "@/lib/referrals";
 import { getFunnel } from "@/funnels";
 import {
   EMAIL,
@@ -69,6 +70,7 @@ export async function POST(request: Request) {
   const googleProfileUrl = typeof body.googleProfileUrl === "string" ? normaliseUrl(body.googleProfileUrl) : null;
   const description = str(body.description, 2000);
   const anythingElse = str(body.anythingElse, 2000);
+  const recommendedBy = parseRecommendedBy(body.recommendedBy);
 
   if (!companyName) errors.companyName = "Please enter your company name.";
   if (!contactName) errors.contactName = "Please enter a contact name.";
@@ -94,6 +96,7 @@ export async function POST(request: Request) {
   if (scheme?.value === "other" && !schemeOther) errors.competentPersonSchemeOther = "Please tell us which scheme.";
   if (!googleProfileUrl) errors.googleProfileUrl = "Please enter a link to your Google Business profile or reviews.";
   if (!description) errors.description = "Please tell us a little about your business.";
+  if (!recommendedBy.ok) errors.recommendedBy = recommendedBy.error;
 
   const expected = supplierDeclarationWording();
   const declaration = (body.declaration ?? {}) as Record<string, unknown>;
@@ -136,6 +139,8 @@ export async function POST(request: Request) {
     googleProfileUrl: googleProfileUrl!,
     description: description!,
     anythingElse,
+    // Stored as typed; it can't be added or changed after this point.
+    recommendedBy: recommendedBy.ok && recommendedBy.name ? { name: recommendedBy.name, submittedAt: now } : null,
     declaration: { ...expected, givenAt: now },
     termsAcceptance: { version: specialistTermsVersion, ...expectedTerms, acceptedByName: contactName!, acceptedAt: now },
     source: parseSource(body.source),

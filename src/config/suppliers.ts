@@ -61,7 +61,7 @@ export function supplierDeclarationWording() {
  * content/legal/supplier-terms.md. Change both together when the terms change,
  * so every acceptance records which version it was.
  */
-export const specialistTermsVersion = "2026-11-19";
+export const specialistTermsVersion = "2026-11-28";
 
 /** How long a "please accept our terms" link stays valid. */
 export const termsInviteDays = 30;

@@ -475,6 +475,8 @@ Google profile: ${a.googleProfileUrl}
 About the business:
 ${a.description}
 
+Recommended by: ${a.recommendedBy?.name ?? "Not given"}
+
 Anything else:
 ${a.anythingElse ?? "Nothing"}
 

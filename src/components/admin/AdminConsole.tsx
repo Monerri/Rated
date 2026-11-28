@@ -57,6 +57,7 @@ const KIND_LABELS: Record<LedgerEntry["kind"], string> = {
   topup: "Top-up",
   bonus: "Bonus",
   promo: "Free credits",
+  referral_bonus: "Referral credits",
   lead: "Lead",
   refund: "Refund",
   adjustment: "Adjustment",

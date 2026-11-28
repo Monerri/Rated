@@ -4,6 +4,8 @@ import { useRef, useState } from "react";
 import type { Service } from "@/lib/types";
 import { maxRadiusMiles, radiusOptions } from "@/config/coverage";
 import { applicationTermsWording, competentPersonSchemes, supplierDeclarationWording } from "@/config/suppliers";
+import { referrals, referralsOpen } from "@/config/referrals";
+import { site } from "@/config/site";
 import { getSourceInfo } from "@/lib/source";
 import { buttonClass } from "@/components/ui/Button";
 import { getFunnel } from "@/funnels";
@@ -56,6 +58,7 @@ export function SupplierForm({ services }: { services: Pick<Service, "slug" | "n
         insuranceBackedGuaranteeProvider: get("insuranceBackedGuaranteeProvider"),
         googleProfileUrl: get("googleProfileUrl"),
         description: get("description"),
+        recommendedBy: get("recommendedBy"),
         anythingElse: get("anythingElse"),
         declaration: { ...declaration, given: agreed },
         terms: { ...termsWording, given: termsAgreed },
@@ -278,6 +281,16 @@ export function SupplierForm({ services }: { services: Pick<Service, "slug" | "n
           maxLength={2000}
           error={errors.description}
         />
+        {referralsOpen() && (
+          <TextField
+            label="Who recommended us?"
+            name="recommendedBy"
+            hint={`If another ${site.name} specialist recommended us, enter their business name to claim ${referrals.credits} extra credits each when you're approved.`}
+            autoComplete="off"
+            maxLength={referrals.maxNameLength}
+            error={errors.recommendedBy}
+          />
+        )}
         <TextAreaField label="Anything else you'd like us to know" name="anythingElse" optional maxLength={2000} />
       </fieldset>
 

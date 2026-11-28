@@ -190,7 +190,16 @@ export interface SpecialistOnboarding {
   phone: string;
   googleProfileUrl: string | null;
   /** What was checked for each of our checks, for our records (never shown to homeowners). */
-  checkNotes: { company: string; guarantee: string; scheme: string; google: string; legal?: string; identity?: string };
+  checkNotes: {
+    company: string;
+    guarantee: string;
+    scheme: string;
+    google: string;
+    legal?: string;
+    identity?: string;
+    /** Sole traders: the checklist items ticked (ids from soleTraderChecklist in config/vetting.ts). */
+    soleTraderChecklist?: string[];
+  };
   checkedBy: AdminRole;
   /** The reference they use on bank transfers, for example VN-REALFLOORS. Unique. */
   paymentReference?: string;
@@ -222,7 +231,7 @@ export interface LedgerEntry {
   id: string;
   supplierSlug: string;
   createdAt: string;
-  kind: "topup" | "bonus" | "promo" | "lead" | "refund" | "adjustment" | "forfeit" | "payout";
+  kind: "topup" | "bonus" | "promo" | "referral_bonus" | "lead" | "refund" | "adjustment" | "forfeit" | "payout";
   amountCredits: number;
   /** Money in (topup) or out (payout), in pence. Null for every other kind. */
   paidPence?: number | null;
@@ -375,6 +384,11 @@ export interface SupplierApplication {
   description: string;
   anythingElse: string | null;
   /**
+   * "Who recommended us?", exactly as typed (trimmed), with when it was
+   * submitted. Set only on the application form; never added or changed later.
+   */
+  recommendedBy?: { name: string; submittedAt: string } | null;
+  /**
    * The Specialist terms, accepted on the application form, to take effect if
    * we approve them. Missing on older applications.
    */
@@ -383,4 +397,47 @@ export interface SupplierApplication {
   declaration: { wordingId: string; wording: string; givenAt: string };
   source: SourceInfo;
   createdAt: string;
+}
+
+/** Why a referral might not qualify. Shown on /admin in words with a symbol. */
+export type ReferralFlag =
+  /** (a) The named recommender isn't an active (approved, terms accepted) specialist. */
+  | "recommender_not_approved"
+  /** (b) The applicant had already registered, applied or been recommended. */
+  | "not_new"
+  /** (c) The applicant names itself, or shares an email, phone, Companies House number or likely owner with the recommender. */
+  | "connected"
+  /** (d) The application arrived after the referral deadline. */
+  | "late";
+
+/**
+ * The owner's confirmation of who recommended an application. Saved once per
+ * application; the credits are added when the recommended business is also
+ * approved and has accepted the Specialist terms (see lib/referrals.ts).
+ */
+export interface ReferralConfirmation {
+  applicationId: string;
+  recommenderSlug: string;
+  /** The name exactly as the applicant typed it. */
+  nameAsEntered: string;
+  /** The flags shown when the owner confirmed. */
+  flags: ReferralFlag[];
+  /** Flags the owner chose to override, with their reason. Only "not_new" and "connected" can be overridden. */
+  overrides: { flag: ReferralFlag; reason: string }[];
+  /** The owner confirmed they'd checked Companies House for a shared director. */
+  ownershipChecked: boolean;
+  confirmedAt: string;
+  confirmedBy: AdminRole;
+}
+
+/** A referral award: both ledger lines, linked to each other and the application. One per application, ever. */
+export interface ReferralAward {
+  applicationId: string;
+  recommenderSlug: string;
+  recommendedSlug: string;
+  credits: number;
+  /** Null if the recommender had left by the time the credits were added, so only the recommended business was credited. */
+  recommenderEntryId: string | null;
+  recommendedEntryId: string;
+  awardedAt: string;
 }

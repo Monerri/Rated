@@ -10,11 +10,20 @@ import {
 
 const wantsWindows = (a: Record<string, unknown>) => a.improve === "windows" || a.improve === "both";
 const wantsDoors = (a: Record<string, unknown>) => a.improve === "doors" || a.improve === "both";
+const wantsGarage = (a: Record<string, unknown>) => a.improve === "garage";
 
 export const windowsDoorsFunnel: FunnelConfig = {
   serviceSlug: "windows-doors",
   heading: "Windows & Doors",
   researching: { questionId: "timescale", value: RESEARCHING },
+  // Garage door firms are often different from window and door firms.
+  leadTypes: {
+    options: [
+      { value: "windows-doors", label: "Windows and doors" },
+      { value: "garage-doors", label: "Garage doors" },
+    ],
+    of: (a) => (wantsGarage(a) ? "garage-doors" : "windows-doors"),
+  },
   questions: [
     {
       id: "improve",
@@ -25,6 +34,7 @@ export const windowsDoorsFunnel: FunnelConfig = {
         { value: "windows", label: "Windows", icon: "window" },
         { value: "doors", label: "Doors", icon: "door" },
         { value: "both", label: "Windows & doors", icon: "windows-doors" },
+        { value: "garage", label: "Garage door", icon: "garage" },
       ],
     },
     postcodeQuestion,
@@ -59,6 +69,34 @@ export const windowsDoorsFunnel: FunnelConfig = {
       ],
     },
     {
+      id: "garageDoor",
+      type: "single",
+      title: "What kind of garage door would you like?",
+      summaryLabel: "Garage door",
+      layout: "list",
+      showIf: wantsGarage,
+      options: [
+        { value: "up-and-over", label: "Up and over" },
+        { value: "roller", label: "Roller" },
+        { value: "sectional", label: "Sectional" },
+        { value: "side-hinged", label: "Side-hinged" },
+        { value: "not-sure", label: "Not sure, I'd like advice" },
+      ],
+    },
+    {
+      id: "garageMotor",
+      type: "single",
+      title: "Would you like it to open electrically?",
+      summaryLabel: "Electric opening",
+      layout: "list",
+      showIf: wantsGarage,
+      options: [
+        { value: "yes", label: "Yes" },
+        { value: "no", label: "No" },
+        { value: "not-sure", label: "Not sure" },
+      ],
+    },
+    {
       id: "currentGlazing",
       type: "single",
       title: "What windows do you currently have?",
@@ -79,6 +117,7 @@ export const windowsDoorsFunnel: FunnelConfig = {
       summaryLabel: "Most important",
       max: 3,
       layout: "list",
+      showIf: (a) => !wantsGarage(a),
       options: [
         { value: "energy-bills", label: "Lower energy bills" },
         { value: "warmer", label: "Warmer rooms" },

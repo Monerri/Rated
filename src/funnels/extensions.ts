@@ -10,11 +10,15 @@ import {
 } from "@/funnels/shared";
 
 const NEW_BUILD = "new-build";
+const BRICKWORK = "brickwork";
 const isNewBuild = (a: Record<string, unknown>) => a.extensionType === NEW_BUILD;
+const isBrickwork = (a: Record<string, unknown>) => a.extensionType === BRICKWORK;
+/** Questions about the size and use of an extension, not asked for a new house or brickwork. */
+const isExtension = (a: Record<string, unknown>) => !isNewBuild(a) && !isBrickwork(a);
 
 /** Kinds of job builders can choose to take. "Not sure" goes to builders who do both sizes of extension. */
 const leadTypeOf = (a: Record<string, unknown>) =>
-  a.extensionType === "single-storey" ? "single-storey" : isNewBuild(a) ? NEW_BUILD : "multi-storey";
+  a.extensionType === "single-storey" ? "single-storey" : isNewBuild(a) ? NEW_BUILD : isBrickwork(a) ? BRICKWORK : "multi-storey";
 
 const homeTypeQuestion: Question = {
   ...propertyTypeQuestion,
@@ -30,6 +34,7 @@ export const extensionsFunnel: FunnelConfig = {
       { value: "single-storey", label: "Single-storey extensions" },
       { value: "multi-storey", label: "Two and three-storey extensions" },
       { value: NEW_BUILD, label: "New-build houses" },
+      { value: BRICKWORK, label: "Brickwork and pointing" },
     ],
     of: leadTypeOf,
   },
@@ -43,6 +48,7 @@ export const extensionsFunnel: FunnelConfig = {
         { value: "single-storey", label: "Single-storey extension", icon: "single-storey" },
         { value: "multi-storey", label: "Two or three-storey extension", icon: "two-storey" },
         { value: NEW_BUILD, label: "A new house", hint: "For example, on a plot of land", icon: "new-build" },
+        { value: BRICKWORK, label: "Brickwork or pointing", hint: "Repointing, repairs or a new wall", icon: "brickwork" },
         { value: "not-sure", label: "Not sure yet", icon: "unsure" },
       ],
     },
@@ -53,7 +59,7 @@ export const extensionsFunnel: FunnelConfig = {
       title: "Where would it go?",
       summaryLabel: "Position",
       layout: "list",
-      showIf: (a) => !isNewBuild(a),
+      showIf: isExtension,
       options: [
         { value: "rear", label: "At the back" },
         { value: "side", label: "At the side" },
@@ -69,7 +75,7 @@ export const extensionsFunnel: FunnelConfig = {
       summaryLabel: "Use of space",
       max: 3,
       layout: "list",
-      showIf: (a) => !isNewBuild(a),
+      showIf: isExtension,
       options: [
         { value: "kitchen", label: "A bigger kitchen" },
         { value: "open-plan", label: "Open-plan living or dining" },
@@ -86,7 +92,7 @@ export const extensionsFunnel: FunnelConfig = {
       hint: "A rough idea is fine. A small kitchen extension might be around 3m × 4m.",
       summaryLabel: "Approximate size",
       layout: "list",
-      showIf: (a) => !isNewBuild(a),
+      showIf: isExtension,
       options: [
         { value: "small", label: "Small", hint: "Under about 15 m²" },
         { value: "medium", label: "Medium", hint: "About 15 to 30 m²" },
@@ -122,9 +128,30 @@ export const extensionsFunnel: FunnelConfig = {
       ],
     },
     {
+      id: "brickwork",
+      type: "multi",
+      title: "What brickwork do you need?",
+      hint: "Choose all that apply.",
+      summaryLabel: "Brickwork",
+      layout: "list",
+      showIf: isBrickwork,
+      options: [
+        { value: "repointing", label: "Repointing" },
+        { value: "repairs", label: "Brick repairs or replacement", hint: "For example cracked or crumbling bricks" },
+        { value: "wall", label: "A new garden or boundary wall" },
+        { value: "chimney", label: "Chimney repairs or rebuilding" },
+        { value: "other", label: "Something else" },
+      ],
+      goodToKnow: {
+        when: () => true,
+        text: "Older brick homes are usually best repointed with a lime mortar, which lets the walls breathe. Ask your specialist which mortar they'll use. A wall next to a road over 1 metre high, or over 2 metres elsewhere, usually needs planning permission.",
+      },
+    },
+    {
       id: "stage",
       type: "single",
       title: "Where are you up to?",
+      showIf: (a) => !isBrickwork(a),
       summaryLabel: "Plans",
       layout: "list",
       options: [

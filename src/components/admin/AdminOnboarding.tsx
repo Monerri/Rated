@@ -437,6 +437,10 @@ function ApplicationDetails({ a }: { a: SupplierApplication }) {
     ["Business", a.businessType === "sole_trader" ? "Sole trader: check identity and address" : `Limited company, Companies House ${a.companiesHouseNumber}`],
     ["Trade scheme", a.competentPersonScheme],
     ["Guarantee provider", a.insuranceBackedGuaranteeProvider || "None given"],
+    [
+      "Own workmanship guarantee",
+      a.workmanshipGuaranteeYears == null ? "Not asked (older application)" : a.workmanshipGuaranteeYears === 0 ? "None" : `${a.workmanshipGuaranteeYears} years`,
+    ],
     ["Google profile", a.googleProfileUrl],
     ["About", a.description],
     ["Recommended by", a.recommendedBy ? `“${a.recommendedBy.name}” (as typed). Confirm or check it in Referral below.` : "Nobody named"],

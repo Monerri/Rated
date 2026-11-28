@@ -47,14 +47,17 @@ export function checkRows(s: PublicSpecialist): CheckRow[] {
         ? { title: "Trade or legal registration", status: "passed", detail: names.join(" · ") }
         : { title: "Trade or legal registration", status: "not_required", detail: "None needed for this work" };
 
-  // 3. Insurance-backed guarantee.
+  // 3. Insurance-backed guarantee. Without one, the business's own workmanship guarantee (as it told us) is shown instead.
   const ibg = st("insurance_backed_guarantee");
+  const years = s.workmanshipGuaranteeYears;
+  const own =
+    years == null ? null : years === 0 ? "No written guarantee of its own" : `Own ${years}-year guarantee, not insurance-backed`;
   const guarantee: CheckRow =
     ibg === "passed"
       ? { title: "Insurance-backed guarantee", status: "passed", detail: strip(r("insurance_backed_guarantee")!.evidence) }
       : ibg === "not_required"
-        ? { title: "Insurance-backed guarantee", status: "not_required", detail: "Not needed for this work" }
-        : { title: "Insurance-backed guarantee", status: "partial", detail: "Not checked" };
+        ? { title: "Insurance-backed guarantee", status: "not_required", detail: years ? `Not needed · own ${years}-year guarantee` : "Not needed for this work" }
+        : { title: "Insurance-backed guarantee", status: "partial", detail: own ?? "Not checked" };
 
   // 4. Google rating.
   const rating: CheckRow = {

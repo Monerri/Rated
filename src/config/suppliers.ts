@@ -27,6 +27,12 @@ export const badgeCriteria = [
  * schemes. "Other" covers anything not listed. See config/schemes.ts for
  * which service needs which.
  */
+/** Values that mean "no scheme": they can't be combined with a scheme. */
+export const NO_SCHEME_VALUES = ["not-applicable", "none"];
+
+/** The longest workmanship guarantee, in years, the application form accepts. */
+export const maxWorkmanshipGuaranteeYears = 50;
+
 export const competentPersonSchemes = [
   { value: "aphc", label: "APHC" },
   { value: "arb", label: "Architects Registration Board" },

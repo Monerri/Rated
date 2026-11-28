@@ -16,6 +16,13 @@ export const referrals = {
   maxNameLength: 120,
 };
 
+/**
+ * The automatic referral invite email (lib/referralInvites.ts) goes to
+ * specialists who go live from this moment, the morning after they do.
+ * Anyone live before it can be sent one from /admin.
+ */
+export const referralInvitesFrom = "2026-11-29T00:00:00.000Z";
+
 /** Whether an application made at this moment can claim referral credits. */
 export function referralsOpen(at: Date | string = new Date()): boolean {
   return new Date(at).getTime() <= new Date(referrals.deadline).getTime();

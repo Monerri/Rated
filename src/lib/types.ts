@@ -211,6 +211,12 @@ export interface SpecialistOnboarding {
   checkedBy: AdminRole;
   /** The reference they use on bank transfers, for example VN-REALFLOORS. Unique. */
   paymentReference?: string;
+  /** When we emailed them about the referral scheme (see lib/referralInvites.ts). */
+  referralInviteSentAt?: string | null;
+  /** Unguessable token for the "stop offers like this" link in offer emails. */
+  offersToken?: string;
+  /** Set when they asked us to stop sending offers. Service emails (introductions, account) still go. */
+  offersOptOut?: { at: string } | null;
   approvedAt: string;
   approvedBy: AdminRole;
   updatedAt: string;

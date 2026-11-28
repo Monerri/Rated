@@ -52,6 +52,7 @@ export async function POST(request: Request) {
         googleRating: s.googleRating,
         checks: s.checks,
         checksLastConfirmed: s.checksLastConfirmed,
+        workmanshipGuaranteeYears: s.workmanshipGuaranteeYears ?? null,
       })),
     },
     { status: 201 },

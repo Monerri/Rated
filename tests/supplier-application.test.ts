@@ -29,7 +29,8 @@ function body(extra: Record<string, unknown> = {}) {
     radiusMiles: 20,
     businessType: "limited",
     companiesHouseNumber: "12345678",
-    competentPersonScheme: "none",
+    tradeSchemes: ["none"],
+    workmanshipGuaranteeYears: "2",
     googleProfileUrl: "https://g.page/new-drains",
     description: "Drains and pipes.",
     declaration: { ...supplierDeclarationWording(), given: true },
@@ -60,4 +61,32 @@ test("more than 120 characters is rejected with a field error", async () => {
   assert.equal(res.status, 400);
   const json = (await res.json()) as { fields: Record<string, string> };
   assert.ok(json.fields.recommendedBy);
+});
+
+test("several trade schemes can be ticked, and are stored in words too", async () => {
+  const res = await post(body({ tradeSchemes: ["gas-safe", "oftec", "other"], competentPersonSchemeOther: "Benchmark" }));
+  assert.equal(res.status, 201);
+  const [saved] = await recordStore.listSupplierApplications();
+  assert.deepEqual(saved.tradeSchemes, ["gas-safe", "oftec", "other"]);
+  assert.equal(saved.competentPersonScheme, "Gas Safe Register; OFTEC; Other: Benchmark");
+});
+
+test("a scheme can't be ticked alongside 'not currently registered', and at least one option is needed", async () => {
+  const both = await post(body({ tradeSchemes: ["gas-safe", "none"] }));
+  assert.equal(both.status, 400);
+  assert.ok(((await both.json()) as { fields: Record<string, string> }).fields.competentPersonScheme);
+  const none = await post(body({ tradeSchemes: [] }));
+  assert.equal(none.status, 400);
+});
+
+test("the workmanship guarantee years are required, from 0 to 50, and stored", async () => {
+  for (const bad of ["", "-1", "two", "51"]) {
+    const res = await post(body({ workmanshipGuaranteeYears: bad }));
+    assert.equal(res.status, 400, `"${bad}" should be rejected`);
+    assert.ok(((await res.json()) as { fields: Record<string, string> }).fields.workmanshipGuaranteeYears);
+  }
+  const ok = await post(body({ workmanshipGuaranteeYears: "0" }));
+  assert.equal(ok.status, 201);
+  const [saved] = await recordStore.listSupplierApplications();
+  assert.equal(saved.workmanshipGuaranteeYears, 0);
 });

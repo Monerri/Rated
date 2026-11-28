@@ -3,7 +3,14 @@ import { maxRadiusMiles, radiusOptions } from "@/config/coverage";
 import { lookupPostcode } from "@/lib/geo";
 import { normalisePostcode } from "@/lib/postcode";
 import { getService, services } from "@/config/services";
-import { applicationTermsWording, competentPersonSchemes, specialistTermsVersion, supplierDeclarationWording } from "@/config/suppliers";
+import {
+  applicationTermsWording,
+  competentPersonSchemes,
+  maxWorkmanshipGuaranteeYears,
+  NO_SCHEME_VALUES,
+  specialistTermsVersion,
+  supplierDeclarationWording,
+} from "@/config/suppliers";
 import { supplierAcknowledgementEmail, supplierApplicationInternalEmail, trySend } from "@/lib/notifications";
 import { recordStore } from "@/lib/records";
 import { parseRecommendedBy } from "@/lib/referrals";
@@ -63,9 +70,12 @@ export async function POST(request: Request) {
   const excludedValid = !excludedPostcodes || excludedPostcodes.split(/[\s,;]+/).filter(Boolean).every((x) => POSTCODE_PART.test(x.toUpperCase()));
   const businessType = body.businessType === "sole_trader" ? "sole_trader" : "limited";
   const companiesHouseNumber = typeof body.companiesHouseNumber === "string" ? normaliseCompanyNumber(body.companiesHouseNumber) : null;
-  const scheme = competentPersonSchemes.find((s) => s.value === body.competentPersonScheme);
+  // Trade schemes: any number ticked, or one "no scheme" answer. Older clients sent a single value.
+  const ticked = Array.isArray(body.tradeSchemes) ? body.tradeSchemes.map(String) : body.competentPersonScheme ? [String(body.competentPersonScheme)] : [];
+  const tradeSchemes = competentPersonSchemes.map((s) => s.value).filter((v) => ticked.includes(v));
   const schemeOther = str(body.competentPersonSchemeOther, 120);
-  const otherSchemes = str(body.otherSchemes, 200);
+  const yearsRaw = String(body.workmanshipGuaranteeYears ?? "").trim();
+  const workmanshipGuaranteeYears = /^\d{1,2}$/.test(yearsRaw) ? Number(yearsRaw) : null;
   const ibgProvider = str(body.insuranceBackedGuaranteeProvider, 160);
   const googleProfileUrl = typeof body.googleProfileUrl === "string" ? normaliseUrl(body.googleProfileUrl) : null;
   const description = str(body.description, 2000);
@@ -92,8 +102,12 @@ export async function POST(request: Request) {
   if (!radiusOptions.includes(radiusMiles)) errors.radiusMiles = `Please choose how far you'll travel, up to ${maxRadiusMiles} miles.`;
   if (!excludedValid) errors.excludedPostcodes = "Please list postcode areas or districts only, separated by commas, for example TD, DG, NE71.";
   if (businessType === "limited" && !companiesHouseNumber) errors.companiesHouseNumber = "Please enter an 8-character Companies House number, for example 01234567 or SC123456.";
-  if (!scheme) errors.competentPersonScheme = "Please choose an option.";
-  if (scheme?.value === "other" && !schemeOther) errors.competentPersonSchemeOther = "Please tell us which scheme.";
+  if (tradeSchemes.length === 0) errors.competentPersonScheme = "Please tick at least one option.";
+  else if (tradeSchemes.some((v) => NO_SCHEME_VALUES.includes(v)) && tradeSchemes.length > 1)
+    errors.competentPersonScheme = "Please either tick your schemes, or tell us none applies, not both.";
+  if (tradeSchemes.includes("other") && !schemeOther) errors.competentPersonSchemeOther = "Please tell us which scheme.";
+  if (workmanshipGuaranteeYears === null || workmanshipGuaranteeYears > maxWorkmanshipGuaranteeYears)
+    errors.workmanshipGuaranteeYears = `Please enter a number of years from 0 to ${maxWorkmanshipGuaranteeYears}. Enter 0 if you don't give a written guarantee.`;
   if (!googleProfileUrl) errors.googleProfileUrl = "Please enter a link to your Google Business profile or reviews.";
   if (!description) errors.description = "Please tell us a little about your business.";
   if (!recommendedBy.ok) errors.recommendedBy = recommendedBy.error;
@@ -134,8 +148,12 @@ export async function POST(request: Request) {
     excludedPostcodes: excludedPostcodes?.toUpperCase() ?? null,
     businessType,
     companiesHouseNumber: businessType === "limited" ? companiesHouseNumber! : "",
-    competentPersonScheme: `${scheme!.value === "other" ? `Other: ${schemeOther}` : scheme!.label}${otherSchemes ? `; also: ${otherSchemes}` : ""}`,
+    competentPersonScheme: tradeSchemes
+      .map((v) => (v === "other" ? `Other: ${schemeOther}` : competentPersonSchemes.find((s) => s.value === v)!.label))
+      .join("; "),
+    tradeSchemes,
     insuranceBackedGuaranteeProvider: ibgProvider ?? "",
+    workmanshipGuaranteeYears,
     googleProfileUrl: googleProfileUrl!,
     description: description!,
     anythingElse,

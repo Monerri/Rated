@@ -161,6 +161,12 @@ export interface Specialist {
   checks: VettingCheckResult[];
   /** ISO date the checks were last confirmed. */
   checksLastConfirmed: string;
+  /**
+   * Years the business guarantees its own workmanship for, as it told us
+   * (separate from any insurance-backed guarantee). 0 means no written
+   * guarantee; missing means we don't know.
+   */
+  workmanshipGuaranteeYears?: number | null;
   /** Services for which they don't want discounted "in 3 to 6 months" leads. */
   skipLaterLeadsFor?: string[];
   /** Per service, the kinds of job they take (see FunnelConfig.leadTypes). Missing means all. */
@@ -358,7 +364,7 @@ export interface SpecialistCoverage {
 /** The parts of a specialist record that may be shown to homeowners. */
 export type PublicSpecialist = Pick<
   Specialist,
-  "slug" | "name" | "isDemo" | "services" | "googleRating" | "googleReviewCount" | "checks" | "checksLastConfirmed"
+  "slug" | "name" | "isDemo" | "services" | "googleRating" | "googleReviewCount" | "checks" | "checksLastConfirmed" | "workmanshipGuaranteeYears"
 >;
 
 /** A business asking to be considered for introductions. Not an approval. */
@@ -394,8 +400,13 @@ export interface SupplierApplication {
   businessType?: "limited" | "sole_trader";
   /** Empty for sole traders. */
   companiesHouseNumber: string;
+  /** The schemes in words, for example "Gas Safe Register; OFTEC". */
   competentPersonScheme: string;
+  /** Every scheme ticked, by value (config/suppliers.ts), plus "other". Missing on older applications, which chose one. */
+  tradeSchemes?: string[];
   insuranceBackedGuaranteeProvider: string;
+  /** Years they guarantee their own work for (0 = no written guarantee). Missing on older applications. */
+  workmanshipGuaranteeYears?: number | null;
   googleProfileUrl: string;
   description: string;
   anythingElse: string | null;

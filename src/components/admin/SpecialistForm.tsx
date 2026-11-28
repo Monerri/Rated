@@ -42,6 +42,8 @@ interface Values {
   identityCheck: string;
   guaranteeStatus: CheckChoice;
   guaranteeProvider: string;
+  /** Their own workmanship guarantee in years, as they told us. Blank if not known. */
+  workmanshipYears: string;
   guaranteeCheck: string;
   guaranteeReason: string;
   schemeStatus: CheckChoice;
@@ -61,9 +63,13 @@ function allKinds(slug: string): string[] | null {
 }
 
 export function valuesFromApplication(a: SupplierApplication): Values {
-  const scheme = competentPersonSchemes.find((s) => a.competentPersonScheme.startsWith(s.label));
-  const legal = !!scheme && LEGAL_SCHEMES.includes(scheme.value);
-  const named = !!scheme && !["other", "none", "not-applicable"].includes(scheme.value) && !legal;
+  // Newer applications list every scheme ticked; older ones chose one.
+  const ticked = a.tradeSchemes ?? [competentPersonSchemes.find((s) => a.competentPersonScheme.startsWith(s.label))?.value].filter(Boolean) as string[];
+  const label = (v: string) => competentPersonSchemes.find((s) => s.value === v)?.label ?? v;
+  const legalOnes = ticked.filter((v) => LEGAL_SCHEMES.includes(v));
+  const namedOnes = ticked.filter((v) => !["other", "none", "not-applicable"].includes(v) && !LEGAL_SCHEMES.includes(v));
+  const legal = legalOnes.length > 0;
+  const named = namedOnes.length > 0;
   const provider = a.insuranceBackedGuaranteeProvider?.trim() ?? "";
   return {
     ...blankValues(),
@@ -81,11 +87,12 @@ export function valuesFromApplication(a: SupplierApplication): Values {
     businessType: a.businessType ?? "limited",
     companiesHouseNumber: a.companiesHouseNumber ?? "",
     legalNeeded: legal,
-    legalScheme: legal ? scheme!.label : "",
+    legalScheme: legalOnes.map(label).join(", "),
     guaranteeStatus: provider ? "passed" : "not_passed",
     guaranteeProvider: provider,
-    schemeStatus: a.competentPersonScheme.startsWith("Not applicable") ? "not_required" : named ? "passed" : "not_passed",
-    schemeName: named ? scheme!.label : "",
+    workmanshipYears: a.workmanshipGuaranteeYears == null ? "" : String(a.workmanshipGuaranteeYears),
+    schemeStatus: ticked.includes("not-applicable") ? "not_required" : named ? "passed" : "not_passed",
+    schemeName: namedOnes.map(label).join(", "),
   };
 }
 
@@ -133,6 +140,7 @@ export function valuesFromSpecialist(s: Specialist): Values {
     identityCheck: choiceOf(s, "identity") === "passed" && !soleTrader ? (notes?.identity ?? "") : "",
     guaranteeStatus: choiceOf(s, "insurance_backed_guarantee"),
     guaranteeProvider: s.checks.find((c) => c.id === "insurance_backed_guarantee" && c.passed)?.evidence.replace("Provider: ", "") ?? "",
+    workmanshipYears: s.workmanshipGuaranteeYears == null ? "" : String(s.workmanshipGuaranteeYears),
     guaranteeCheck: choiceOf(s, "insurance_backed_guarantee") === "passed" ? (notes?.guarantee ?? "") : "",
     guaranteeReason: reasonOf(s, "insurance_backed_guarantee"),
     schemeStatus: choiceOf(s, "competent_person_scheme"),
@@ -172,6 +180,7 @@ export function blankValues(): Values {
     identityCheck: "",
     guaranteeStatus: "not_passed",
     guaranteeProvider: "",
+    workmanshipYears: "",
     guaranteeCheck: "",
     guaranteeReason: "",
     schemeStatus: "not_passed",
@@ -303,6 +312,7 @@ export function SpecialistForm({
       legal: { needed: v.legalNeeded, scheme: v.legalScheme, registration: v.legalRegistration, check: v.legalCheck },
       identity: { status: v.identityStatus, check: v.identityCheck },
       guarantee: { status: v.guaranteeStatus, provider: v.guaranteeProvider, check: v.guaranteeCheck, reason: v.guaranteeReason },
+      workmanshipGuaranteeYears: v.workmanshipYears,
       scheme: { status: v.schemeStatus, name: v.schemeName, registration: v.schemeRegistration, check: v.schemeCheck, reason: v.schemeReason },
       applicationId,
     };
@@ -575,6 +585,15 @@ export function SpecialistForm({
             error={errors.guaranteeReason}
           />
         )}
+
+        <TextField
+          label="Their own workmanship guarantee (years)"
+          inputMode="numeric"
+          hint="As they told us; check their written guarantee if you can. 0 means none; leave blank if you don't know. Homeowners see it when there's no insurance-backed guarantee."
+          value={v.workmanshipYears}
+          onChange={(e) => set("workmanshipYears", e.target.value)}
+          error={errors.workmanshipGuaranteeYears}
+        />
 
         <h3 className="font-bold">6. Trade scheme</h3>
         <p className="-mt-2 text-sm text-muted">

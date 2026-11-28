@@ -3,7 +3,13 @@
 import { useRef, useState } from "react";
 import type { Service } from "@/lib/types";
 import { maxRadiusMiles, radiusOptions } from "@/config/coverage";
-import { applicationTermsWording, competentPersonSchemes, supplierDeclarationWording } from "@/config/suppliers";
+import {
+  applicationTermsWording,
+  competentPersonSchemes,
+  maxWorkmanshipGuaranteeYears,
+  NO_SCHEME_VALUES,
+  supplierDeclarationWording,
+} from "@/config/suppliers";
 import { referrals, referralsOpen } from "@/config/referrals";
 import { site } from "@/config/site";
 import { getSourceInfo } from "@/lib/source";
@@ -20,7 +26,7 @@ export function SupplierForm({ services }: { services: Pick<Service, "slug" | "n
   const [errors, setErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [agreed, setAgreed] = useState(false);
-  const [scheme, setScheme] = useState("");
+  const [schemes, setSchemes] = useState<string[]>([]);
   const [offered, setOffered] = useState<string[]>([]);
   const [businessType, setBusinessType] = useState<"limited" | "sole_trader">("limited");
   const [status, setStatus] = useState<"idle" | "sending" | "done">("idle");
@@ -52,10 +58,10 @@ export function SupplierForm({ services }: { services: Pick<Service, "slug" | "n
         radiusMiles: get("radiusMiles"),
         excludedPostcodes: get("excludedPostcodes"),
         companiesHouseNumber: get("companiesHouseNumber"),
-        competentPersonScheme: get("competentPersonScheme"),
+        tradeSchemes: schemes,
         competentPersonSchemeOther: get("competentPersonSchemeOther"),
-        otherSchemes: get("otherSchemes"),
         insuranceBackedGuaranteeProvider: get("insuranceBackedGuaranteeProvider"),
+        workmanshipGuaranteeYears: get("workmanshipGuaranteeYears"),
         googleProfileUrl: get("googleProfileUrl"),
         description: get("description"),
         recommendedBy: get("recommendedBy"),
@@ -233,25 +239,52 @@ export function SupplierForm({ services }: { services: Pick<Service, "slug" | "n
 
       <fieldset className="grid gap-4">
         <legend className="mb-2 font-display text-lg font-bold">Accreditation and reputation</legend>
-        <SelectField
-          label="Main trade scheme you're registered with"
-          name="competentPersonScheme"
-          options={competentPersonSchemes}
-          value={scheme}
-          onChange={(e) => setScheme(e.target.value)}
-          error={errors.competentPersonScheme}
+        <div className="grid gap-2" role="group" aria-labelledby="schemes-label" aria-describedby={errors.competentPersonScheme ? "schemes-error" : "schemes-hint"}>
+          <p id="schemes-label" className="text-[15px] font-semibold">
+            Trade schemes you&apos;re registered with
+          </p>
+          <p id="schemes-hint" className="-mt-1 text-sm text-muted">
+            Tick all that apply, for example Gas Safe and OFTEC for a heating engineer.
+          </p>
+          <div className="grid gap-1 sm:grid-cols-2">
+            {competentPersonSchemes.map((o) => (
+              <label key={o.value} className="flex min-h-11 cursor-pointer items-center gap-3 text-[15px]">
+                <input
+                  type="checkbox"
+                  checked={schemes.includes(o.value)}
+                  onChange={(e) =>
+                    setSchemes((cur) => {
+                      if (!e.target.checked) return cur.filter((x) => x !== o.value);
+                      // "Not applicable" and "Not registered" stand alone; ticking a scheme clears them.
+                      if (NO_SCHEME_VALUES.includes(o.value)) return [o.value];
+                      return [...cur.filter((x) => !NO_SCHEME_VALUES.includes(x)), o.value];
+                    })
+                  }
+                  className="size-5 accent-[var(--color-blue)]"
+                />
+                {o.label}
+              </label>
+            ))}
+          </div>
+          {errors.competentPersonScheme && (
+            <p id="schemes-error" className="text-sm font-semibold">
+              {errors.competentPersonScheme}
+            </p>
+          )}
+        </div>
+        {schemes.includes("other") && (
+          <TextField label="Which other scheme?" name="competentPersonSchemeOther" maxLength={120} error={errors.competentPersonSchemeOther} />
+        )}
+        <TextField
+          label="How many years do you guarantee your work for?"
+          name="workmanshipGuaranteeYears"
+          type="number"
+          inputMode="numeric"
+          min={0}
+          max={maxWorkmanshipGuaranteeYears}
+          hint="Your own written guarantee on your workmanship, separate from any insurance-backed guarantee. Enter 0 if you don't give one."
+          error={errors.workmanshipGuaranteeYears}
         />
-        {scheme === "other" && (
-          <TextField label="Which scheme?" name="competentPersonSchemeOther" maxLength={120} error={errors.competentPersonSchemeOther} />
-        )}
-        {scheme !== "none" && scheme !== "not-applicable" && (
-          <TextField
-            label="Any other schemes you're registered with (optional)"
-            name="otherSchemes"
-            maxLength={200}
-            hint="For example, Gas Safe and OFTEC for a heating engineer."
-          />
-        )}
         <TextField
           label="Insurance-backed guarantee provider (optional)"
           name="insuranceBackedGuaranteeProvider"

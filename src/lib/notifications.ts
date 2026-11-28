@@ -470,6 +470,7 @@ Services: ${serviceName}${
 Where they work: ${a.basePostcode ? `within ${a.radiusMiles} miles of ${a.basePostcode}${a.excludedPostcodes ? `, not ${a.excludedPostcodes}` : ""}` : [...a.areasCovered, a.otherAreas].filter(Boolean).join(", ")}
 Trade schemes: ${a.competentPersonScheme}
 Insurance-backed guarantee provider: ${a.insuranceBackedGuaranteeProvider || "none given"}
+Own workmanship guarantee: ${a.workmanshipGuaranteeYears == null ? "not given" : a.workmanshipGuaranteeYears === 0 ? "none" : `${a.workmanshipGuaranteeYears} years`}
 Google profile: ${a.googleProfileUrl}
 
 About the business:

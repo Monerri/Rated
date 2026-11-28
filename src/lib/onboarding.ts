@@ -5,7 +5,7 @@ import { freeCreditsFor, launch } from "@/config/launch";
 import { addCredit } from "@/lib/billing";
 import { newPaymentReference, paymentReference, topUpInstructions } from "@/lib/payments";
 import { site } from "@/config/site";
-import { specialistTermsVersion, specialistTermsWording, termsInviteDays } from "@/config/suppliers";
+import { specialistTermsVersion, specialistTermsWording, termsInviteDays, maxWorkmanshipGuaranteeYears } from "@/config/suppliers";
 import { verifiedBadge, vettingStandard, soleTraderChecklist } from "@/config/vetting";
 import { isVerified, missingForBadge } from "@/lib/vetting";
 import { getFunnel } from "@/funnels";
@@ -49,6 +49,8 @@ export interface SpecialistDraft {
   /** For the badge. Sole traders are covered by the identity and address check. */
   identity: { status: "passed"; check: string } | { status: "not_passed" };
   guarantee: OptionalCheck<{ provider: string }>;
+  /** Their own workmanship guarantee in years (0 = none), or null if not known. */
+  workmanshipGuaranteeYears: number | null;
   scheme: OptionalCheck<{ name: string; registration: string }>;
   checksConfirmedOn: string;
 }
@@ -117,6 +119,10 @@ export function parseDraft(body: Record<string, unknown> | null): { ok: true; dr
   const scheme = optional(sc);
   const schemeName = str(sc.name, 120) ?? "";
   const schemeRegistration = str(sc.registration, 60) ?? "";
+  const yearsRaw = String(b.workmanshipGuaranteeYears ?? "").trim();
+  const workmanshipGuaranteeYears = yearsRaw === "" ? null : /^\d{1,2}$/.test(yearsRaw) ? Number(yearsRaw) : NaN;
+  if (Number.isNaN(workmanshipGuaranteeYears) || (workmanshipGuaranteeYears ?? 0) > maxWorkmanshipGuaranteeYears)
+    errors.workmanshipGuaranteeYears = `Enter a number of years from 0 to ${maxWorkmanshipGuaranteeYears}, or leave it blank.`;
   const checksConfirmedOn = String(b.checksConfirmedOn ?? "");
   const confirmedDate = new Date(`${checksConfirmedOn}T00:00:00Z`);
 
@@ -180,6 +186,7 @@ export function parseDraft(body: Record<string, unknown> | null): { ok: true; dr
       about,
       googleRating,
       googleReviewCount,
+      workmanshipGuaranteeYears: Number.isNaN(workmanshipGuaranteeYears) ? null : workmanshipGuaranteeYears,
       business: soleTrader
         ? { type: "sole_trader", check: businessCheck, checklist }
         : { type: "limited", companiesHouseNumber: companiesHouseNumber!, check: businessCheck },
@@ -303,6 +310,7 @@ export async function buildSpecialist(
     about: d.about,
     googleRating: d.googleRating,
     googleReviewCount: d.googleReviewCount,
+    workmanshipGuaranteeYears: d.workmanshipGuaranteeYears,
     checks: checksFrom(d),
     checksLastConfirmed: d.checksConfirmedOn,
     ...(d.skipLaterLeadsFor.length ? { skipLaterLeadsFor: d.skipLaterLeadsFor } : {}),

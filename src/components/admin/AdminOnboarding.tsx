@@ -5,6 +5,7 @@ import { isCurrentlyVetted, isVerified, missingForBadge } from "@/lib/vetting";
 import { specialistTermsVersion } from "@/config/suppliers";
 import { useCallback, useEffect, useState } from "react";
 import { getService } from "@/config/services";
+import { coveringServices } from "@/lib/serviceSearch";
 import { buttonClass } from "@/components/ui/Button";
 import { FormError } from "@/components/ui/Form";
 import { ReferralPanel } from "@/components/admin/ReferralPanel";
@@ -71,6 +72,7 @@ export function AdminOnboarding({ token, owner, onChanged }: { token: string; ow
   const [showDone, setShowDone] = useState(false);
   const [removing, setRemoving] = useState<string | null>(null);
   const [showRemoved, setShowRemoved] = useState(false);
+  const [showDoneTrades, setShowDoneTrades] = useState(false);
 
   const headers = { authorization: `Bearer ${token}`, "content-type": "application/json" };
 
@@ -144,8 +146,19 @@ export function AdminOnboarding({ token, owner, onChanged }: { token: string; ow
   const removed = stored.filter((s) => s.onboarding?.status === "removed");
   const toReview = applications.filter((a) => a.status === "received" || a.status === "under_review");
   const done = applications.filter((a) => a.status === "accepted" || a.status === "declined");
-  // Trades people asked for that we don't cover yet, newest first.
-  const requestedTrades = applications.filter((a) => a.otherServices).map((a) => ({ trade: a.otherServices!, who: a.companyName, at: a.createdAt }));
+  // Trades people asked for, newest first. One is done once a live service covers it, or once marked as added.
+  const requestedTrades = applications
+    .filter((a) => a.otherServices)
+    .map((a) => ({ id: a.id, trade: a.otherServices!, who: a.companyName, at: a.createdAt, coveredBy: coveringServices(a.otherServices!), handled: a.tradeRequestHandled ?? null }));
+  const openTrades = requestedTrades.filter((t) => !t.handled && t.coveredBy.length === 0);
+  const doneTrades = requestedTrades.filter((t) => t.handled || t.coveredBy.length > 0);
+
+  async function markTrade(id: string, action: "trade_handled" | "trade_reopen") {
+    setError(null);
+    const res = await fetch(`/api/admin/applications/${id}`, { method: "POST", headers, body: JSON.stringify({ action }) });
+    if (!res.ok) return setError("That didn't work.");
+    await load();
+  }
 
   return (
     <div className="grid min-w-0 gap-10">
@@ -240,18 +253,54 @@ export function AdminOnboarding({ token, owner, onChanged }: { token: string; ow
       {requestedTrades.length > 0 && (
         <section aria-labelledby="requested-trades" className="grid min-w-0 gap-3">
           <h2 id="requested-trades" className="text-2xl font-bold">
-            Trades people have asked for ({requestedTrades.length})
+            Trades people have asked for ({openTrades.length})
           </h2>
           <p className="text-[15px] text-muted">
-            What applicants said they do beyond our current services. Useful when deciding which category to add next.
+            What applicants said they do beyond our current services. Useful when deciding which category to add next. A trade
+            leaves this list once one of our live services covers it, or when you mark it as added.
           </p>
+          {openTrades.length === 0 && <p className="text-muted">Nothing outstanding.</p>}
           <ul className="grid gap-2 text-[15px]">
-            {requestedTrades.map((t, i) => (
-              <li key={i} className="rounded-[var(--radius-card)] border border-line bg-surface p-3">
-                <span className="font-semibold">{t.trade}</span> · {t.who} · {date(t.at)}
+            {openTrades.map((t) => (
+              <li key={t.id} className="grid gap-2 rounded-[var(--radius-card)] border border-line bg-surface p-3">
+                <p>
+                  <span className="font-semibold">{t.trade}</span> · {t.who} · {date(t.at)}
+                </p>
+                <button type="button" className={`${buttonClass("secondary", "sm")} justify-self-start`} onClick={() => void markTrade(t.id, "trade_handled")}>
+                  Mark as added
+                </button>
               </li>
             ))}
           </ul>
+          {doneTrades.length > 0 && (
+            <div className="grid gap-2">
+              <button type="button" className={`${buttonClass("secondary", "sm")} justify-self-start`} onClick={() => setShowDoneTrades(!showDoneTrades)}>
+                {showDoneTrades ? "Hide" : "Show"} trades already added ({doneTrades.length})
+              </button>
+              {showDoneTrades && (
+                <ul className="grid gap-2 text-[15px]">
+                  {doneTrades.map((t) => (
+                    <li key={t.id} className="grid gap-2 rounded-[var(--radius-card)] border border-dashed border-line bg-surface p-3">
+                      <p>
+                        <span className="font-semibold">{t.trade}</span> · {t.who} · {date(t.at)}
+                      </p>
+                      <p className="text-muted">
+                        ✓{" "}
+                        {t.coveredBy.length > 0
+                          ? `Covered by ${t.coveredBy.join(", ")}`
+                          : `Marked as added ${date(t.handled!.at)} by ${t.handled!.by}`}
+                      </p>
+                      {t.handled && t.coveredBy.length === 0 && (
+                        <button type="button" className={`${buttonClass("secondary", "sm")} justify-self-start`} onClick={() => void markTrade(t.id, "trade_reopen")}>
+                          Put back on the list
+                        </button>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
         </section>
       )}
 

@@ -367,6 +367,8 @@ export interface SupplierApplication {
   leadTypes?: Record<string, string[]>;
   /** Anything they do that isn't one of our services. */
   otherServices?: string | null;
+  /** Set on /admin when that trade has been added (or otherwise dealt with), so it leaves the "Trades people have asked for" list. */
+  tradeRequestHandled?: { at: string; by: AdminRole } | null;
   /** Older applications chose postcode areas; newer ones give a base and radius. */
   areasCovered: string[];
   otherAreas: string | null;

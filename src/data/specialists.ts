@@ -67,17 +67,20 @@ export const specialists: Specialist[] = [];
  * to illustrate the evidence we display. Never matched or sent leads, and
  * labelled as an example wherever it appears.
  */
-export const demoSpecialist: Specialist = demo(
-  "example-glazing",
-  "Example Glazing Ltd",
-  ["windows-doors", "conservatory-roofs"],
-  ALL_NE,
-  4.7,
-  212,
-  "00000001",
-  "Example scheme",
-  "A family-run window, door and conservatory installer.",
-);
+export const demoSpecialist: Specialist = {
+  ...demo(
+    "example-glazing",
+    "Example Glazing Ltd",
+    ["windows-doors", "conservatory-roofs"],
+    ALL_NE,
+    4.7,
+    212,
+    "00000001",
+    "Example scheme",
+    "A family-run window, door and conservatory installer.",
+  ),
+  workmanshipGuaranteeYears: 10,
+};
 
 export function getSpecialist(slug: string): Specialist | undefined {
   return specialists.find((s) => s.slug === slug);

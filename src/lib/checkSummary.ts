@@ -3,7 +3,8 @@ import type { PublicSpecialist, VettingCheckId } from "@/lib/types";
 
 /**
  * The checks as homeowners see them on a specialist's card and in emails:
- * four rows, each with one short line of detail. Some rows combine checks
+ * four rows, each with one short line of detail, plus a highlighted fifth
+ * row when the business also offers an insurance-backed guarantee. Some rows combine checks
  * (identity with the registered business, legal registration with trade
  * schemes). How we check explains each check in full.
  */
@@ -13,6 +14,8 @@ export interface CheckRow {
   status: "passed" | "not_required" | "partial";
   /** One short line, for example "Companies House 01234567 · ID checked". */
   detail: string;
+  /** Shown as something extra, with a star, for example an insurance-backed guarantee. */
+  special?: boolean;
 }
 
 const strip = (evidence: string) =>
@@ -47,17 +50,21 @@ export function checkRows(s: PublicSpecialist): CheckRow[] {
         ? { title: "Trade or legal registration", status: "passed", detail: names.join(" · ") }
         : { title: "Trade or legal registration", status: "not_required", detail: "None needed for this work" };
 
-  // 3. Insurance-backed guarantee. Without one, the business's own workmanship guarantee (as it told us) is shown instead.
+  // 3. The business's own workmanship guarantee, as it told us: a tick with its length.
   const ibg = st("insurance_backed_guarantee");
   const years = s.workmanshipGuaranteeYears;
-  const own =
-    years == null ? null : years === 0 ? "No written guarantee of its own" : `Own ${years}-year guarantee, not insurance-backed`;
-  const guarantee: CheckRow =
-    ibg === "passed"
-      ? { title: "Insurance-backed guarantee", status: "passed", detail: strip(r("insurance_backed_guarantee")!.evidence) }
-      : ibg === "not_required"
-        ? { title: "Insurance-backed guarantee", status: "not_required", detail: years ? `Not needed · own ${years}-year guarantee` : "Not needed for this work" }
-        : { title: "Insurance-backed guarantee", status: "partial", detail: own ?? "Not checked" };
+  const workmanship: CheckRow =
+    years != null && years > 0
+      ? { title: "Workmanship guarantee", status: "passed", detail: `${years} year${years === 1 ? "" : "s"}` }
+      : years === 0
+        ? { title: "Workmanship guarantee", status: "partial", detail: "No written guarantee" }
+        : ibg === "not_required"
+          ? { title: "Workmanship guarantee", status: "not_required", detail: "Not needed for this work" }
+          : { title: "Workmanship guarantee", status: "partial", detail: "Not confirmed yet" };
+
+  // 3b. An insurance-backed guarantee, shown only when they have one, as something extra.
+  const insured: CheckRow | null =
+    ibg === "passed" ? { title: "Insurance-backed guarantee", status: "passed", detail: strip(r("insurance_backed_guarantee")!.evidence), special: true } : null;
 
   // 4. Google rating.
   const rating: CheckRow = {
@@ -66,5 +73,5 @@ export function checkRows(s: PublicSpecialist): CheckRow[] {
     detail: `${s.googleReviewCount} reviews`,
   };
 
-  return [business, registration, guarantee, rating];
+  return [business, registration, workmanship, ...(insured ? [insured] : []), rating];
 }
